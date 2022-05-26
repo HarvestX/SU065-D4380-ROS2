@@ -13,8 +13,8 @@ class Robot_controller(Node):
         self.without_ser = 1
 
         self.dz = 0
-        self.dr = 0 #[m/s]
-        self.dx = 0 #[m/s]
+        self.dr = 0  # [m/s]
+        self.dx = 0  # [m/s]
 
         self.bat = 0
         self.state = 0
@@ -23,7 +23,7 @@ class Robot_controller(Node):
         self.encright = 0
         self.encleft = 0
 
-        self.width = 0.5 #[横幅のm]
+        self.width = 0.5  # [横幅のm]
 
         self.rightvel = 0
         self.leftvel = 0
@@ -34,27 +34,27 @@ class Robot_controller(Node):
 
         # rpm  = 9 * 1000 * 60 / 150 / math.pi * vel
 
-        self.rotratio   = 3600 / math.pi 
+        self.rotratio = 3600 / math.pi
 
-        self.wheelordermsg = Int32MultiArray(data=[0,0])
+        self.wheelordermsg = Int32MultiArray(data=[0, 0])
 
         self.odmmsg = Odometry()
 
-
         super().__init__('Agv_controlnode')
 
-        self.wheelorderPublisher=self.create_publisher(Int32MultiArray,'/wheel_order_vel',10)
+        self.wheelorderPublisher = self.create_publisher(
+            Int32MultiArray, '/wheel_order_vel', 10)
 
-        self.navodmpublisher = self.create_publisher(Odometry,'/nav_odm',10)
+        self.navodmpublisher = self.create_publisher(Odometry, '/nav_odm', 10)
 
-        self.WheelCmdSubscriber=self.create_subscription(
+        self.WheelCmdSubscriber = self.create_subscription(
             Twist,
             '/cmd_vel',
             self.twisttovel_callback,
             10
         )
 
-        self.WheelreadvelSubscriber=self.create_subscription(
+        self.WheelreadvelSubscriber = self.create_subscription(
             Int32MultiArray,
             '/wheel_read_vel',
             self.wheelreadvel_callback,
@@ -66,18 +66,14 @@ class Robot_controller(Node):
         recievetimer_ms = 0.02  # seconds
 
         publishtimer_ms = 0.02  # seconds
-        
 
         self.cnt = 0
 
         if self.timesys == 1:
-            self.sendtimer = self.create_timer(publishtimer_ms, self.datapub_callback)
+            self.sendtimer = self.create_timer(
+                publishtimer_ms, self.datapub_callback)
 
-
-
-
-
-    def twisttovel_callback(self,msg):
+    def twisttovel_callback(self, msg):
         self.dx = msg.linear.x
         self.dy = msg.linear.y
         self.dr = msg.angular.z
@@ -96,9 +92,9 @@ class Robot_controller(Node):
         # elif self.leftvel < -0.1:
         #     self.lefttvel = -0.1
 
-        self.rightrot = int(self.rightvel  * self.rotratio)
+        self.rightrot = int(self.rightvel * self.rotratio) * (-1)
 
-        self.leftrot = int(self.leftvel  * self.rotratio) * (-1)
+        self.leftrot = int(self.leftvel * self.rotratio)
 
         self.wheelordermsg.data[0] = self.rightrot
 
@@ -109,23 +105,23 @@ class Robot_controller(Node):
 
         rclpy.logging._root_logger.info(str(self.rightvel))
         rclpy.logging._root_logger.info(str(self.leftvel))
-        
 
-    def wheelreadvel_callback(self,msg):
+    def wheelreadvel_callback(self, msg):
         # rclpy.logging._root_logger.info(str(msg.data))
-        self.encright = msg.data[0] / self.rotratio  #rightvel
-        self.encleft = msg.data[1] / self.rotratio  * (-1) #leftvel
-       
+        self.encright = msg.data[0] / self.rotratio  # rightvel
+        self.encleft = msg.data[1] / self.rotratio * (-1)  # leftvel
+
         self.error = msg.data[2]
         self.state = msg.data[3]
         self.bat = msg.data[4]
-       
-        self.odmmsg.twist.twist.linear.x = (self.encright + self.encleft) /2
 
-        self.odmmsg.twist.twist.angular.z = (self.encright - self.encleft) / self.width 
+        self.odmmsg.twist.twist.linear.x = (self.encright + self.encleft) / 2
+
+        self.odmmsg.twist.twist.angular.z = (
+            self.encright - self.encleft) / self.width
 
         self.odmmsg.twist.twist.linear.y = 0.0
-       
+
         if self.timesys == 0:
             self.navodmpublisher.publish(self.odmmsg)
 
@@ -133,7 +129,6 @@ class Robot_controller(Node):
     def datapub_callback(self):
         self.navodmpublisher.publish(self.odmmsg)
         self.wheelorderPublisher.publish(self.wheelordermsg)
-
 
 
 def main(args=None):

@@ -9,12 +9,13 @@ import serial
 import struct
 from operator import xor
 
+
 class joyconnode(Node):
     def __init__(self):
         super().__init__('Joycon_node')
 
-        self.cmdvelpub=self.create_publisher(Twist,'/cmd_vel',10)
-        self.joysub=self.create_subscription(
+        self.cmdvelpub = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.joysub = self.create_subscription(
             Joy,
             '/joy',
             self.joynode_callback,
@@ -22,10 +23,10 @@ class joyconnode(Node):
         )
 
         self.vel_msg = Twist()
-    
-    def joynode_callback(self,msg):
-        self.vel_msg.linear.x=msg.axes[1] * 0.4
-        self.vel_msg.angular.z=msg.axes[0] * -0.4
+
+    def joynode_callback(self, msg):
+        self.vel_msg.linear.x = msg.axes[1] * 0.2
+        self.vel_msg.angular.z = msg.axes[0] * 0.2
 
         rclpy.logging._root_logger.info(str(self.vel_msg.linear.x))
         rclpy.logging._root_logger.info(str(self.vel_msg.angular.z))
@@ -44,6 +45,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
-
-
