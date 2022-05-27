@@ -78,9 +78,12 @@ class AGVcontrolNode(Node):
 
         self.agv = AGV()
 
+        port = self.declare_parameter('dev', '/dev/ttyUSB0')
+        self.get_logger().info('Selected dev: {}'.format(port.value))
+
         if self.without_ser != 1:
             self.agv.ser = serial.Serial(
-                port="/dev/ttyUSB0",
+                port=port.value,
                 baudrate=115200,
                 parity=serial.PARITY_NONE,
                 bytesize=serial.EIGHTBITS,
@@ -146,18 +149,11 @@ class AGVcontrolNode(Node):
             self.pubdata.data[0] = self.agv.rightwheel.vel_cmd_int
             self.pubdata.data[1] = self.agv.leftwheel.vel_cmd_int
 
-        # rclpy.logging._root_logger.info(str(self.pubdata.data))
         self.wheelDataPublisher.publish(self.pubdata)
 
     def wheelcmdvell_callback(self, msg):
         self.agv.rightwheel.vel_cmd_f = msg.data[0]
         self.agv.leftwheel.vel_cmd_f = msg.data[1]
-        # rclpy.logging._root_logger.info(str(self.agv.drv_bat))
-        # rclpy.logging._root_logger.info(str(self.agv.rightwheel.vel_cmd_f))
-        # rclpy.logging._root_logger.info(str(self.agv.leftwheel.vel_cmd_f))
-        # rclpy.logging._root_logger.info(str(self.agv.comarray))
-        # rclpy.logging._root_logger.info(str(self.agv.drv_error))
-        # rclpy.logging._root_logger.info(str(self.agv.drv_error_log))
         self.agv.rightwheel.vel_cmd_int = int(self.agv.rightwheel.vel_cmd_f)
         self.agv.leftwheel.vel_cmd_int = int(self.agv.leftwheel.vel_cmd_f)
 
@@ -165,8 +161,6 @@ class AGVcontrolNode(Node):
             if self.agv.rightwheel.vel_cmd_int != 0 or self.agv.rightwheel.vel_cmd_int != 0:
                 self.agv.driver_in = 1
                 self.agv.comarray[0] = 1
-        # tmpsenddata1=self.make_senddata(self.agv.comarray,self.agv.rightwheel.vel_cmd_int,self.agv.leftwheel.vel_cmd_int)
-        # rclpy.logging._root_logger.info(str(self.tmpsenddata1))
 
     def tohex(self, val, nbits):
         return hex((val+(1 << nbits)) % (1 << nbits))
@@ -230,7 +224,7 @@ class AGVcontrolNode(Node):
         write_data = 0x00
 
         if (paramid - command_offset in [0, 1, 2, 3, 7, 8]) == 0:
-            rclpy.logging._root_logger.info("comid error")
+            self.get_logger().error('comid error')
             return
 
         senddata = struct.pack('>B2sB4s2sB', startid, format(0, '02X').encode(
@@ -259,7 +253,7 @@ class AGVcontrolNode(Node):
         write_data = 0x00
 
         if (paramid - command_offset in [0, 1, 2, 3, 7, 8]) == 0:
-            rclpy.logging._root_logger.info("comid error")
+            self.get_logger().error('comid error')
             return
 
         senddata = struct.pack('>B2sB4s4s2sB', startid, format(0, '02X').encode(), read_command, format(
@@ -274,7 +268,6 @@ class AGVcontrolNode(Node):
         return senddata
 
     def recv_data(self, readdata):
-        # rclpy.logging._root_logger.info(str(readdata))
         if len(readdata) == 13:
 
             checkdata = struct.unpack('13b', readdata)
@@ -295,48 +288,34 @@ class AGVcontrolNode(Node):
             if readdata[6] != checksum:
                 print("error!")
 
-            # rclpy.logging._root_logger.info(str(readdata))
-
             if readdata[1] == self.agv.rightwheel.id:
                 veldata = struct.unpack('>xBBxhB', readdata)
                 self.agv.rightwheel.speed = veldata[2]
-                # rclpy.logging._root_logger.info(str(veldata[2]))
 
             elif readdata[1] == self.agv.leftwheel.id:
                 veldata = struct.unpack('>xBBxhB', readdata)
                 self.agv.leftwheel.speed = veldata[2]
-                # rclpy.logging._root_logger.info(str(veldata[2]))
 
             elif readdata[1] == self.agv.status_id:
                 veldata = struct.unpack('>xBHHB', readdata)
                 self.agv.drv_status = veldata[1]
                 self.agv.drv_error = veldata[2]
-                # rclpy.logging._root_logger.info(str(veldata))
 
             elif readdata[1] == self.agv.enc_id:
                 veldata = struct.unpack('>xBHHb', readdata)
                 self.agv.rightwheel.enc = veldata[1]
                 self.agv.leftwheel.enc = veldata[2]
-                # rclpy.logging._root_logger.info(str(veldata))
 
             elif readdata[1] == self.agv.bat_id:
                 veldata = struct.unpack('>xB2s2sB', readdata)
-                # print(veldata)
                 self.agv.drv_bat_str = veldata[1]
-                # print(agv.drv_bat_str)
                 self.agv.drv_bat = int.from_bytes(self.agv.drv_bat_str, "big")
-                # print(agv.drv_bat)
-                # rclpy.logging._root_logger.info(str(veldata))
-                # rclpy.logging._root_logger.info(str(self.agv.drv_bat))
 
             else:
                 return
 
-        # rclpy.logging._root_logger.info(str(readdata))
-
         if len(readdata) == 2:
             self.agv.response = 1
-            # rclpy.logging._root_logger.info(str(readdata))
             return
 
     def return_xor_bytes(self, bytesarray, i, j):

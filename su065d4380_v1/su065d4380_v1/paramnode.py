@@ -114,9 +114,12 @@ class AGVcontrolNode(Node):
 
         self.agv = AGV()
 
+        port = self.declare_parameter('dev', '/dev/ttyUSB0')
+        self.get_logger().info('Selected dev: {}'.format(port.value))
+
         if self.without_ser != 1:
             self.agv.ser = serial.Serial(
-                port="/dev/ttyUSB0",
+                port=port.value,
                 baudrate=115200,
                 parity=serial.PARITY_NONE,
                 bytesize=serial.EIGHTBITS,
