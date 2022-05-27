@@ -17,46 +17,50 @@ class paramkeyNode(Node):
 
         super().__init__('paramkeynode')
 
-        self.keypub=self.create_publisher(String,'/param_key',10)
-        self.valuepub=self.create_publisher(Int32MultiArray,'/param_value',10)
-
+        self.keypub = self.create_publisher(String, '/param_key', 10)
+        self.valuepub = self.create_publisher(
+            Int32MultiArray, '/param_value', 10)
 
         keyinputtimer_ms = 0.01  # seconds
 
-        self.keyinputtimer = self.create_timer(keyinputtimer_ms,self.keyinput_callback)
+        self.keyinputtimer = self.create_timer(
+            keyinputtimer_ms, self.keyinput_callback)
 
     def keyinput_callback(self):
-        key = input("r:read all data , w:write one parameter,, e: reset error\n")
+        key = input(
+            "r:read all data , w:write one parameter,, e: reset error\n")
 
         pubkey = String(data=key)
         self.keypub.publish(pubkey)
         rclpy.logging._root_logger.info(str(key))
 
         if key == "r":
-            return 
+            return
 
-        elif key =='w':
-            indexkey = input("0:right total gain, 1:left total gain,2 :acc time,3:dcc time \n 4:comm timeout[0.1s],5:gensoku time\n")
+        elif key == 'w':
+            indexkey = input(
+                "0:right total gain, 1:left total gain,2 :acc time,3:dcc time \n 4:comm timeout[0.1s],5:gensoku time\n")
             valuekey = input("value")
             indexkey = int(indexkey)
-            valuekey= int(valuekey)
+            valuekey = int(valuekey)
 
-            if valuekey > 100 and indexkey in [0,1]:
+            if valuekey > 100 and indexkey in [0, 1]:
                 valuekey = 100
 
-            if valuekey > 500 and indexkey in [2,3,5]:
+            if valuekey > 500 and indexkey in [2, 3, 5]:
                 valuekey = 500
-            
-            if valuekey > 5 and indexkey ==4:
+
+            if valuekey > 5 and indexkey == 4:
                 valuekey = 5
-            
-            pubdata=Int32MultiArray(data=[indexkey,valuekey]) 
+
+            pubdata = Int32MultiArray(data=[indexkey, valuekey])
 
             self.valuepub.publish(pubdata)
-            
-        elif key =="e":
-            return 
-        
+
+        elif key == "e":
+            return
+
+
 def main(args=None):
     rclpy.init(args=args)
     agvnode = paramkeyNode()
@@ -87,7 +91,3 @@ if __name__ == '__main__':
 # recv_data(aas,agv_aa)
 
 # recv_data(exbatdata,agv_aa)
-
-
-
-
