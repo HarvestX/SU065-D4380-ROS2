@@ -4,14 +4,14 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    this_pkg_name = 'su065d4380_v1'
+    controller_pkg = 'su065d4380_v1'
     return LaunchDescription([
         Node(
             package="joy",
             executable="joy_node",
         ),
         Node(
-            package=this_pkg_name,
+            package=controller_pkg,
             executable="joynode",
             output='screen',
         ),

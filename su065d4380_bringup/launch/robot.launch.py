@@ -6,17 +6,17 @@ from ament_index_python.packages import get_package_share_path
 
 
 def generate_launch_description():
-    this_pkg_name = 'su065d4380_v1'
+    controller_pkg = 'su065d4380_v1'
     enkf_param = str(get_package_share_path(
         'robot_localization') / 'params' / 'ekf.yaml')
     return LaunchDescription([
         Node(
-            package=this_pkg_name,
+            package=controller_pkg,
             executable="comnode",
             output='screen',
         ),
         Node(
-            package=this_pkg_name,
+            package=controller_pkg,
             executable="odomnode",
             output='screen',
         ),
