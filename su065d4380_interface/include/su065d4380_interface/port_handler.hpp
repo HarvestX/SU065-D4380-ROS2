@@ -50,6 +50,7 @@ public:
   int readPort(char * const, int);
   int writePort(const uint8_t * const, int);
   int writePort(const char * const, int);
+  int writePort(const std::string &);
 
 private:
   bool setupPort(const speed_t);

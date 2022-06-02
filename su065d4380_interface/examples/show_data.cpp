@@ -14,6 +14,7 @@
 
 
 #include "su065d4380_interface/port_handler.hpp"
+#include "su065d4380_interface/packet_handler.hpp"
 
 int main()
 {
@@ -33,6 +34,30 @@ int main()
   RCLCPP_INFO(
     logger, "BaudRate: %d", port_handler->getBaudRate());
 
+  namespace vp = su065d4380_interface::velocity_packet;
+
+  std::string velocity_command;
+  su065d4380_interface::velocity_packet::setPacket(
+    vp::FLAG_MODE_MOTOR_ON | vp::FLAG_MODE_ERROR_REST,
+    3000, 0, velocity_command);
+
+
+  port_handler->writePort(velocity_command);
+
+  while (true) {
+    if (port_handler->getBytesAvailable() > 0) {
+      break;
+    }
+  }
+
+  char buf[100];
+  port_handler->readPort(buf, sizeof(buf));
+  RCLCPP_INFO(logger, "Recv %s", buf);
+  if (su065d4380_interface::velocity_packet::isOK(std::string(buf))) {
+    RCLCPP_INFO(logger, "OK!");
+  } else {
+    RCLCPP_INFO(logger, "NG!");
+  }
 
   return EXIT_SUCCESS;
 }
