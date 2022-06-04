@@ -38,11 +38,13 @@ int main()
 
   std::string velocity_command;
   su065d4380_interface::velocity_packet::setPacket(
-    vp::FLAG_MODE_MOTOR_ON | vp::FLAG_MODE_ERROR_REST,
+    vp::FLAG_MODE_MOTOR_ON,
     3000, 0, velocity_command);
 
-
-  port_handler->writePort(velocity_command);
+  RCLCPP_INFO(
+    logger,
+    "Send %s", velocity_command.c_str());
+  port_handler->writePort(velocity_command.data(), velocity_command.size());
 
   while (true) {
     if (port_handler->getBytesAvailable() > 0) {
@@ -50,14 +52,16 @@ int main()
     }
   }
 
-  char buf[100];
-  port_handler->readPort(buf, sizeof(buf));
-  RCLCPP_INFO(logger, "Recv %s", buf);
-  if (su065d4380_interface::velocity_packet::isOK(std::string(buf))) {
-    RCLCPP_INFO(logger, "OK!");
-  } else {
-    RCLCPP_INFO(logger, "NG!");
+  std::string recved_str;
+  while (1) {
+    while (port_handler->getBytesAvailable() > 0) {
+      char buf[100];
+      port_handler->readPort(buf, sizeof(buf));
+      recved_str += std::string(buf);
+    }
   }
+  RCLCPP_INFO(
+    logger, "Recv: %s", recved_str.c_str());
 
   return EXIT_SUCCESS;
 }

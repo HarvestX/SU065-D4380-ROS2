@@ -119,11 +119,6 @@ int PortHandler::writePort(const char * const packet, int length)
   return write(this->socket_fd_, packet, length);
 }
 
-int PortHandler::writePort(const std::string & packet)
-{
-  return write(this->socket_fd_, packet.data(), packet.size());
-}
-
 speed_t PortHandler::getCFlagBaud(const int baudrate) const noexcept
 {
   switch (baudrate) {

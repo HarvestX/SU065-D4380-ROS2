@@ -42,7 +42,7 @@ void setPacket(
   // Set Checksum
   snprintf(
     packet.data(), packet.size(), "%s%02hhX\r", buf, sum);
-  packet.pop_back();
+  packet.erase(std::find(packet.begin(), packet.end(), '\0'), packet.end());
 }
 
 bool isOK(const std::string & recv)

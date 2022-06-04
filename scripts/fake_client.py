@@ -3,6 +3,31 @@
 import serial
 
 
+# Need to append crc and \r
+driver_info_packet_base = [
+    '$A10100F830',
+    '$A200000000',
+    '$A300000000',
+    '$A40100F830',
+    '$A512D30000', ]
+
+
+def calcCRC(packet: str) -> str:
+    crc = 0
+    for p in packet.encode():
+        crc = crc ^ p
+    return format(crc, '02X')
+
+
+def create_driver_info_packet(key: int) -> str:
+    if(key > len(driver_info_packet_base)):
+        raise RuntimeError('Invalid key given')
+
+    target_data = driver_info_packet_base[key]
+    crc = calcCRC(target_data)
+    return target_data + crc + '\r'
+
+
 def main():
     port_name = '/dev/ttyUSB-FT232R-Mock'
     port_handler = serial.Serial(
@@ -14,15 +39,18 @@ def main():
         timeout=None,
     )
 
-    buf = bytes()
     while(1):
         if port_handler.inWaiting():
             break
     recv = port_handler.read(port_handler.inWaiting())
     print(recv)
-    send = '$8C06\r'
-    port_handler.write(send.encode('ascii'))
-    print(buf)
+    response = '$8C06\r'
+    port_handler.write(response.encode('ascii'))
+
+    for i in range(len(driver_info_packet_base)):
+        packet = create_driver_info_packet(i)
+        port_handler.write(packet.encode('ascii'))
+        print(packet)
 
 
 if __name__ == '__main__':
