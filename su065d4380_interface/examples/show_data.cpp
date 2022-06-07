@@ -34,34 +34,16 @@ int main()
   RCLCPP_INFO(
     logger, "BaudRate: %d", port_handler->getBaudRate());
 
-  namespace vp = su065d4380_interface::velocity_packet;
+  auto packet_handler =
+    std::make_unique<su065d4380_interface::PacketHandler>(
+    std::move(port_handler));
 
-  std::string velocity_command;
-  su065d4380_interface::velocity_packet::setPacket(
-    vp::FLAG_MODE_MOTOR_ON,
-    3000, 0, velocity_command);
 
-  RCLCPP_INFO(
-    logger,
-    "Send %s", velocity_command.c_str());
-  port_handler->writePort(velocity_command.data(), velocity_command.size());
-
-  while (true) {
-    if (port_handler->getBytesAvailable() > 0) {
-      break;
-    }
-  }
 
   std::string recved_str;
   while (1) {
-    while (port_handler->getBytesAvailable() > 0) {
-      char buf[100];
-      port_handler->readPort(buf, sizeof(buf));
-      recved_str += std::string(buf);
-    }
+    packet_handler->recvCommand();
   }
-  RCLCPP_INFO(
-    logger, "Recv: %s", recved_str.c_str());
 
   return EXIT_SUCCESS;
 }

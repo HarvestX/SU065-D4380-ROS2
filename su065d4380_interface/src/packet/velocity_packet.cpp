@@ -21,17 +21,18 @@ namespace velocity_packet
 {
 void setPacket(
   const uint16_t mode,
-  const int32_t right_speed,
-  const int32_t left_speed,
+  const int32_t right_rpm,
+  const int32_t left_rpm,
   std::string & packet
 )
 {
-  packet.resize(TX_PACKET_SIZE);
+  // add 1 for null sequence
+  packet.resize(TX_PACKET_SIZE + 1);
 
   char buf[TX_PACKET_SIZE];
   snprintf(
     buf, sizeof(buf),
-    "$8C%02hhX00%04hX%04hX", mode, right_speed, left_speed);
+    "$8C%02hhX00%04hX%04hX", mode, right_rpm, left_rpm);
 
   // Calculate checksum
   uint16_t sum = 0;

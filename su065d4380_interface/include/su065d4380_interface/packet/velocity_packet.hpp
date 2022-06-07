@@ -18,18 +18,17 @@
 #include <string>
 #include <exception>
 #include <stdexcept>
-#include "su065d4380_interface/packet/common.hpp"
 
 namespace su065d4380_interface
 {
 namespace velocity_packet
 {
-// +1 for null
-static constexpr size_t RX_PACKET_SIZE = 6 + 1;
-static constexpr size_t TX_PACKET_SIZE = 18 + 1;
+static constexpr size_t RX_PACKET_SIZE = 6;
+static constexpr size_t TX_PACKET_SIZE = 18;
 
-const char * const RX_OK = "$8C06\r";
-const char * const RX_NG = "$8C07\r";
+
+const char * const RX_OK = "$8C06";
+const char * const RX_NG = "$8C07";
 
 const uint16_t FLAG_MODE_MOTOR_ON = 0b00000001;
 const uint16_t FLAG_MODE_BREAK_OFF = 0b00000100;
@@ -55,5 +54,6 @@ void setPacket(
   const int32_t,
   std::string &);
 bool isOK(const std::string &);
+
 }  // namespace velocity_packet
 }  // namespace su065d4380_interface
