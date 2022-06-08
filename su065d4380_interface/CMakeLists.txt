@@ -13,6 +13,9 @@ ament_auto_add_library(
   ${PROJECT_NAME}
   STATIC
     ./src/port_handler.cpp
+    ./src/packet_handler.cpp
+    ./src/packet/velocity_packet.cpp
+    ./src/packet/info_packet.cpp
 )
 set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 # End su065d4380 interface ==========================================

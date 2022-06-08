@@ -202,6 +202,8 @@ class AGVcontrolNode(Node):
 
         checkdata = struct.unpack('18b', senddata)
         checksum = self.return_xor_bytes(checkdata, 0, 14)
+        print(checkdata)
+        print(checksum)
         tmpsumbyte = format(checksum, '02X').encode()
         senddata = bytearray(senddata)
         senddata[-3] = tmpsumbyte[0]

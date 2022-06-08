@@ -14,6 +14,7 @@
 
 
 #include "su065d4380_interface/port_handler.hpp"
+#include "su065d4380_interface/packet_handler.hpp"
 
 int main()
 {
@@ -33,6 +34,16 @@ int main()
   RCLCPP_INFO(
     logger, "BaudRate: %d", port_handler->getBaudRate());
 
+  auto packet_handler =
+    std::make_unique<su065d4380_interface::PacketHandler>(
+    std::move(port_handler));
+
+
+
+  std::string recved_str;
+  while (1) {
+    packet_handler->recvCommand();
+  }
 
   return EXIT_SUCCESS;
 }
