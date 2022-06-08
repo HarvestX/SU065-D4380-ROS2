@@ -64,7 +64,7 @@ bool PacketHandler::sendVelocityCommand(
 
   std::string send_data;
   velocity_packet::setPacket(
-    mode, right_rpm, left_rpm, send_data);
+    mode, actual_right_rpm, actual_left_rpm, send_data);
   this->port_handler_->writePort(send_data.data(), send_data.size());
   this->velcom_state_ = VELCOM_STATE::WAITING_RESPONSE;
 
