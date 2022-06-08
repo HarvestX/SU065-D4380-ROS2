@@ -40,7 +40,27 @@ bool PacketHandler::sendVelocityCommand(
     return false;
   }
 
-  // TODO: Check rpm < 3000
+  auto fetch_rpm = [this](
+    const int32_t min, const int32_t max,
+    const int32_t target) -> int32_t {
+      if (target < min) {
+        RCLCPP_WARN(
+          this->logger_,
+          "Speed fixed %d -> %d", target, min);
+        return min;
+      } else if (target > max) {
+        RCLCPP_WARN(
+          this->logger_,
+          "Speed fixed %d -> %d", target, max);
+        return max;
+      }
+      return target;
+    };
+
+  const int32_t actual_right_rpm = fetch_rpm(
+    velocity_packet::MIN_SPEED, velocity_packet::MAX_SPEED, right_rpm);
+  const int32_t actual_left_rpm = fetch_rpm(
+    velocity_packet::MIN_SPEED, velocity_packet::MAX_SPEED, left_rpm);
 
   std::string send_data;
   velocity_packet::setPacket(

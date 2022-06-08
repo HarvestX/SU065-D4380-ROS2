@@ -34,6 +34,9 @@ const uint16_t FLAG_MODE_MOTOR_ON = 0b00000001;
 const uint16_t FLAG_MODE_BREAK_OFF = 0b00000100;
 const uint16_t FLAG_MODE_ERROR_REST = 0b00010000;
 
+const int32_t MAX_SPEED = 3000;
+const int32_t MIN_SPEED = -3000;
+
 enum class TX_IDX
 {
   PREFIX = 0,
