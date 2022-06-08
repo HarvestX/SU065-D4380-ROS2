@@ -18,9 +18,6 @@
 #include <string>
 #include <sstream>
 
-// TODO: remove me
-#include <rclcpp/rclcpp.hpp>
-
 namespace su065d4380_interface
 {
 namespace info_packet

@@ -60,7 +60,13 @@ public:
     const uint16_t, const int32_t, const int32_t);
   void recvCommand();
 
-  // TODO: Implement it
+  float getVoltage();
+  int getRightRPM();
+  int getLeftRPM();
+  uint32_t getRightEncoder();
+  uint32_t getLeftEncoder();
+
+  // TODO(m12watanabe1a): Implement it
   // bool sendConfigCommand();
   // bool recvConfigCommand();
 
