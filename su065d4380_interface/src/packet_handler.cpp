@@ -17,8 +17,8 @@
 
 namespace su065d4380_interface
 {
-PacketHandler::PacketHandler(std::unique_ptr<PortHandler> port_handler)
-: port_handler_(std::move(port_handler)),
+PacketHandler::PacketHandler(std::shared_ptr<PortHandler> port_handler)
+: port_handler_(port_handler),
   queue_vel_rx(std::make_unique<std::queue<std::string>>()),
   queue_inf_rx(std::make_unique<std::queue<std::string>>())
 {
@@ -26,6 +26,16 @@ PacketHandler::PacketHandler(std::unique_ptr<PortHandler> port_handler)
   this->driver_state_ = std::make_unique<info_packet::DriverState>();
 }
 
+bool PacketHandler::sendVelocityCommand(
+  const double right_rps, const double left_rps
+)
+{
+  return this->sendVelocityCommand(
+    velocity_packet::FLAG_MODE_MOTOR_ON,
+    static_cast<int32_t>(right_rps * RPS2RPM_),
+    static_cast<int32_t>(left_rps)
+  );
+}
 
 bool PacketHandler::sendVelocityCommand(
   const uint16_t mode,

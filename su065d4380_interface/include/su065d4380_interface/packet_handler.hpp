@@ -31,13 +31,14 @@ class PacketHandler
 {
 private:
   const rclcpp::Logger logger_ = rclcpp::get_logger("PacketHandler");
-  const std::unique_ptr<PortHandler> port_handler_;
+  const std::shared_ptr<PortHandler> port_handler_;
 
   const std::unique_ptr<std::queue<std::string>> queue_vel_rx;
   const std::unique_ptr<std::queue<std::string>> queue_inf_rx;
 
   const double ENC2RAD_ = 2.0 * M_PI / 65535;
   const double RPM2RPS_ = 60.0 / M_PI / 2.0;
+  const double RPS2RPM_ = 1.0 / RPM2RPS_;
 
   std::unique_ptr<info_packet::DriverState> driver_state_;
 
@@ -57,10 +58,10 @@ private:
 
 public:
   PacketHandler() = delete;
-  explicit PacketHandler(std::unique_ptr<PortHandler>);
+  explicit PacketHandler(std::shared_ptr<PortHandler>);
 
-  bool sendVelocityCommand(
-    const uint16_t, const int32_t, const int32_t);
+  bool sendVelocityCommand(const double, const double);
+  bool sendVelocityCommand(const uint16_t, const int32_t, const int32_t);
   void recvCommand();
 
   double getVoltage();
