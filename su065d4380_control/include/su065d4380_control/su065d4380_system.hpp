@@ -47,7 +47,8 @@ private:
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
 
-  std::unique_ptr<su065d4380_interface::PacketHandler> hw_if_;
+  std::shared_ptr<su065d4380_interface::PortHandler> port_handler_;
+  std::unique_ptr<su065d4380_interface::PacketHandler> packet_handler_;
 
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(SU065D4380System)
@@ -78,5 +79,10 @@ public:
 
 private:
   static rclcpp::Logger getLogger();
+  enum class WHEEL_IDX
+  {
+    LEFT,
+    RIGHT
+  };
 };
 }  // namespace su065d4380_control

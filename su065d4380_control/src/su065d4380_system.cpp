@@ -26,6 +26,16 @@ CallbackReturn SU065D4380System::on_init(
     return CallbackReturn::ERROR;
   }
 
+  const std::string port_name = this->info_.hardware_parameters["dev"];
+  this->port_handler_ =
+    std::make_shared<su065d4380_interface::PortHandler>(port_name);
+  // Dry run for connection test
+  if (!this->port_handler_->openPort()) {
+    RCLCPP_FATAL(this->getLogger(), "Failed to open port");
+    return CallbackReturn::ERROR;
+  }
+  this->port_handler_->closePort();
+
   this->hw_positions_.resize(
     this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   this->hw_velocities_.resize(
@@ -84,6 +94,28 @@ CallbackReturn SU065D4380System::on_init(
     }
   }
 
+  if (this->info_.joints.at(
+      static_cast<size_t>(WHEEL_IDX::LEFT)).name.find("left") ==
+    std::string::npos)
+  {
+    RCLCPP_FATAL(
+      this->getLogger(),
+      "The index for left wheel expected to be %d",
+      static_cast<int>(WHEEL_IDX::LEFT));
+    return CallbackReturn::ERROR;
+  }
+
+  if (this->info_.joints.at(
+      static_cast<size_t>(WHEEL_IDX::RIGHT)).name.find("right") ==
+    std::string::npos)
+  {
+    RCLCPP_FATAL(
+      this->getLogger(),
+      "The index  for wright wheel expected to be %d",
+      static_cast<int>(WHEEL_IDX::RIGHT));
+    return CallbackReturn::ERROR;
+  }
+
   return CallbackReturn::SUCCESS;
 }
 
@@ -123,6 +155,11 @@ SU065D4380System::export_command_interfaces()
 
 CallbackReturn SU065D4380System::on_activate(const rclcpp_lifecycle::State &)
 {
+  this->port_handler_->openPort();
+  this->packet_handler_ =
+    std::make_unique<su065d4380_interface::PacketHandler>(
+    this->port_handler_);
+
   // Set default value
   for (size_t i = 0; i < this->hw_positions_.size(); ++i) {
     if (std::isnan(this->hw_positions_.at(i))) {
@@ -132,27 +169,56 @@ CallbackReturn SU065D4380System::on_activate(const rclcpp_lifecycle::State &)
     }
   }
 
+  // STOP motor
+  this->packet_handler_->sendVelocityCommand(0.0, 0.0);
+
   RCLCPP_INFO(this->getLogger(), "Successfully activated!");
   return CallbackReturn::SUCCESS;
 }
 
 CallbackReturn SU065D4380System::on_deactivate(const rclcpp_lifecycle::State &)
 {
+  // STOP motor
+  this->packet_handler_->sendVelocityCommand(0.0, 0.0);
+  this->port_handler_->closePort();
+  this->packet_handler_ = nullptr;
   RCLCPP_INFO(this->getLogger(), "Successfully deactivated!");
   return CallbackReturn::SUCCESS;
 }
 
 hardware_interface::return_type SU065D4380System::read()
 {
-  for (size_t i = 0; i < hw_commands_.size(); ++i) {
-
+  while (this->port_handler_->getBytesAvailable() > 0) {
+    this->packet_handler_->recvCommand();
   }
+
+  // TODO(anyone): Fix it for continuous position change
+  this->hw_positions_.at(static_cast<size_t>(WHEEL_IDX::LEFT)) =
+    this->packet_handler_->getLeftPosition();
+  this->hw_positions_.at(static_cast<size_t>(WHEEL_IDX::RIGHT)) =
+    this->packet_handler_->getRightPosition();
+
+  this->hw_velocities_.at(static_cast<size_t>(WHEEL_IDX::LEFT)) =
+    this->packet_handler_->getLeftVelocity();
+  this->hw_velocities_.at(static_cast<size_t>(WHEEL_IDX::RIGHT)) =
+    this->packet_handler_->getRightVelocity();
 
   return hardware_interface::return_type::OK;
 }
 
 hardware_interface::return_type SU065D4380System::write()
 {
+  const double left_rps =
+    this->hw_commands_.at(static_cast<size_t>(WHEEL_IDX::LEFT));
+  const double right_rps =
+    this->hw_commands_.at(static_cast<size_t>(WHEEL_IDX::RIGHT));
+
+  if (!this->packet_handler_->sendVelocityCommand(right_rps, left_rps)) {
+    RCLCPP_ERROR(
+      this->getLogger(),
+      "Failed to send velocity command");
+    return hardware_interface::return_type::ERROR;
+  }
   return hardware_interface::return_type::OK;
 }
 
