@@ -23,7 +23,7 @@ int main()
     "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AB0PCR2T-if00-port0";
 
   auto port_handler =
-    std::make_unique<su065d4380_interface::PortHandler>(port_name);
+    std::make_shared<su065d4380_interface::PortHandler>(port_name);
 
   if (!port_handler->openPort()) {
     RCLCPP_ERROR(logger, "Failed to open the port!");
@@ -35,12 +35,9 @@ int main()
     logger, "BaudRate: %d", port_handler->getBaudRate());
 
   auto packet_handler =
-    std::make_unique<su065d4380_interface::PacketHandler>(
-    std::move(port_handler));
+    std::make_unique<su065d4380_interface::PacketHandler>(port_handler);
 
-  packet_handler->sendVelocityCommand(
-    su065d4380_interface::velocity_packet::FLAG_MODE_MOTOR_ON,
-    0.0, 0.0);
+  packet_handler->sendVelocityCommand(0.0, 0.0);
 
   while (1) {
     packet_handler->recvCommand();
