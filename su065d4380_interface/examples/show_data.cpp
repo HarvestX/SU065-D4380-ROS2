@@ -38,9 +38,6 @@ int main()
     std::make_unique<su065d4380_interface::PacketHandler>(
     std::move(port_handler));
 
-
-
-  std::string recved_str;
   while (1) {
     packet_handler->recvCommand();
   }
