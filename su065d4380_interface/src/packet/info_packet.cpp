@@ -23,8 +23,14 @@ bool checkSum(const std::string & packet)
 {
   const size_t check_code_idx =
     static_cast<size_t>(RX_IDX::CHECK_CODE);
-  uint16_t expected =
-    std::stoi(packet.substr(check_code_idx), nullptr, 16);
+
+  uint16_t expected;
+  try {
+    expected =
+      std::stoi(packet.substr(check_code_idx), nullptr, 16);
+  } catch (std::invalid_argument &) {
+    return false;
+  }
 
   uint16_t actual = 0;
   for (size_t i = 0; i < check_code_idx; ++i) {

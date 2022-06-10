@@ -37,8 +37,8 @@ private:
   const std::unique_ptr<std::queue<std::string>> queue_inf_rx;
 
   const double ENC2RAD_ = 2.0 * M_PI / 65535;
-  const double RPM2RPS_ = 60.0 / M_PI / 2.0;
-  const double RPS2RPM_ = 1.0 / RPM2RPS_;
+  const double RPS2RPM_ = 60.0 / M_PI / 2.0;
+  const double RPM2RPS_ = 1.0 / RPS2RPM_;
 
   std::unique_ptr<info_packet::DriverState> driver_state_;
 
