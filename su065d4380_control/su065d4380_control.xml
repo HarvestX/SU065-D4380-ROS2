@@ -1,0 +1,11 @@
+<library path="su065d4380_control">
+  <class
+      name="su065d4380_control/SU065D4380System"
+      type="su065d4380_control::SU065D4380System"
+      base_class_type="hardware_interface::SystemInterface">
+    <description>
+      The ros2_control SU065D4380 using a system hardware interface-type.
+      It uses velocity command and position state interface.
+    </description>
+  </class>
+</library>
