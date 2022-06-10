@@ -30,11 +30,10 @@ bool PacketHandler::sendVelocityCommand(
   const double right_rps, const double left_rps
 )
 {
+  const int32_t right_rpm = static_cast<int32_t>(right_rps * RPS2RPM_);
+  const int32_t left_rpm = static_cast<int32_t>(left_rps * RPS2RPM_);
   return this->sendVelocityCommand(
-    velocity_packet::FLAG_MODE_MOTOR_ON,
-    static_cast<int32_t>(right_rps * RPS2RPM_),
-    static_cast<int32_t>(left_rps)
-  );
+    velocity_packet::FLAG_MODE_MOTOR_ON, right_rpm, left_rpm);
 }
 
 bool PacketHandler::sendVelocityCommand(
@@ -79,7 +78,8 @@ bool PacketHandler::sendVelocityCommand(
   this->velcom_state_ = VELCOM_STATE::WAITING_RESPONSE;
 
   RCLCPP_INFO(
-    logger_, "Send: %s", send_data.c_str());
+    logger_, "Left: %d, Right: %d, Send: %s",
+    actual_left_rpm, actual_right_rpm, send_data.c_str());
 
   return true;
 }
@@ -114,7 +114,7 @@ void PacketHandler::enqueueCommands(const std::string & packet_chunk)
       continue;
     }
 
-    // Add 1 for removing CR
+    // Add 1 for removed CR
     switch (packet.size() + 1) {
       case velocity_packet::RX_PACKET_SIZE:
         this->queue_vel_rx->emplace(packet);
@@ -156,7 +156,14 @@ void PacketHandler::evaluateCommands()
     const std::string packet = this->queue_inf_rx->front();
     this->queue_inf_rx->pop();
 
-    const auto type = info_packet::getCommandType(packet);
+    info_packet::COMMAND_TYPE type;
+    try {
+      type = info_packet::getCommandType(packet);
+    } catch (std::invalid_argument & e) {
+      RCLCPP_ERROR(this->logger_, e.what());
+      continue;
+    }
+
     if (type == info_packet::COMMAND_TYPE::RIGHT_WHEEL) {
       this->right_rpm_ = info_packet::getRPM(packet);
     }

@@ -44,7 +44,15 @@ int main()
 
     RCLCPP_INFO(
       logger,
-      "pose %lf", packet_handler->getLeftPosition());
+      "Position left %.3lf, right %.3lf",
+      packet_handler->getLeftPosition(),
+      packet_handler->getRightPosition());
+
+    RCLCPP_INFO(
+      logger,
+      "Velocity left %.3lf, right %.3lf",
+      packet_handler->getLeftVelocity(),
+      packet_handler->getRightVelocity());
 
     using namespace std::chrono_literals;
     rclcpp::sleep_for(1s);
