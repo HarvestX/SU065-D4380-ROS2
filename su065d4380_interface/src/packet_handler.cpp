@@ -19,11 +19,11 @@ namespace su065d4380_interface
 {
 PacketHandler::PacketHandler(std::unique_ptr<PortHandler> port_handler)
 : port_handler_(std::move(port_handler)),
-  driver_state_(std::make_unique<info_packet::DriverState>()),
   queue_vel_rx(std::make_unique<std::queue<std::string>>()),
   queue_inf_rx(std::make_unique<std::queue<std::string>>())
 {
   this->velcom_state_ = VELCOM_STATE::READY;
+  this->driver_state_ = std::make_unique<info_packet::DriverState>();
 }
 
 
@@ -169,6 +169,31 @@ void PacketHandler::evaluateCommands()
       this->voltage_ = info_packet::getVoltage(packet);
     }
   }
+}
+
+double PacketHandler::getVoltage()
+{
+  return static_cast<double>(this->voltage_);
+}
+
+double PacketHandler::getLeftPosition()
+{
+  return static_cast<double>(this->left_encode_) * this->ENC2RAD_;
+}
+
+double PacketHandler::getRightPosition()
+{
+  return static_cast<double>(this->right_encoder_) * this->ENC2RAD_;
+}
+
+double PacketHandler::getLeftVelocity()
+{
+  return static_cast<double>(this->left_rpm_) * this->RPM2RPS_;
+}
+
+double PacketHandler::getRightVelocity()
+{
+  return static_cast<double>(this->right_rpm_) * this->RPM2RPS_;
 }
 
 }  // namespace su065d4380_interface

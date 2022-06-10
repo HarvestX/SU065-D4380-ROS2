@@ -38,8 +38,19 @@ int main()
     std::make_unique<su065d4380_interface::PacketHandler>(
     std::move(port_handler));
 
+  packet_handler->sendVelocityCommand(
+    su065d4380_interface::velocity_packet::FLAG_MODE_MOTOR_ON,
+    0.0, 0.0);
+
   while (1) {
     packet_handler->recvCommand();
+
+    RCLCPP_INFO(
+      logger,
+      "pose %lf", packet_handler->getLeftPosition());
+
+    using namespace std::chrono_literals;
+    rclcpp::sleep_for(1s);
   }
 
   return EXIT_SUCCESS;
