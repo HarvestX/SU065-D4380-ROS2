@@ -33,10 +33,13 @@ private:
   const rclcpp::Logger logger_ = rclcpp::get_logger("PacketHandler");
   const std::unique_ptr<PortHandler> port_handler_;
 
-  std::unique_ptr<info_packet::DriverState> driver_state_;
-
   const std::unique_ptr<std::queue<std::string>> queue_vel_rx;
   const std::unique_ptr<std::queue<std::string>> queue_inf_rx;
+
+  const double ENC2RAD_ = 2.0 * M_PI / 65535;
+  const double RPM2RPS_ = 60.0 / M_PI / 2.0;
+
+  std::unique_ptr<info_packet::DriverState> driver_state_;
 
   enum class VELCOM_STATE
   {
@@ -60,11 +63,11 @@ public:
     const uint16_t, const int32_t, const int32_t);
   void recvCommand();
 
-  float getVoltage();
-  int getRightRPM();
-  int getLeftRPM();
-  uint32_t getRightEncoder();
-  uint32_t getLeftEncoder();
+  double getVoltage();
+  double getLeftPosition();
+  double getRightPosition();
+  double getLeftVelocity();
+  double getRightVelocity();
 
   // TODO(m12watanabe1a): Implement it
   // bool sendConfigCommand();
