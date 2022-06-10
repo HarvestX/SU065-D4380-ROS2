@@ -34,7 +34,22 @@ CallbackReturn SU065D4380System::on_init(
     RCLCPP_FATAL(this->getLogger(), "Failed to open port");
     return CallbackReturn::ERROR;
   }
+  // Send to stop
   this->port_handler_->closePort();
+
+  const int ld_tmp =
+    std::stoi(this->info_.hardware_parameters["left_rotation_direction"]);
+  if (ld_tmp < 0) {
+    this->left_rot_dir_ = -1.0;
+  }
+  const int rd_tmp =
+    std::stoi(this->info_.hardware_parameters["right_rotation_direction"]);
+  if (rd_tmp < 0) {
+    this->right_rot_dir_ = -1.0;
+  }
+
+  this->reduction_ratio_ =
+    std::stod(this->info_.hardware_parameters["reduction_ratio"]);
 
   this->hw_positions_.resize(
     this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -209,8 +224,12 @@ hardware_interface::return_type SU065D4380System::read()
 hardware_interface::return_type SU065D4380System::write()
 {
   const double left_rps =
+    this->reduction_ratio_ *
+    this->left_rot_dir_ *
     this->hw_commands_.at(static_cast<size_t>(WHEEL_IDX::LEFT));
   const double right_rps =
+    this->reduction_ratio_ *
+    this->right_rot_dir_ *
     this->hw_commands_.at(static_cast<size_t>(WHEEL_IDX::RIGHT));
 
   if (!this->packet_handler_->sendVelocityCommand(right_rps, left_rps)) {

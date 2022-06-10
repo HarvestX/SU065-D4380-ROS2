@@ -43,6 +43,10 @@ namespace su065d4380_control
 class SU065D4380System : public hardware_interface::SystemInterface
 {
 private:
+  double reduction_ratio_ = 1.0;
+  double left_rot_dir_ = 1.0;
+  double right_rot_dir_ = 1.0;
+
   std::vector<double> hw_commands_;
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
