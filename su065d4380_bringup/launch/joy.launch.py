@@ -14,10 +14,12 @@
 # limitations under the License.
 
 from launch import LaunchDescription
+
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    """Generate launch description."""
     controller_pkg = 'su065d4380_v1'
     return LaunchDescription([
         Node(
