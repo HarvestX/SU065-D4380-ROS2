@@ -42,7 +42,7 @@ def generate_launch_description():
     nodes = [
         Node(
             package=controller_pkg,
-            executable="comnode",
+            executable='comnode',
             output='screen',
             parameters=[{
                 'dev': LaunchConfiguration('dev')
@@ -50,7 +50,7 @@ def generate_launch_description():
         ),
         Node(
             package=controller_pkg,
-            executable="odomnode",
+            executable='odomnode',
             output='screen',
         ),
         Node(
