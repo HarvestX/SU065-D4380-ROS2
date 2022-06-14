@@ -1,7 +1,8 @@
 """Setup."""
-from setuptools import setup
 
 from glob import glob
+
+from setuptools import setup
 
 package_name = 'su065d4380_bringup'
 
