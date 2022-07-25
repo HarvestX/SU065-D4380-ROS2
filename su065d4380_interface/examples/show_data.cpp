@@ -16,11 +16,15 @@
 #include "su065d4380_interface/port_handler.hpp"
 #include "su065d4380_interface/packet_handler.hpp"
 
-int main()
+int main(int argc, char ** argv)
 {
+  std::string port_name =
+    "/dev/ttyUSB0";
+  if (argc == 2) {
+    port_name = argv[1];
+  }
+
   const rclcpp::Logger logger = rclcpp::get_logger("ShowData");
-  const std::string port_name =
-    "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AB0PCR2T-if00-port0";
 
   auto port_handler =
     std::make_shared<su065d4380_interface::PortHandler>(port_name);
