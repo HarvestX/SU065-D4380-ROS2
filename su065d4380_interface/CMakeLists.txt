@@ -14,8 +14,10 @@ ament_auto_add_library(
   STATIC
     ./src/port_handler.cpp
     ./src/packet_handler.cpp
+    ./src/packet_pool.cpp
     ./src/packet/velocity_packet.cpp
     ./src/packet/info_packet.cpp
+    ./src/commander/parameter_commander.cpp
 )
 set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 # End su065d4380 interface ==========================================
@@ -30,6 +32,20 @@ if(BUILD_TESTING)
   set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
+
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_gmock REQUIRED)
+
+  ament_add_gtest(
+    test_packet_pool
+    test/src/test_packet_pool.cpp)
+  target_include_directories(test_packet_pool PRIVATE "include")
+  target_link_libraries(test_packet_pool ${PROJECT_NAME})
+
+  ament_add_gmock(
+    test_parameter_commander
+    test/src/commander/test_parameter_commander.cpp)
+  target_link_libraries(test_parameter_commander ${PROJECT_NAME})
 endif()
 
 ament_auto_package()

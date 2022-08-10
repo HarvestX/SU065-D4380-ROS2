@@ -99,22 +99,22 @@ int PortHandler::getBytesAvailable()
   return bytes_available;
 }
 
-int PortHandler::readPort(uint8_t * const packet, int length)
+int PortHandler::readPort(uint8_t * packet, const int length) const
 {
   return read(this->socket_fd_, packet, length);
 }
 
-int PortHandler::readPort(char * const packet, int length)
+int PortHandler::readPort(char * packet, const int length) const
 {
   return read(this->socket_fd_, packet, length);
 }
 
-int PortHandler::writePort(const uint8_t * const packet, int length)
+int PortHandler::writePort(const uint8_t * const packet, const int length) const
 {
   return write(this->socket_fd_, packet, length);
 }
 
-int PortHandler::writePort(const char * const packet, int length)
+int PortHandler::writePort(const char * const packet, const int length) const
 {
   return write(this->socket_fd_, packet, length);
 }

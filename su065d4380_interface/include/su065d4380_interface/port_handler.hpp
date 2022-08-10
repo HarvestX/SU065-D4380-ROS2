@@ -24,10 +24,12 @@
 #include <string>
 #include <rclcpp/rclcpp.hpp>
 
+#include "su065d4380_interface/port_handler_base.hpp"
+
 namespace su065d4380_interface
 {
 
-class PortHandler
+class PortHandler final : public PortHandlerBase
 {
 private:
   const rclcpp::Logger logger_ = rclcpp::get_logger("PortHandler");
@@ -46,10 +48,11 @@ public:
   std::string getPortName() const noexcept;
 
   int getBytesAvailable();
-  int readPort(uint8_t * const, int);
-  int readPort(char * const, int);
-  int writePort(const uint8_t * const, int);
-  int writePort(const char * const, int);
+  int readPort(uint8_t *, const int) const;
+  int readPort(char *, const int)const override;
+
+  int writePort(const uint8_t * const, const int) const;
+  int writePort(const char * const, const int) const override;
 
 private:
   bool setupPort(const speed_t);
