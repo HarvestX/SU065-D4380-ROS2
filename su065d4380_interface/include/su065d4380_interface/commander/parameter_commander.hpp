@@ -26,35 +26,6 @@
 
 namespace su065d4380_interface
 {
-
-namespace parameter_packet
-{
-namespace ids
-{
-const char * const WRITE = "00W";
-const char * const READ = "00R";
-}  // namespace ids
-
-const char * const WRITE_OK = "$00W17*\r";
-const char * const WRITE_NG = "$00W17/\r";
-
-const char * const READ_OK = "$00R12DDDDFF*\r";
-const char * const READ_NG = "$00R12/\r";
-
-enum class TX_IDX
-{
-  PREFIX = 0,
-  RW = 3,
-  COMMAND_ID = 4,
-  DATA = 8,
-  CHECK_CODE = 12,
-  EXIT_CODE = 14,
-  CR = 15
-};
-
-}  // namespace parameter_packet
-
-
 using namespace std::chrono_literals;
 class ParameterCommander
 {
@@ -85,16 +56,19 @@ public:
   bool writeDecWithTimeout(const uint);
 
   // Read parameter
-  int readRightWheelGain(const uint) const;
-  int readLeftWheelGain(const uint) const;
-  int readAccTime(const uint) const;
-  int readDecTime(const uint) const;
-  int readTimeout(const uint) const;
-  int readDecWithTimeout(const uint) const;
+  int readRightWheelGain();
+  int readLeftWheelGain();
+  int readAccTime();
+  int readDecTime();
+  int readTimeout();
+  int readDecWithTimeout();
 
 private:
   static const rclcpp::Logger getLogger();
+  uint16_t calcChecksum(char const * const, const int) const;
   int setChecksum(char * const, const int);
+  bool waitForResponse(std::string &);
   bool evaluateWriteResponse();
+  int evaluateReadResponse();
 };
 }  // namespace su065d4380_interface

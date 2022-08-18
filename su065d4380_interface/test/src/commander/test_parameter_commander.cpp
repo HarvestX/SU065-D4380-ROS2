@@ -351,3 +351,160 @@ TEST_F(TestParameterCommander, writeDecWithTimeoutInvalidResponse) {
   ASSERT_THROW(
     this->commander->writeDecWithTimeout(500), std::runtime_error);
 }
+
+
+TEST_F(TestParameterCommander, readRightWheelGainOK)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R001E02\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R006474*\r"), Return(12)));
+
+  ASSERT_EQ(this->commander->readRightWheelGain(), 100);
+}
+
+TEST_F(TestParameterCommander, readRightWheelGainNG)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R001E02\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
+
+  ASSERT_LT(this->commander->readRightWheelGain(), 0);
+}
+
+TEST_F(TestParameterCommander, readLeftWheelGainOK)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R001F01\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R006474*\r"), Return(12)));
+
+  ASSERT_EQ(this->commander->readLeftWheelGain(), 100);
+}
+
+TEST_F(TestParameterCommander, readLeftWheelGainNG)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R001F01\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
+
+  ASSERT_LT(this->commander->readLeftWheelGain(), 0);
+}
+
+TEST_F(TestParameterCommander, readAccTimeOK)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R002074\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R01F405*\r"), Return(12)));
+
+  ASSERT_EQ(this->commander->readAccTime(), 500);
+}
+
+TEST_F(TestParameterCommander, readAccTimeNG)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R002074\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
+
+  ASSERT_LT(this->commander->readAccTime(), 0);
+}
+
+TEST_F(TestParameterCommander, readDecTimeOK)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R002175\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R01F405*\r"), Return(12)));
+
+  ASSERT_EQ(this->commander->readDecTime(), 500);
+}
+
+TEST_F(TestParameterCommander, readDecTimeNG)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R002175\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
+
+  ASSERT_LT(this->commander->readDecTime(), 0);
+}
+
+TEST_F(TestParameterCommander, readTimeoutOK)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R002571\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R000076*\r"), Return(12)));
+
+  ASSERT_EQ(this->commander->readTimeout(), 0);
+}
+
+TEST_F(TestParameterCommander, readTimeoutNG)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R002571\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
+
+  ASSERT_LT(this->commander->readTimeout(), 0);
+}
+
+TEST_F(TestParameterCommander, readDecWithTimeoutOK)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R002672\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R01F405*\r"), Return(12)));
+
+  ASSERT_EQ(this->commander->readDecWithTimeout(), 500);
+}
+
+TEST_F(TestParameterCommander, readDecWithTimeoutNG)
+{
+  EXPECT_CALL(
+    mock,
+    writePort(StrEq("$00R002672\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    readPort(_, _))
+  .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
+
+  ASSERT_LT(this->commander->readDecWithTimeout(), 0);
+}

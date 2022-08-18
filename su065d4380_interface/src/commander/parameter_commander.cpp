@@ -155,44 +155,192 @@ bool ParameterCommander::writeDecWithTimeout(const uint time)
   return this->evaluateWriteResponse();
 }
 
+int ParameterCommander::readRightWheelGain()
+{
+  char write_buf[this->BUF_SIZE_];
+
+  // Set base string
+  int cx = snprintf(
+    write_buf, this->BUF_SIZE_, "$00R001E");
+
+  cx = this->setChecksum(write_buf, cx);
+
+  // Send Command
+  this->port_handler_->writePort(write_buf, cx);
+  return this->evaluateReadResponse();
+}
+
+int ParameterCommander::readLeftWheelGain()
+{
+  char write_buf[this->BUF_SIZE_];
+
+  // Set base string
+  int cx = snprintf(
+    write_buf, this->BUF_SIZE_, "$00R001F");
+
+  cx = this->setChecksum(write_buf, cx);
+
+  // Send Command
+  this->port_handler_->writePort(write_buf, cx);
+  return this->evaluateReadResponse();
+}
+
+int ParameterCommander::readAccTime()
+{
+  char write_buf[this->BUF_SIZE_];
+
+  // Set base string
+  int cx = snprintf(
+    write_buf, this->BUF_SIZE_, "$00R0020");
+
+  cx = this->setChecksum(write_buf, cx);
+
+  // Send Command
+  this->port_handler_->writePort(write_buf, cx);
+  return this->evaluateReadResponse();
+}
+
+int ParameterCommander::readDecTime()
+{
+  char write_buf[this->BUF_SIZE_];
+
+  // Set base string
+  int cx = snprintf(
+    write_buf, this->BUF_SIZE_, "$00R0021");
+
+  cx = this->setChecksum(write_buf, cx);
+
+  // Send Command
+  this->port_handler_->writePort(write_buf, cx);
+  return this->evaluateReadResponse();
+}
+
+int ParameterCommander::readTimeout()
+{
+  char write_buf[this->BUF_SIZE_];
+
+  // Set base string
+  int cx = snprintf(
+    write_buf, this->BUF_SIZE_, "$00R0025");
+
+  cx = this->setChecksum(write_buf, cx);
+
+  // Send Command
+  this->port_handler_->writePort(write_buf, cx);
+  return this->evaluateReadResponse();
+}
+
+int ParameterCommander::readDecWithTimeout()
+{
+  char write_buf[this->BUF_SIZE_];
+
+  // Set base string
+  int cx = snprintf(
+    write_buf, this->BUF_SIZE_, "$00R0026");
+
+  cx = this->setChecksum(write_buf, cx);
+
+  // Send Command
+  this->port_handler_->writePort(write_buf, cx);
+  return this->evaluateReadResponse();
+}
+
+uint16_t ParameterCommander::calcChecksum(
+  char const * const buf, const int cx) const
+{
+  uint16_t crc = 0;
+  for (int i = 0; i < cx; ++i) {
+    crc ^= static_cast<uint16_t>(buf[i]);
+  }
+
+  return crc;
+}
+
 int ParameterCommander::setChecksum(
   char * const buf, const int cx)
 {
-  uint16_t sum = 0;
-  for (int i = 0; i < cx; ++i) {
-    sum ^= static_cast<uint16_t>(buf[i]);
-  }
+  const uint16_t crc = this->calcChecksum(buf, cx);
 
   return snprintf(
-    buf + cx, this->BUF_SIZE_ - cx, "%02hhX\r", sum);
+    buf + cx, this->BUF_SIZE_ - cx, "%02hhX\r", crc);
 }
 
-bool ParameterCommander::evaluateWriteResponse()
+bool ParameterCommander::waitForResponse(std::string & response)
 {
   bool has_response = false;
-  std::string response;
   const auto start = this->clock_->now();
   while (this->clock_->now() - start < this->TIMEOUT) {
-    char buf[100];
-    this->port_handler_->readPort(buf, 100);
+    char buf[this->BUF_SIZE_];
+    this->port_handler_->readPort(buf, this->BUF_SIZE_);
     this->pool_->enqueue(std::string(buf));
     if (this->pool_->takeParamPacket(response)) {
-      std::cout << response << std::endl;
       has_response = true;
       break;
     }
     rclcpp::sleep_for(10ms);
   }
+  return has_response;
+}
+
+bool ParameterCommander::evaluateWriteResponse()
+{
+  static const char * const WRITE_OK = "$00W17*\r";
+  static const char * const WRITE_NG = "$00W17/\r";
+
+  std::string response;
+  bool has_response = this->waitForResponse(response);
   if (!has_response) {
-    throw std::runtime_error("Couldn't take the response before the timeout.");
+    throw std::runtime_error("Couldn't get response before timeout");
   }
-  if (response == parameter_packet::WRITE_OK) {
+  if (response == WRITE_OK) {
     return true;
-  } else if (response == parameter_packet::WRITE_NG) {
+  } else if (response == WRITE_NG) {
     return false;
   } else {
-    throw std::runtime_error("Invalid response.");
+    throw std::runtime_error("Invalid response");
   }
+}
+
+int ParameterCommander::evaluateReadResponse()
+{
+  static const int READ_DATA_IDX = 4;
+  static const int READ_CHECKSUM_IDX = 8;
+  static const char * const READ_NG = "$00R12/\r";
+
+  std::string response;
+  const bool has_response = this->waitForResponse(response);
+  if (!has_response) {
+    RCLCPP_ERROR(
+      this->getLogger(),
+      "Couldn't get response before timeout");
+    return -1;
+  } else if (response == READ_NG) {
+    RCLCPP_ERROR(
+      this->getLogger(),
+      "Driver responded NG");
+    return -1;
+  }
+
+  // Check crc
+  uint16_t expected_crc;
+  try {
+    expected_crc =
+      std::stoi(response.substr(READ_CHECKSUM_IDX, 2), nullptr, 16);
+  } catch (std::invalid_argument &) {
+    return false;
+  }
+  const uint16_t actual_crc =
+    this->calcChecksum(response.data(), READ_CHECKSUM_IDX);
+  if (expected_crc != actual_crc) {
+    RCLCPP_ERROR(
+      this->getLogger(),
+      "Crc does not match [%u] != [%u]",
+      expected_crc, actual_crc);
+    return -1;
+  }
+
+  // Fine result
+  return std::stoi(response.substr(READ_DATA_IDX, 4), nullptr, 16);
 }
 
 const rclcpp::Logger ParameterCommander::getLogger()
