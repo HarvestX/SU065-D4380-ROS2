@@ -51,24 +51,49 @@ void PacketPool::enqueue(const std::string & in_packet)
   std::string chunk = this->previous_chunk_ + in_packet;
 
   std::vector<std::string> packet_candidates;
+  bool scanning = false;
   std::string item;
   for (char ch : chunk) {
-    item += ch;
-    if (ch == SU065D4380_SUFFIX) {
-      if (!item.empty() && item.at(0) == SU065D4380_PREFIX) {
-        if (this->isVelocityPacket(item)) {
-          this->velocity_queue_->push(item);
-        } else if (this->isInfoPacket(item)) {
-          this->info_queue_->push(item);
-        } else if (this->isParamPacket(item)) {
-          this->param_queue_->push(item);
-        } else {
-          // Invalid item
-          // Do noting
-        }
-      }
-      item.clear();
+    // Ignore until prefix found
+    if (ch != SU065D4380_PREFIX && !scanning) {
+      continue;
     }
+    scanning = true;
+
+    item += ch;
+    if (ch != SU065D4380_SUFFIX) {
+      continue;
+    }
+
+    if (item.empty()) {
+      continue;
+    }
+
+    if (this->isVelocityPacket(item)) {
+      RCLCPP_DEBUG(
+        this->getLogger(),
+        "Velocity packet enqueued");
+      this->velocity_queue_->push(item);
+    } else if (this->isInfoPacket(item)) {
+      RCLCPP_DEBUG(
+        this->getLogger(),
+        "Info packet enqueued");
+      this->info_queue_->push(item);
+    } else if (this->isParamPacket(item)) {
+      RCLCPP_DEBUG(
+        this->getLogger(),
+        "Param packet enqueued");
+      this->param_queue_->push(item);
+    } else {
+      // Invalid item
+      // Do noting
+      RCLCPP_WARN(
+        this->getLogger(),
+        "Command like packet [%s] given. Ignored.",
+        item.c_str());
+    }
+    scanning = false;
+    item.clear();
   }
   if (!item.empty()) {
     this->previous_chunk_ = item;
@@ -126,6 +151,11 @@ bool PacketPool::isParamPacket(const std::string & packet) const noexcept
 {
   return (packet.size() == 8 || packet.size() == 12) &&
          packet.at(1) == '0';
+}
+
+const rclcpp::Logger PacketPool::getLogger()
+{
+  return rclcpp::get_logger("PacketPool");
 }
 
 }  // namespace su065d4380_interface

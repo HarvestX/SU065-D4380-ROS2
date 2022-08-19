@@ -30,7 +30,6 @@ using namespace std::chrono_literals;
 class ParameterCommander
 {
 private:
-  static const size_t BUF_SIZE_ = 100;
   static const uint MAX_GAIN_ = 100;
   static const uint MAX_ACCTIME_ = 500;
   static const uint MAX_TIMEOUT_ = 5;
@@ -45,7 +44,7 @@ public:
   ParameterCommander() = delete;
   explicit ParameterCommander(
     PortHandlerBase *,
-    const std::chrono::nanoseconds = 100ms);
+    const std::chrono::nanoseconds = 1s);
 
   // Write parameter
   bool writeRightWheelGain(const uint);
@@ -66,7 +65,7 @@ public:
 private:
   static const rclcpp::Logger getLogger();
   uint16_t calcChecksum(char const * const, const int) const;
-  int setChecksum(char * const, const int);
+  int setChecksum(char * const, const size_t, const int);
   bool waitForResponse(std::string &);
   bool evaluateWriteResponse();
   int evaluateReadResponse();

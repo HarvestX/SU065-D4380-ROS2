@@ -36,13 +36,13 @@ bool ParameterCommander::writeRightWheelGain(
       "Input out of range 0 ~ 100 [%u]", gain);
     return false;
   }
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00W001E%04hX", gain);
+    write_buf, sizeof(write_buf), "$00W001E%04hX", gain);
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -58,13 +58,13 @@ bool ParameterCommander::writeLeftWheelGain(
       "Input out of range 0 ~ 100 [%u]", gain);
     return false;
   }
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00W001F%04hX", gain);
+    write_buf, sizeof(write_buf), "$00W001F%04hX", gain);
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -79,13 +79,13 @@ bool ParameterCommander::writeAccTime(const uint time)
       "Input out of range 0 ~ 500 [%u]", time);
     return false;
   }
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00W0020%04hX", time);
+    write_buf, sizeof(write_buf), "$00W0020%04hX", time);
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -100,13 +100,13 @@ bool ParameterCommander::writeDecTime(const uint time)
       "Input out of range 0 ~ 500 [%u]", time);
     return false;
   }
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00W0021%04hX", time);
+    write_buf, sizeof(write_buf), "$00W0021%04hX", time);
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -121,13 +121,13 @@ bool ParameterCommander::writeTimeout(const uint time)
       "Input out of range 0 ~ 5 [%u]", time);
     return false;
   }
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00W0025%04hX", time);
+    write_buf, sizeof(write_buf), "$00W0025%04hX", time);
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -142,13 +142,13 @@ bool ParameterCommander::writeDecWithTimeout(const uint time)
       "Input out of range 0 ~ 500 [%u]", time);
     return false;
   }
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00W0026%04hX", time);
+    write_buf, sizeof(write_buf), "$00W0026%04hX", time);
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -157,13 +157,13 @@ bool ParameterCommander::writeDecWithTimeout(const uint time)
 
 int ParameterCommander::readRightWheelGain()
 {
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00R001E");
+    write_buf, sizeof(write_buf), "$00R001E");
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -172,13 +172,13 @@ int ParameterCommander::readRightWheelGain()
 
 int ParameterCommander::readLeftWheelGain()
 {
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00R001F");
+    write_buf, sizeof(write_buf), "$00R001F");
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -187,13 +187,13 @@ int ParameterCommander::readLeftWheelGain()
 
 int ParameterCommander::readAccTime()
 {
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00R0020");
+    write_buf, sizeof(write_buf), "$00R0020");
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -202,13 +202,13 @@ int ParameterCommander::readAccTime()
 
 int ParameterCommander::readDecTime()
 {
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00R0021");
+    write_buf, sizeof(write_buf), "$00R0021");
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -217,13 +217,13 @@ int ParameterCommander::readDecTime()
 
 int ParameterCommander::readTimeout()
 {
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00R0025");
+    write_buf, sizeof(write_buf), "$00R0025");
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -232,13 +232,13 @@ int ParameterCommander::readTimeout()
 
 int ParameterCommander::readDecWithTimeout()
 {
-  char write_buf[this->BUF_SIZE_];
+  char write_buf[100];
 
   // Set base string
   int cx = snprintf(
-    write_buf, this->BUF_SIZE_, "$00R0026");
+    write_buf, sizeof(write_buf), "$00R0026");
 
-  cx = this->setChecksum(write_buf, cx);
+  cx = this->setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
   this->port_handler_->writePort(write_buf, cx);
@@ -257,12 +257,12 @@ uint16_t ParameterCommander::calcChecksum(
 }
 
 int ParameterCommander::setChecksum(
-  char * const buf, const int cx)
+  char * const buf, const size_t buf_size, const int cx)
 {
   const uint16_t crc = this->calcChecksum(buf, cx);
 
   return snprintf(
-    buf + cx, this->BUF_SIZE_ - cx, "%02hhX\r", crc);
+    buf + cx, buf_size - cx, "%02hhX\r", crc) + cx;
 }
 
 bool ParameterCommander::waitForResponse(std::string & response)
@@ -270,14 +270,17 @@ bool ParameterCommander::waitForResponse(std::string & response)
   bool has_response = false;
   const auto start = this->clock_->now();
   while (this->clock_->now() - start < this->TIMEOUT) {
-    char buf[this->BUF_SIZE_];
-    this->port_handler_->readPort(buf, this->BUF_SIZE_);
+    if (this->port_handler_->getBytesAvailable() < 1) {
+      continue;
+    }
+    char buf[100];
+    this->port_handler_->readPort(buf, sizeof(buf));
     this->pool_->enqueue(std::string(buf));
     if (this->pool_->takeParamPacket(response)) {
       has_response = true;
       break;
     }
-    rclcpp::sleep_for(10ms);
+    rclcpp::sleep_for(100ms);
   }
   return has_response;
 }

@@ -32,8 +32,6 @@ namespace su065d4380_interface
 class PortHandler final : public PortHandlerBase
 {
 private:
-  const rclcpp::Logger logger_ = rclcpp::get_logger("PortHandler");
-
   int socket_fd_;
   int baudrate_;
   std::string port_name_;
@@ -47,16 +45,17 @@ public:
   int getBaudRate() const noexcept;
   std::string getPortName() const noexcept;
 
-  int getBytesAvailable();
-  int readPort(uint8_t *, const int) const;
+  int getBytesAvailable() const override;
   int readPort(char *, const int)const override;
 
-  int writePort(const uint8_t * const, const int) const;
   int writePort(const char * const, const int) const override;
 
 private:
   bool setupPort(const speed_t);
   speed_t getCFlagBaud(const int) const noexcept;
+
+  static const std::string fixEscapeSequence(const std::string &);
+  static const rclcpp::Logger getLogger();
 };
 
 }  // namespace su065d4380_interface

@@ -17,6 +17,7 @@
 #include <queue>
 #include <memory>
 #include <string>
+#include <rclcpp/rclcpp.hpp>
 
 #include "su065d4380_interface/commander/common.hpp"
 
@@ -45,5 +46,7 @@ private:
   bool isVelocityPacket(const std::string &) const noexcept;
   bool isInfoPacket(const std::string &) const noexcept;
   bool isParamPacket(const std::string &) const noexcept;
+
+  static const rclcpp::Logger getLogger();
 };
 }  // namespace su065d4380_interface

@@ -35,6 +35,8 @@ public:
   }
 
   MOCK_METHOD(
+    int, getBytesAvailable, (), (const override));
+  MOCK_METHOD(
     int, readPort, (char *, const int), (const override));
   MOCK_METHOD(
     int, writePort, (const char *, const int), (const override));
@@ -63,6 +65,10 @@ TEST_F(TestParameterCommander, writeRightWheelGainOK) {
     writePort(StrEq("$00W001E006405\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
@@ -74,6 +80,10 @@ TEST_F(TestParameterCommander, writeRightWheelGainNG) {
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00W001E006405\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))
@@ -96,6 +106,10 @@ TEST_F(TestParameterCommander, writeRightWheelGainInvalidResponse) {
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00W001E006405\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   // Return invalid response here
   EXPECT_CALL(
     mock,
@@ -114,6 +128,10 @@ TEST_F(TestParameterCommander, writeLeftWheelGainOK) {
     writePort(StrEq("$00W001F006406\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
@@ -125,6 +143,10 @@ TEST_F(TestParameterCommander, writeLeftWheelGainNG) {
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00W001F006406\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))
@@ -148,6 +170,10 @@ TEST_F(TestParameterCommander, writeLeftWheelGainInvalidResponse)
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00W001F006406\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   // Return invalid response here
   EXPECT_CALL(
     mock,
@@ -165,6 +191,10 @@ TEST_F(TestParameterCommander, writeAccTimeOK) {
     writePort(StrEq("$00W002001F402\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
@@ -176,6 +206,10 @@ TEST_F(TestParameterCommander, writeAccTimeNG) {
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00W002001F402\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))
@@ -201,6 +235,10 @@ TEST_F(TestParameterCommander, writeAccTimeInvalidResponse)
     writePort(StrEq("$00W002001F402\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17x\r"), Return(8)));
 
@@ -214,6 +252,10 @@ TEST_F(TestParameterCommander, writeDecTimeOK) {
     writePort(StrEq("$00W002101F403\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
@@ -225,6 +267,10 @@ TEST_F(TestParameterCommander, writeDecTimeNG) {
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00W002101F403\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))
@@ -249,6 +295,10 @@ TEST_F(TestParameterCommander, writeDecTimeInvalidResponse)
     writePort(StrEq("$00W002101F403\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17x\r"), Return(8)));
 
@@ -262,6 +312,10 @@ TEST_F(TestParameterCommander, writeTimeoutOK) {
     writePort(StrEq("$00W0025000571\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
@@ -273,6 +327,10 @@ TEST_F(TestParameterCommander, writeTimeoutNG) {
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00W0025000571\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))
@@ -297,6 +355,10 @@ TEST_F(TestParameterCommander, writeTimeoutInvalidResponse) {
     writePort(StrEq("$00W0025000571\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17x\r"), Return(8)));
 
@@ -310,6 +372,10 @@ TEST_F(TestParameterCommander, writeDecWithTimeoutOK) {
     writePort(StrEq("$00W002601F404\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
@@ -321,6 +387,10 @@ TEST_F(TestParameterCommander, writeDecWithTimeoutNG) {
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00W002601F404\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))
@@ -345,6 +415,10 @@ TEST_F(TestParameterCommander, writeDecWithTimeoutInvalidResponse) {
     writePort(StrEq("$00W002601F404\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17x\r"), Return(8)));
 
@@ -360,6 +434,10 @@ TEST_F(TestParameterCommander, readRightWheelGainOK)
     writePort(StrEq("$00R001E02\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R006474*\r"), Return(12)));
 
@@ -371,6 +449,10 @@ TEST_F(TestParameterCommander, readRightWheelGainNG)
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00R001E02\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))
@@ -386,6 +468,10 @@ TEST_F(TestParameterCommander, readLeftWheelGainOK)
     writePort(StrEq("$00R001F01\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R006474*\r"), Return(12)));
 
@@ -397,6 +483,10 @@ TEST_F(TestParameterCommander, readLeftWheelGainNG)
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00R001F01\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))
@@ -412,6 +502,10 @@ TEST_F(TestParameterCommander, readAccTimeOK)
     writePort(StrEq("$00R002074\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R01F405*\r"), Return(12)));
 
@@ -423,6 +517,10 @@ TEST_F(TestParameterCommander, readAccTimeNG)
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00R002074\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))
@@ -438,6 +536,10 @@ TEST_F(TestParameterCommander, readDecTimeOK)
     writePort(StrEq("$00R002175\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R01F405*\r"), Return(12)));
 
@@ -449,6 +551,10 @@ TEST_F(TestParameterCommander, readDecTimeNG)
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00R002175\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))
@@ -464,6 +570,10 @@ TEST_F(TestParameterCommander, readTimeoutOK)
     writePort(StrEq("$00R002571\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R000076*\r"), Return(12)));
 
@@ -475,6 +585,10 @@ TEST_F(TestParameterCommander, readTimeoutNG)
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00R002571\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))
@@ -490,6 +604,10 @@ TEST_F(TestParameterCommander, readDecWithTimeoutOK)
     writePort(StrEq("$00R002672\r"), _)).Times(1);
   EXPECT_CALL(
     mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
+  EXPECT_CALL(
+    mock,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R01F405*\r"), Return(12)));
 
@@ -501,6 +619,10 @@ TEST_F(TestParameterCommander, readDecWithTimeoutNG)
   EXPECT_CALL(
     mock,
     writePort(StrEq("$00R002672\r"), _)).Times(1);
+  EXPECT_CALL(
+    mock,
+    getBytesAvailable())
+  .WillRepeatedly(Return(8));
   EXPECT_CALL(
     mock,
     readPort(_, _))

@@ -14,18 +14,5 @@
 
 #pragma once
 
-#include <string>
-
-namespace su065d4380_interface
-{
-
-class PortHandlerBase
-{
-public:
-  PortHandlerBase() {}
-
-  virtual int getBytesAvailable() const = 0;
-  virtual int readPort(char *, const int) const = 0;
-  virtual int writePort(const char *, const int) const = 0;
-};
-}  // namespace su065d4380_interface
+#include "su065d4380_interface/port_handler.hpp"
+#include "su065d4380_interface/commander/parameter_commander.hpp"

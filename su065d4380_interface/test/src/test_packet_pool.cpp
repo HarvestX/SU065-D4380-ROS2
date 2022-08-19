@@ -79,3 +79,15 @@ TEST_F(TestPacketPool, enqueueFineSeparatedCommands)
   ASSERT_TRUE(this->pool->takeParamPacket(packet));
   EXPECT_EQ(packet, param_response);
 }
+
+TEST_F(TestPacketPool, enqueueInitiallyGarbageContainedFineCommands) {
+  const std::string prefix_garbage = "garbage";
+  const std::string param_response = "$00R003277*\r";
+
+  this->pool->enqueue(prefix_garbage + param_response);
+
+  std::string packet;
+
+  ASSERT_TRUE(this->pool->takeParamPacket(packet));
+  EXPECT_EQ(packet, param_response);
+}
