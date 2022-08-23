@@ -21,6 +21,17 @@
 
 namespace su065d4380_tool
 {
+class KeyboardReader final
+{
+private:
+  struct termios cooked_;
+
+public:
+  KeyboardReader();
+  ~KeyboardReader();
+  char readOne();
+};
+
 class ParamConfigurator : public rclcpp::Node
 {
 public:

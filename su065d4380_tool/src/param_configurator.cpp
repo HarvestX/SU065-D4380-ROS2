@@ -16,6 +16,40 @@
 
 namespace su065d4380_tool
 {
+KeyboardReader::KeyboardReader()
+{
+  // get the console in raw mode
+  if (tcgetattr(0, &cooked_) < 0) {
+    throw std::runtime_error("Failed to get old console mode");
+  }
+  struct termios raw;
+  memcpy(&raw, &cooked_, sizeof(struct termios));
+  raw.c_lflag &= ~(ICANON | ECHO);
+  // Setting a new line, then end of file
+  raw.c_cc[VEOL] = 1;
+  raw.c_cc[VEOF] = 2;
+  raw.c_cc[VTIME] = 1;
+  raw.c_cc[VMIN] = 1;
+  if (tcsetattr(0, TCSANOW, &raw) < 0) {
+    throw std::runtime_error("Failed to set new console mode");
+  }
+}
+
+KeyboardReader::~KeyboardReader()
+{
+  tcsetattr(0, TCSANOW, &cooked_);
+}
+
+char KeyboardReader::readOne()
+{
+  char c = 0;
+  int rc = read(0, &c, 1);
+  if (rc < 0) {
+    throw std::runtime_error("read failed");
+  }
+  return c;
+}
+
 ParamConfigurator::ParamConfigurator(const rclcpp::NodeOptions & options)
 : rclcpp::Node("param_configurator", options),
   dev_(this->declare_parameter("dev", "/dev/ttyUSB0"))
@@ -157,6 +191,15 @@ const std::string ParamConfigurator::getParamName(
 }
 }  // namespace su065d4380_tool
 
+int ask_val(const int min, const int max)
+{
+  std::cout << "Input value(" << min << "~" << max << "): ";
+  int ret;
+  std::cin >> ret;
+  std::cout << ret << std::endl;
+  return ret;
+}
+
 
 int main(int argc, char * argv[])
 {
@@ -166,6 +209,78 @@ int main(int argc, char * argv[])
   auto configurator =
     std::make_shared<su065d4380_tool::ParamConfigurator>(rclcpp::NodeOptions());
 
-  configurator->readAll();
+  using su = su065d4380_tool::ParamConfigurator::CONFIGURABLE_PARAM;
+
+  auto key_reader = std::make_unique<su065d4380_tool::KeyboardReader>();
+
+  while (1) {
+    std::cout << "[r]: Read All [w]: Write [q]: Quit" << std::endl;
+    const char pressed = key_reader->readOne();
+    if (pressed == 'r') {
+      std::cout << "Read All" << std::endl;
+      configurator->readAll();
+    } else if (pressed == 'w') {
+      std::cout << "Select Parameter to configure." << std::endl;
+      std::cout << "\t1: Right Wheel Gain" << std::endl;
+      std::cout << "\t2: Left Wheel Gain" << std::endl;
+      std::cout << "\t3: Acc Time" << std::endl;
+      std::cout << "\t4: Dec Time" << std::endl;
+      std::cout << "\t5: Timeout" << std::endl;
+      std::cout << "\t6: Dec with timeout" << std::endl;
+
+      try {
+        const char pressed_num = key_reader->readOne();
+        switch (pressed_num) {
+          case '1':
+            {
+              const int val = ask_val(0, 100);
+              configurator->write(su::RIGHT_WHEEL_GAIN, val);
+              break;
+            }
+          case '2':
+            {
+              const int val = ask_val(0, 100);
+              configurator->write(su::LEFT_WHEEL_GAIN, val);
+              break;
+            }
+          case '3':
+            {
+              const int val = ask_val(0, 500);
+              configurator->write(su::ACC_TIME, val);
+              break;
+            }
+          case '4':
+            {
+              const int val = ask_val(0, 500);
+              configurator->write(su::DEC_TIME, val);
+              break;
+            }
+          case '5':
+            {
+              const int val = ask_val(0, 5);
+              configurator->write(su::TIMEOUT, val);
+              break;
+            }
+          case '6':
+            {
+              const int val = ask_val(0, 500);
+              configurator->write(su::DEC_WITH_TIMEOUT, val);
+              break;
+            }
+          default:
+            {
+              std::cerr << "Select from 1 ~ 6" << std::endl;
+            }
+        }
+      } catch (std::runtime_error & e) {
+        // Do noting
+      }
+    } else if (pressed == 'q') {
+      std::cout << "Bye-bye." << std::endl;
+      break;
+    } else {
+      std::cerr << "Invalid input" << std::endl;
+    }
+  }
   return EXIT_SUCCESS;
 }
