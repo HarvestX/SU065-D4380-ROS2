@@ -8,7 +8,8 @@
       "includePath": [
         "/opt/ros/galactic/include/**",
         "/usr/include/**",
-        "${workspaceFolder}/su065d4380_interface/include/**"
+        "${workspaceFolder}/su065d4380_interface/include/**",
+        "${workspaceFolder}/su065d4380_tool/include/**"
       ],
       "name": "ROS",
       "intelliSenseMode": "clang-x64",
