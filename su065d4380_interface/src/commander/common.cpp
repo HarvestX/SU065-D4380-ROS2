@@ -12,20 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
 
-#include <rclcpp/rclcpp.hpp>
-
-#define SU065D4380_PREFIX '$'
-#define SU065D4380_SUFFIX '\r'
+#include "su065d4380_interface/commander/common.hpp"
 
 namespace su065d4380_interface
 {
-
-class CommandUtil
+uint16_t CommandUtil::calcChecksum(
+  char const * const buf, const int cx)
 {
-public:
-  static uint16_t calcChecksum(char const * const, const int);
-  static int setChecksum(char * const, const size_t, const int);
-};
+  uint16_t crc = 0;
+  for (int i = 0; i < cx; ++i) {
+    crc ^= static_cast<uint16_t>(buf[i]);
+  }
+  return crc;
+}
+
+int CommandUtil::setChecksum(
+  char * const buf, const size_t buf_size, const int cx)
+{
+  const uint16_t crc = CommandUtil::calcChecksum(buf, cx);
+  return snprintf(buf + cx, buf_size - cx, "%02hhX\r", crc) + cx;
+}
 }  // namespace su065d4380_interface

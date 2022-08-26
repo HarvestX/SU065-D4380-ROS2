@@ -63,8 +63,6 @@ public:
 
 private:
   static const rclcpp::Logger getLogger();
-  uint16_t calcChecksum(char const * const, const int) const;
-  int setChecksum(char * const, const size_t, const int);
   bool waitForResponse(std::string &);
   bool evaluateWriteResponse();
   int evaluateReadResponse();
