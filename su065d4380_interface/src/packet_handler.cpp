@@ -17,200 +17,46 @@
 
 namespace su065d4380_interface
 {
-PacketHandler::PacketHandler(std::shared_ptr<PortHandler> port_handler)
-: port_handler_(port_handler),
-  queue_vel_rx(std::make_unique<std::queue<std::string>>()),
-  queue_inf_rx(std::make_unique<std::queue<std::string>>())
-{
-  this->velcom_state_ = VELCOM_STATE::READY;
-  this->driver_state_ = std::make_unique<info_packet::DriverState>();
-}
-
-bool PacketHandler::sendVelocityCommand(
-  const double right_rps, const double left_rps
+PacketHandler::PacketHandler(
+  PortHandlerBase const * const port_handler
 )
+: port_handler_(port_handler),
+  pool_(std::make_unique<PacketPool>())
 {
-  const int32_t right_rpm = static_cast<int32_t>(right_rps * RPS2RPM_);
-  const int32_t left_rpm = static_cast<int32_t>(left_rps * RPS2RPM_);
-  return this->sendVelocityCommand(
-    velocity_packet::FLAG_MODE_MOTOR_ON, right_rpm, left_rpm);
+
 }
 
-bool PacketHandler::sendVelocityCommand(
-  const uint16_t mode,
-  const int32_t right_rpm,
-  const int32_t left_rpm)
+int PacketHandler::writePort(
+  char const * const packet, const int length) const
 {
-  if (this->velcom_state_ == VELCOM_STATE::WAITING_RESPONSE) {
-    RCLCPP_WARN(
-      this->logger_,
-      "Command not sent. "
-      "Waiting for the response from previous packet.");
-    return false;
-  }
-
-  auto fetch_rpm = [this](
-    const int32_t min, const int32_t max,
-    const int32_t target) -> int32_t {
-      if (target < min) {
-        RCLCPP_WARN(
-          this->logger_,
-          "Speed fixed %d -> %d", target, min);
-        return min;
-      } else if (target > max) {
-        RCLCPP_WARN(
-          this->logger_,
-          "Speed fixed %d -> %d", target, max);
-        return max;
-      }
-      return target;
-    };
-
-  const int32_t actual_right_rpm = fetch_rpm(
-    velocity_packet::MIN_SPEED, velocity_packet::MAX_SPEED, right_rpm);
-  const int32_t actual_left_rpm = fetch_rpm(
-    velocity_packet::MIN_SPEED, velocity_packet::MAX_SPEED, left_rpm);
-
-  std::string send_data;
-  velocity_packet::setPacket(
-    mode, actual_right_rpm, actual_left_rpm, send_data);
-  this->port_handler_->writePort(send_data.data(), send_data.size());
-  this->velcom_state_ = VELCOM_STATE::WAITING_RESPONSE;
-
-  RCLCPP_INFO(
-    logger_, "Left: %d, Right: %d, Send: %s",
-    actual_left_rpm, actual_right_rpm, send_data.c_str());
-
-  return true;
+  return this->port_handler_->writePort(packet, length);
 }
 
-void PacketHandler::recvCommand()
+int PacketHandler::readPortIntoQueue()
 {
-  if (this->port_handler_->getBytesAvailable() <
-    static_cast<int>(velocity_packet::RX_PACKET_SIZE))
-  {
-    return;
-  }
-
   char buf[100];
-  this->port_handler_->readPort(buf, sizeof(buf));
-  this->enqueueCommands(std::string(buf));
-  this->evaluateCommands();
+  int ret = this->port_handler_->readPort(buf, sizeof(buf));
+  this->pool_->enqueue(std::string(buf));
+  return ret;
 }
 
-void PacketHandler::enqueueCommands(const std::string & packet_chunk)
+int PacketHandler::getBytesAvailable() const
 {
-  const char delimiter = '\r';
-  const char command_symbol = '$';
-  std::stringstream packet_chunk_ss(packet_chunk);
-
-  while (packet_chunk_ss.good()) {
-    std::string packet;
-    std::getline(packet_chunk_ss, packet, delimiter);
-    if (packet.size() == 0) {
-      continue;
-    }
-    if (packet.at(0) != command_symbol) {
-      continue;
-    }
-
-    // Add 1 for removed CR
-    switch (packet.size() + 1) {
-      case velocity_packet::RX_PACKET_SIZE:
-        this->queue_vel_rx->emplace(packet);
-        break;
-      case info_packet::RX_PACKET_SIZE:
-        if (!info_packet::checkSum(packet)) {
-          break;
-        }
-        this->queue_inf_rx->emplace(packet);
-        break;
-      default:
-        break;
-    }
-  }
+  return this->port_handler_->getBytesAvailable();
 }
 
-void PacketHandler::evaluateCommands()
+bool PacketHandler::takeVelocityPacket(std::string & out)
 {
-  while (!this->queue_vel_rx->empty()) {
-    const std::string packet = this->queue_vel_rx->front();
-    this->queue_vel_rx->pop();
-    try {
-      if (velocity_packet::isOK(packet)) {
-        RCLCPP_INFO(
-          this->logger_,
-          "Velocity command accepted.");
-      } else {
-        RCLCPP_ERROR(
-          this->logger_,
-          "Failed to sent velocity command");
-      }
-      this->velcom_state_ = VELCOM_STATE::READY;
-    } catch (std::runtime_error & e) {
-      RCLCPP_WARN(this->logger_, e.what());
-    }
-  }
-
-  while (!this->queue_inf_rx->empty()) {
-    const std::string packet = this->queue_inf_rx->front();
-    this->queue_inf_rx->pop();
-
-    info_packet::COMMAND_TYPE type;
-    try {
-      type = info_packet::getCommandType(packet);
-    } catch (std::invalid_argument & e) {
-      RCLCPP_ERROR(this->logger_, e.what());
-      continue;
-    }
-
-    if (type == info_packet::COMMAND_TYPE::RIGHT_WHEEL) {
-      this->right_rpm_ = info_packet::getRPM(packet);
-    }
-    if (type == info_packet::COMMAND_TYPE::LEFT_WHEEL) {
-      this->left_rpm_ = info_packet::getRPM(packet);
-    }
-    if (type == info_packet::COMMAND_TYPE::DRIVER_STATE) {
-      info_packet::getDriverState(packet, this->driver_state_);
-      if (this->driver_state_->has_error) {
-        RCLCPP_ERROR(
-          this->logger_,
-          info_packet::getErrorState(packet).c_str());
-      }
-    }
-    if (type == info_packet::COMMAND_TYPE::ENCODE_DATA) {
-      this->right_encoder_ = info_packet::getRightEncoderData(packet);
-      this->left_encode_ = info_packet::getLeftEncoderData(packet);
-    }
-    if (type == info_packet::COMMAND_TYPE::VOLTAGE) {
-      this->voltage_ = info_packet::getVoltage(packet);
-    }
-  }
+  return this->pool_->takeVelocityPacket(out);
 }
 
-double PacketHandler::getVoltage()
+bool PacketHandler::takeInfoPacket(std::string & out)
 {
-  return static_cast<double>(this->voltage_);
+  return this->pool_->takeInfoPacket(out);
 }
 
-double PacketHandler::getLeftPosition()
+bool PacketHandler::takeParamPacket(std::string & out)
 {
-  return static_cast<double>(this->left_encode_) * this->ENC2RAD_;
+  return this->pool_->takeParamPacket(out);
 }
-
-double PacketHandler::getRightPosition()
-{
-  return static_cast<double>(this->right_encoder_) * this->ENC2RAD_;
-}
-
-double PacketHandler::getLeftVelocity()
-{
-  return static_cast<double>(this->left_rpm_) * this->RPM2RPS_;
-}
-
-double PacketHandler::getRightVelocity()
-{
-  return static_cast<double>(this->right_rpm_) * this->RPM2RPS_;
-}
-
 }  // namespace su065d4380_interface

@@ -33,4 +33,64 @@ int CommandUtil::setChecksum(
   const uint16_t crc = CommandUtil::calcChecksum(buf, cx);
   return snprintf(buf + cx, buf_size - cx, "%02hhX\r", crc) + cx;
 }
+
+bool CommandUtil::confirmChecksum(const std::string & buf, const int CRC_IDX)
+{
+
+  uint16_t expected_crc;
+  try {
+    expected_crc =
+      std::stoi(buf.substr(CRC_IDX, 2), nullptr, 16);
+  } catch (std::invalid_argument &) {
+    return false;
+  }
+
+  const uint16_t actual_crc = CommandUtil::calcChecksum(
+    buf.data(), CRC_IDX);
+
+  return expected_crc == actual_crc;
+}
+
+void CommandUtil::logResponse(
+  const rclcpp::Logger & logger,
+  const RESPONSE_STATE & response)
+{
+  switch (response) {
+    case RESPONSE_STATE::OK:
+      RCLCPP_INFO(
+        logger,
+        "Response OK");
+      break;
+    case RESPONSE_STATE::WAITING_RESPONSE:
+      RCLCPP_INFO(
+        logger,
+        "Waiting for response");
+      break;
+    case RESPONSE_STATE::ERROR_EXPLICIT_NG:
+      RCLCPP_ERROR(
+        logger,
+        "Driver response NG");
+      break;
+    case RESPONSE_STATE::ERROR_NOT_COMING_YET:
+      RCLCPP_ERROR(
+        logger,
+        "Driver not responded yet");
+      break;
+    case RESPONSE_STATE::ERROR_INVALID_INPUT:
+      RCLCPP_ERROR(
+        logger,
+        "Invalid input given");
+      break;
+    case RESPONSE_STATE::ERROR_CRC:
+      RCLCPP_ERROR(
+        logger,
+        "Crc calculation failed");
+      break;
+    case RESPONSE_STATE::ERROR_UNKNOWN:
+      RCLCPP_ERROR(
+        logger,
+        "Uknown error");
+      break;
+  }
+}
 }  // namespace su065d4380_interface

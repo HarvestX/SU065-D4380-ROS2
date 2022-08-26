@@ -19,8 +19,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include "su065d4380_interface/packet_pool.hpp"
-#include "su065d4380_interface/port_handler_base.hpp"
+#include "su065d4380_interface/packet_handler.hpp"
 
 
 namespace su065d4380_interface
@@ -28,43 +27,42 @@ namespace su065d4380_interface
 using namespace std::chrono_literals;
 class ParameterCommander
 {
-private:
-  static const uint MAX_GAIN_ = 100;
-  static const uint MAX_ACCTIME_ = 500;
-  static const uint MAX_TIMEOUT_ = 5;
+public:
+  static const uint MAX_GAIN = 100;
+  static const uint MAX_ACCTIME = 500;
+  static const uint MAX_TIMEOUT = 5;
 
-  // Use raw pointer for gmock
-  const PortHandlerBase * const port_handler_;
+private:
+  std::shared_ptr<PacketHandler> packet_handler_;
   rclcpp::Clock::SharedPtr clock_;
-  const rclcpp::Duration TIMEOUT;
-  std::shared_ptr<PacketPool> pool_;
+  const rclcpp::Duration TIMEOUT_;
 
 public:
   ParameterCommander() = delete;
   explicit ParameterCommander(
-    PortHandlerBase *,
+    std::shared_ptr<PacketHandler>,
     const std::chrono::nanoseconds = 1s);
 
   // Write parameter
-  bool writeRightWheelGain(const uint);
-  bool writeLeftWheelGain(const uint);
-  bool writeAccTime(const uint);
-  bool writeDecTime(const uint);
-  bool writeTimeout(const uint);
-  bool writeDecWithTimeout(const uint);
+  RESPONSE_STATE writeRightWheelGain(const uint) const noexcept;
+  RESPONSE_STATE writeLeftWheelGain(const uint) const noexcept;
+  RESPONSE_STATE writeAccTime(const uint) const noexcept;
+  RESPONSE_STATE writeDecTime(const uint) const noexcept;
+  RESPONSE_STATE writeTimeout(const uint) const noexcept;
+  RESPONSE_STATE writeDecWithTimeout(const uint) const noexcept;
 
   // Read parameter
-  int readRightWheelGain();
-  int readLeftWheelGain();
-  int readAccTime();
-  int readDecTime();
-  int readTimeout();
-  int readDecWithTimeout();
+  RESPONSE_STATE readRightWheelGain(int &) const noexcept;
+  RESPONSE_STATE readLeftWheelGain(int &) const noexcept;
+  RESPONSE_STATE readAccTime(int &) const noexcept;
+  RESPONSE_STATE readDecTime(int &) const noexcept;
+  RESPONSE_STATE readTimeout(int &) const noexcept;
+  RESPONSE_STATE readDecWithTimeout(int &) const noexcept;
 
 private:
   static const rclcpp::Logger getLogger();
-  bool waitForResponse(std::string &);
-  bool evaluateWriteResponse();
-  int evaluateReadResponse();
+  bool waitForResponse(std::string &) const noexcept;
+  RESPONSE_STATE evaluateWriteResponse() const noexcept;
+  RESPONSE_STATE evaluateReadResponse(int &)const noexcept;
 };
 }  // namespace su065d4380_interface

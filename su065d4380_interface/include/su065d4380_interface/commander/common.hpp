@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <string>
 #include <rclcpp/rclcpp.hpp>
 
 #define SU065D4380_PREFIX '$'
@@ -22,10 +23,24 @@
 namespace su065d4380_interface
 {
 
+enum class RESPONSE_STATE
+{
+  OK,
+  WAITING_RESPONSE,
+  ERROR_EXPLICIT_NG,
+  ERROR_NOT_COMING_YET,
+  ERROR_INVALID_INPUT,
+  ERROR_CRC,
+  ERROR_UNKNOWN,
+};
+
 class CommandUtil
 {
 public:
   static uint16_t calcChecksum(char const * const, const int);
   static int setChecksum(char * const, const size_t, const int);
+  static bool confirmChecksum(const std::string &, const int);
+  static void logResponse(
+    const rclcpp::Logger &, const RESPONSE_STATE &);
 };
 }  // namespace su065d4380_interface

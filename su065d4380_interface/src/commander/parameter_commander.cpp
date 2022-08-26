@@ -17,24 +17,22 @@
 namespace su065d4380_interface
 {
 ParameterCommander::ParameterCommander(
-  PortHandlerBase * port_handler,
-  const std::chrono::nanoseconds timeout
-)
-: port_handler_(port_handler),
+  std::shared_ptr<PacketHandler> packet_handler,
+  const std::chrono::nanoseconds timeout)
+: packet_handler_(packet_handler),
   clock_(std::make_shared<rclcpp::Clock>(RCL_STEADY_TIME)),
-  TIMEOUT(rclcpp::Duration(timeout)),
-  pool_(std::make_shared<PacketPool>())
+  TIMEOUT_(rclcpp::Duration(timeout))
 {
 }
 
-bool ParameterCommander::writeRightWheelGain(
-  const uint gain)
+RESPONSE_STATE ParameterCommander::writeRightWheelGain(
+  const uint gain) const noexcept
 {
-  if (gain > this->MAX_GAIN_) {
+  if (gain > this->MAX_GAIN) {
     RCLCPP_ERROR(
       this->getLogger(),
       "Input out of range 0 ~ 100 [%u]", gain);
-    return false;
+    return RESPONSE_STATE::ERROR_INVALID_INPUT;
   }
   char write_buf[100];
 
@@ -45,18 +43,18 @@ bool ParameterCommander::writeRightWheelGain(
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
+  this->packet_handler_->writePort(write_buf, cx);
   return this->evaluateWriteResponse();
 }
 
-bool ParameterCommander::writeLeftWheelGain(
-  const uint gain)
+RESPONSE_STATE ParameterCommander::writeLeftWheelGain(
+  const uint gain) const noexcept
 {
-  if (gain > this->MAX_GAIN_) {
+  if (gain > this->MAX_GAIN) {
     RCLCPP_ERROR(
       this->getLogger(),
       "Input out of range 0 ~ 100 [%u]", gain);
-    return false;
+    return RESPONSE_STATE::ERROR_INVALID_INPUT;
   }
   char write_buf[100];
 
@@ -67,17 +65,18 @@ bool ParameterCommander::writeLeftWheelGain(
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
+  this->packet_handler_->writePort(write_buf, cx);
   return this->evaluateWriteResponse();
 }
 
-bool ParameterCommander::writeAccTime(const uint time)
+RESPONSE_STATE ParameterCommander::writeAccTime(
+  const uint time) const noexcept
 {
-  if (time > this->MAX_ACCTIME_) {
+  if (time > this->MAX_ACCTIME) {
     RCLCPP_ERROR(
       this->getLogger(),
       "Input out of range 0 ~ 500 [%u]", time);
-    return false;
+    return RESPONSE_STATE::ERROR_INVALID_INPUT;
   }
   char write_buf[100];
 
@@ -88,17 +87,18 @@ bool ParameterCommander::writeAccTime(const uint time)
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
+  this->packet_handler_->writePort(write_buf, cx);
   return this->evaluateWriteResponse();
 }
 
-bool ParameterCommander::writeDecTime(const uint time)
+RESPONSE_STATE ParameterCommander::writeDecTime(
+  const uint time) const noexcept
 {
-  if (time > this->MAX_ACCTIME_) {
+  if (time > this->MAX_ACCTIME) {
     RCLCPP_ERROR(
       this->getLogger(),
       "Input out of range 0 ~ 500 [%u]", time);
-    return false;
+    return RESPONSE_STATE::ERROR_INVALID_INPUT;
   }
   char write_buf[100];
 
@@ -109,17 +109,18 @@ bool ParameterCommander::writeDecTime(const uint time)
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
+  this->packet_handler_->writePort(write_buf, cx);
   return this->evaluateWriteResponse();
 }
 
-bool ParameterCommander::writeTimeout(const uint time)
+RESPONSE_STATE ParameterCommander::writeTimeout(
+  const uint time) const noexcept
 {
-  if (time > this->MAX_TIMEOUT_) {
+  if (time > this->MAX_TIMEOUT) {
     RCLCPP_ERROR(
       this->getLogger(),
       "Input out of range 0 ~ 5 [%u]", time);
-    return false;
+    return RESPONSE_STATE::ERROR_INVALID_INPUT;
   }
   char write_buf[100];
 
@@ -130,17 +131,18 @@ bool ParameterCommander::writeTimeout(const uint time)
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
+  this->packet_handler_->writePort(write_buf, cx);
   return this->evaluateWriteResponse();
 }
 
-bool ParameterCommander::writeDecWithTimeout(const uint time)
+RESPONSE_STATE ParameterCommander::writeDecWithTimeout(
+  const uint time) const noexcept
 {
-  if (time > this->MAX_ACCTIME_) {
+  if (time > this->MAX_ACCTIME) {
     RCLCPP_ERROR(
       this->getLogger(),
       "Input out of range 0 ~ 500 [%u]", time);
-    return false;
+    return RESPONSE_STATE::ERROR_INVALID_INPUT;
   }
   char write_buf[100];
 
@@ -151,11 +153,11 @@ bool ParameterCommander::writeDecWithTimeout(const uint time)
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
+  this->packet_handler_->writePort(write_buf, cx);
   return this->evaluateWriteResponse();
 }
 
-int ParameterCommander::readRightWheelGain()
+RESPONSE_STATE ParameterCommander::readRightWheelGain(int & out) const noexcept
 {
   char write_buf[100];
 
@@ -166,11 +168,12 @@ int ParameterCommander::readRightWheelGain()
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
-  return this->evaluateReadResponse();
+  this->packet_handler_->writePort(write_buf, cx);
+
+  return this->evaluateReadResponse(out);
 }
 
-int ParameterCommander::readLeftWheelGain()
+RESPONSE_STATE ParameterCommander::readLeftWheelGain(int & out) const noexcept
 {
   char write_buf[100];
 
@@ -181,11 +184,12 @@ int ParameterCommander::readLeftWheelGain()
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
-  return this->evaluateReadResponse();
+  this->packet_handler_->writePort(write_buf, cx);
+
+  return this->evaluateReadResponse(out);
 }
 
-int ParameterCommander::readAccTime()
+RESPONSE_STATE ParameterCommander::readAccTime(int & out) const noexcept
 {
   char write_buf[100];
 
@@ -196,11 +200,12 @@ int ParameterCommander::readAccTime()
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
-  return this->evaluateReadResponse();
+  this->packet_handler_->writePort(write_buf, cx);
+
+  return this->evaluateReadResponse(out);
 }
 
-int ParameterCommander::readDecTime()
+RESPONSE_STATE ParameterCommander::readDecTime(int & out) const noexcept
 {
   char write_buf[100];
 
@@ -211,11 +216,12 @@ int ParameterCommander::readDecTime()
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
-  return this->evaluateReadResponse();
+  this->packet_handler_->writePort(write_buf, cx);
+
+  return this->evaluateReadResponse(out);
 }
 
-int ParameterCommander::readTimeout()
+RESPONSE_STATE ParameterCommander::readTimeout(int & out) const noexcept
 {
   char write_buf[100];
 
@@ -226,11 +232,12 @@ int ParameterCommander::readTimeout()
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
-  return this->evaluateReadResponse();
+  this->packet_handler_->writePort(write_buf, cx);
+
+  return this->evaluateReadResponse(out);
 }
 
-int ParameterCommander::readDecWithTimeout()
+RESPONSE_STATE ParameterCommander::readDecWithTimeout(int & out) const noexcept
 {
   char write_buf[100];
 
@@ -241,22 +248,21 @@ int ParameterCommander::readDecWithTimeout()
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  this->port_handler_->writePort(write_buf, cx);
-  return this->evaluateReadResponse();
+  this->packet_handler_->writePort(write_buf, cx);
+
+  return this->evaluateReadResponse(out);
 }
 
-bool ParameterCommander::waitForResponse(std::string & response)
+bool ParameterCommander::waitForResponse(std::string & response) const noexcept
 {
   bool has_response = false;
   const auto start = this->clock_->now();
-  while (this->clock_->now() - start < this->TIMEOUT) {
-    if (this->port_handler_->getBytesAvailable() < 1) {
+  while (this->clock_->now() - start < this->TIMEOUT_) {
+    if (this->packet_handler_->getBytesAvailable() < 1) {
       continue;
     }
-    char buf[100];
-    this->port_handler_->readPort(buf, sizeof(buf));
-    this->pool_->enqueue(std::string(buf));
-    if (this->pool_->takeParamPacket(response)) {
+    this->packet_handler_->readPortIntoQueue();
+    if (this->packet_handler_->takeParamPacket(response)) {
       has_response = true;
       break;
     }
@@ -265,7 +271,7 @@ bool ParameterCommander::waitForResponse(std::string & response)
   return has_response;
 }
 
-bool ParameterCommander::evaluateWriteResponse()
+RESPONSE_STATE ParameterCommander::evaluateWriteResponse() const noexcept
 {
   static const char * const WRITE_OK = "$00W17*\r";
   static const char * const WRITE_NG = "$00W17/\r";
@@ -273,18 +279,19 @@ bool ParameterCommander::evaluateWriteResponse()
   std::string response;
   bool has_response = this->waitForResponse(response);
   if (!has_response) {
-    throw std::runtime_error("Couldn't get response before timeout");
+    return RESPONSE_STATE::ERROR_NOT_COMING_YET;
   }
   if (response == WRITE_OK) {
-    return true;
+    return RESPONSE_STATE::OK;
   } else if (response == WRITE_NG) {
-    return false;
-  } else {
-    throw std::runtime_error("Invalid response");
+    return RESPONSE_STATE::ERROR_EXPLICIT_NG;
   }
+
+  return RESPONSE_STATE::ERROR_UNKNOWN;
 }
 
-int ParameterCommander::evaluateReadResponse()
+RESPONSE_STATE ParameterCommander::evaluateReadResponse(
+  int & out) const noexcept
 {
   static const int READ_DATA_IDX = 4;
   static const int READ_CHECKSUM_IDX = 8;
@@ -293,37 +300,18 @@ int ParameterCommander::evaluateReadResponse()
   std::string response;
   const bool has_response = this->waitForResponse(response);
   if (!has_response) {
-    RCLCPP_ERROR(
-      this->getLogger(),
-      "Couldn't get response before timeout");
-    return -1;
+    return RESPONSE_STATE::ERROR_NOT_COMING_YET;
   } else if (response == READ_NG) {
-    RCLCPP_ERROR(
-      this->getLogger(),
-      "Driver responded NG");
-    return -1;
+    return RESPONSE_STATE::ERROR_EXPLICIT_NG;
   }
 
-  // Check crc
-  uint16_t expected_crc;
-  try {
-    expected_crc =
-      std::stoi(response.substr(READ_CHECKSUM_IDX, 2), nullptr, 16);
-  } catch (std::invalid_argument &) {
-    return false;
-  }
-  const uint16_t actual_crc =
-    CommandUtil::calcChecksum(response.data(), READ_CHECKSUM_IDX);
-  if (expected_crc != actual_crc) {
-    RCLCPP_ERROR(
-      this->getLogger(),
-      "Crc does not match [%u] != [%u]",
-      expected_crc, actual_crc);
-    return -1;
+  if (!CommandUtil::confirmChecksum(response, READ_CHECKSUM_IDX)) {
+    return RESPONSE_STATE::ERROR_CRC;
   }
 
   // Fine result
-  return std::stoi(response.substr(READ_DATA_IDX, 4), nullptr, 16);
+  out = std::stoi(response.substr(READ_DATA_IDX, 4), nullptr, 16);
+  return RESPONSE_STATE::OK;
 }
 
 const rclcpp::Logger ParameterCommander::getLogger()

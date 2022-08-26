@@ -38,29 +38,5 @@ int main(int argc, char ** argv)
   RCLCPP_INFO(
     logger, "BaudRate: %d", port_handler->getBaudRate());
 
-  auto packet_handler =
-    std::make_unique<su065d4380_interface::PacketHandler>(port_handler);
-
-  packet_handler->sendVelocityCommand(0.0, 0.0);
-
-  while (1) {
-    packet_handler->recvCommand();
-
-    RCLCPP_INFO(
-      logger,
-      "Position left %.3lf, right %.3lf",
-      packet_handler->getLeftPosition(),
-      packet_handler->getRightPosition());
-
-    RCLCPP_INFO(
-      logger,
-      "Velocity left %.3lf, right %.3lf",
-      packet_handler->getLeftVelocity(),
-      packet_handler->getRightVelocity());
-
-    using namespace std::chrono_literals;
-    rclcpp::sleep_for(1s);
-  }
-
   return EXIT_SUCCESS;
 }

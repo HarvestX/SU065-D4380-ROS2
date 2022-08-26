@@ -14,19 +14,34 @@
 
 #pragma once
 
+#include <string>
+#include <memory>
+#include <rclcpp/rclcpp.hpp>
+
+#include "su065d4380_interface/packet_handler.hpp"
+
 namespace su065d4380_interface
 {
-
-namespace info_packet
+using namespace std::chrono_literals;
+class InfoCommander
 {
-namespace ids
-{
-const char * const RIGHT_GAIN = "A1";
-const char * const LEFT_GAIN = "A2";
-const char * const DRIVER_STATE = "A3";
-const char * const ENCODER_STATE = "A4";
-const char * const VOLTAGE_STATE = "A5";
-}  // namespace ids
-}  // namespace info_packet
+private:
+  std::shared_ptr<PacketHandler> packet_handler_;
+  rclcpp::Clock::SharedPtr clock_;
+  const rclcpp::Duration TIMEOUT_;
 
+public:
+  InfoCommander() = delete;
+  explicit InfoCommander(
+    std::shared_ptr<PacketHandler>,
+    const std::chrono::nanoseconds = 1s);
+
+  RESPONSE_STATE read(int &);
+
+
+  void evaluateResponse() const noexcept;
+
+private:
+  static const rclcpp::Logger getLogger();
+};
 }  // namespace su065d4380_interface
