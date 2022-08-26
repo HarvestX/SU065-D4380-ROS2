@@ -14,8 +14,6 @@
 
 #pragma once
 
-#include "su065d4380_interface/commander/common.hpp"
-
 namespace su065d4380_interface
 {
 

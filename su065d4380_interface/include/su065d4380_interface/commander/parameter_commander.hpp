@@ -16,7 +16,6 @@
 
 #include <memory>
 #include <string>
-#include <sstream>
 
 #include <rclcpp/rclcpp.hpp>
 
