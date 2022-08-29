@@ -48,6 +48,13 @@ bool CommandUtil::confirmChecksum(const std::string & buf, const int CRC_IDX)
   const uint16_t actual_crc = CommandUtil::calcChecksum(
     buf.data(), CRC_IDX);
 
+  if (expected_crc != actual_crc) {
+    RCLCPP_ERROR(
+      CommandUtil::getLogger(),
+      "Expected crc: [%02hhX] Actual crc: [%02hhX]",
+      expected_crc, actual_crc);
+  }
+
   return expected_crc == actual_crc;
 }
 
@@ -92,5 +99,10 @@ void CommandUtil::logResponse(
         "Uknown error");
       break;
   }
+}
+
+const rclcpp::Logger CommandUtil::getLogger()
+{
+  return rclcpp::get_logger("CommandUtil");
 }
 }  // namespace su065d4380_interface

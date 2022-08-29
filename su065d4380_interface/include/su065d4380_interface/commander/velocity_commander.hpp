@@ -26,9 +26,6 @@ using namespace std::chrono_literals;
 class VelocityCommander
 {
 public:
-  static const uint16_t FLAG_MODE_MOTOR_ON = 0b00000001;
-  static const uint16_t FLAG_MODE_BREAK_OFF = 0b00000100;
-  static const uint16_t FLAG_MODE_ERROR_REST = 0b00010000;
   static const int32_t MAX_RPM = 3000;
 
 private:

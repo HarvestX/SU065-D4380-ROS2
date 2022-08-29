@@ -45,9 +45,10 @@ class TestVelocityCommander : public ::testing::Test
 protected:
   std::unique_ptr<su065d4380_interface::VelocityCommander> commander;
   MockPortHandler mock_port_handler;
+  std::shared_ptr<su065d4380_interface::PacketHandler> packet_handler;
   virtual void SetUp()
   {
-    auto packet_handler =
+    this->packet_handler =
       std::make_shared<su065d4380_interface::PacketHandler>(
       &mock_port_handler);
     this->commander =
@@ -66,7 +67,7 @@ TEST_F(TestVelocityCommander, writeRightWheelRpmOK)
 
   ASSERT_EQ(
     this->commander->writeVelocity(
-      su065d4380_interface::VelocityCommander::FLAG_MODE_MOTOR_ON, 3000, 0),
+      su065d4380_interface::FLAG_MODE_MOTOR_ON, 3000, 0),
     su065d4380_interface::RESPONSE_STATE::WAITING_RESPONSE);
 
   EXPECT_CALL(
@@ -77,6 +78,14 @@ TEST_F(TestVelocityCommander, writeRightWheelRpmOK)
     this->mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$8C06\r"), Return(6)));
+
+  // Reading packet not enqueued yet, so commander still waiting...
+  ASSERT_EQ(
+    this->commander->evaluateResponse(),
+    su065d4380_interface::RESPONSE_STATE::WAITING_RESPONSE);
+
+  // Then here you get response
+  this->packet_handler->readPortIntoQueue();
 
   ASSERT_EQ(
     this->commander->evaluateResponse(),
@@ -91,7 +100,7 @@ TEST_F(TestVelocityCommander, writeRightWheelRpmExplicitNG)
 
   ASSERT_EQ(
     this->commander->writeVelocity(
-      su065d4380_interface::VelocityCommander::FLAG_MODE_MOTOR_ON, 3000, 0),
+      su065d4380_interface::FLAG_MODE_MOTOR_ON, 3000, 0),
     su065d4380_interface::RESPONSE_STATE::WAITING_RESPONSE);
 
   EXPECT_CALL(
@@ -102,6 +111,14 @@ TEST_F(TestVelocityCommander, writeRightWheelRpmExplicitNG)
     this->mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$8C07\r"), Return(6)));
+
+  // Reading packet not enqueued yet, so commander still waiting...
+  ASSERT_EQ(
+    this->commander->evaluateResponse(),
+    su065d4380_interface::RESPONSE_STATE::WAITING_RESPONSE);
+
+  // Then here you get response
+  this->packet_handler->readPortIntoQueue();
 
   ASSERT_EQ(
     this->commander->evaluateResponse(),

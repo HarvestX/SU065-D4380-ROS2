@@ -34,6 +34,10 @@ enum class RESPONSE_STATE
   ERROR_UNKNOWN,
 };
 
+static const uint16_t FLAG_MODE_MOTOR_ON = 0b00000001;
+static const uint16_t FLAG_MODE_BREAK_OFF = 0b00000100;
+static const uint16_t FLAG_MODE_ERROR_REST = 0b00010000;
+
 class CommandUtil
 {
 public:
@@ -42,5 +46,6 @@ public:
   static bool confirmChecksum(const std::string &, const int);
   static void logResponse(
     const rclcpp::Logger &, const RESPONSE_STATE &);
+  static const rclcpp::Logger getLogger();
 };
 }  // namespace su065d4380_interface

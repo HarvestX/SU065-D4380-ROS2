@@ -58,6 +58,12 @@ RESPONSE_STATE VelocityCommander::writeVelocity(
   return RESPONSE_STATE::WAITING_RESPONSE;
 }
 
+/**
+ * @brief Evaluate the response from read packet
+ * @note Call PacketHandler enqueue method before get the result
+ *
+ * @return RESPONSE_STATE
+ */
 RESPONSE_STATE VelocityCommander::evaluateResponse() const noexcept
 {
   static char const * const WRITE_OK = "$8C06\r";
