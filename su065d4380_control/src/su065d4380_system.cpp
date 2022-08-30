@@ -112,24 +112,24 @@ CallbackReturn SU065D4380System::on_init(
   }
 
   if (this->info_.joints.at(
-      static_cast<size_t>(WHEEL_IDX::LEFT)).name.find("left") ==
+      static_cast<size_t>(LEFT_WHEEL_IDX)).name.find("left") ==
     std::string::npos)
   {
     RCLCPP_FATAL(
       this->getLogger(),
-      "The index for left wheel expected to be %d",
-      static_cast<int>(WHEEL_IDX::LEFT));
+      "The index for left wheel expected to be %zu",
+      LEFT_WHEEL_IDX);
     return CallbackReturn::ERROR;
   }
 
   if (this->info_.joints.at(
-      static_cast<size_t>(WHEEL_IDX::RIGHT)).name.find("right") ==
+      static_cast<size_t>(RIGHT_WHEEL_IDX)).name.find("right") ==
     std::string::npos)
   {
     RCLCPP_FATAL(
       this->getLogger(),
-      "The index  for wright wheel expected to be %d",
-      static_cast<int>(WHEEL_IDX::RIGHT));
+      "The index for wright wheel expected to be %zu",
+      RIGHT_WHEEL_IDX);
     return CallbackReturn::ERROR;
   }
 
@@ -176,6 +176,10 @@ CallbackReturn SU065D4380System::on_activate(const rclcpp_lifecycle::State &)
   this->packet_handler_ =
     std::make_unique<su065d4380_interface::PacketHandler>(
     this->port_handler_.get());
+  this->velocity_commander_ =
+    std::make_unique<su065d4380_interface::VelocityCommander>(packet_handler_);
+  this->info_commander_ =
+    std::make_unique<su065d4380_interface::InfoCommander>(packet_handler_);
 
   // Set default value
   for (size_t i = 0; i < this->hw_positions_.size(); ++i) {
@@ -198,39 +202,44 @@ CallbackReturn SU065D4380System::on_deactivate(const rclcpp_lifecycle::State &)
     0, 0);
   this->port_handler_->closePort();
   this->packet_handler_ = nullptr;
+  this->velocity_commander_ = nullptr;
+  this->info_commander_ = nullptr;
   RCLCPP_INFO(this->getLogger(), "Successfully deactivated!");
   return CallbackReturn::SUCCESS;
 }
 
 hardware_interface::return_type SU065D4380System::read()
 {
-  while (this->packet_handler_->getBytesAvailable()) {
+  if (this->packet_handler_->getBytesAvailable()) {
     this->packet_handler_->readPortIntoQueue();
   }
-  static su065d4380_interface::RESPONSE_STATE velocity_response;
-  velocity_response = this->velocity_commander_->evaluateResponse();
-  if (velocity_response == su065d4380_interface::RESPONSE_STATE::OK) {
-    this->last_command_accepted_ = true;
-  } else {
-    su065d4380_interface::CommandUtil::logResponse(
-      this->getLogger(), velocity_response);
-    return hardware_interface::return_type::ERROR;
+  static SU065D4380_RESPONSE_STATE velocity_response;
+  if (!this->last_command_accepted_) {
+    velocity_response = this->velocity_commander_->evaluateResponse();
+    if (velocity_response == SU065D4380_RESPONSE_STATE::OK) {
+      this->last_command_accepted_ = true;
+    } else {
+      su065d4380_interface::CommandUtil::logResponse(
+        this->getLogger(), velocity_response);
+      return hardware_interface::return_type::ERROR;
+    }
   }
   this->info_commander_->evaluateResponse();
 
-
   static const double RPM2RPS = (2.0 * M_PI) / 60.0;
   static uint8_t right_mode, left_mode;
-  static su065d4380_interface::RESPONSE_STATE
+  static SU065D4380_RESPONSE_STATE
     right_response, left_response, enc_response;
   static int16_t right_rpm, left_rpm;
   static uint16_t right_enc, left_enc;
 
-
   right_response = this->info_commander_->readRightRpm(right_mode, right_rpm);
-  if (right_response == su065d4380_interface::RESPONSE_STATE::OK) {
-    this->hw_velocities_.at(static_cast<size_t>(WHEEL_IDX::RIGHT)) =
-      right_rpm * RPM2RPS;
+  if (right_response == SU065D4380_RESPONSE_STATE::OK) {
+    this->hw_velocities_.at(RIGHT_WHEEL_IDX) =
+      static_cast<double>(right_rpm) * RPM2RPS;
+  } else if (right_response == SU065D4380_RESPONSE_STATE::WAITING_RESPONSE) {
+    RCLCPP_DEBUG(
+      this->getLogger(), "Waiting for response");
   } else {
     su065d4380_interface::CommandUtil::logResponse(
       this->getLogger(), right_response);
@@ -238,9 +247,12 @@ hardware_interface::return_type SU065D4380System::read()
   }
 
   left_response = this->info_commander_->readLeftRpm(left_mode, left_rpm);
-  if (left_response == su065d4380_interface::RESPONSE_STATE::OK) {
-    this->hw_velocities_.at(static_cast<size_t>(WHEEL_IDX::LEFT)) =
-      left_rpm * RPM2RPS;
+  if (left_response == SU065D4380_RESPONSE_STATE::OK) {
+    this->hw_velocities_.at(LEFT_WHEEL_IDX) =
+      static_cast<double>(left_rpm) * RPM2RPS;
+  } else if (left_response == SU065D4380_RESPONSE_STATE::WAITING_RESPONSE) {
+    RCLCPP_DEBUG(
+      this->getLogger(), "Waiting for response");
   } else {
     su065d4380_interface::CommandUtil::logResponse(
       this->getLogger(), left_response);
@@ -251,8 +263,17 @@ hardware_interface::return_type SU065D4380System::read()
   enc_response = this->info_commander_->readEncoderData(right_enc, left_enc);
   if (enc_response == su065d4380_interface::RESPONSE_STATE::OK) {
     // TODO(m12watanabe1a) make it absolute encoder
-    this->hw_positions_.at(static_cast<size_t>(WHEEL_IDX::RIGHT)) = right_enc;
-    this->hw_positions_.at(static_cast<size_t>(WHEEL_IDX::LEFT)) = left_enc;
+    this->hw_positions_.at(static_cast<size_t>(RIGHT_WHEEL_IDX)) =
+      static_cast<double>(right_enc);
+    this->hw_positions_.at(static_cast<size_t>(LEFT_WHEEL_IDX)) =
+      static_cast<double>(left_enc);
+  } else if (enc_response == SU065D4380_RESPONSE_STATE::WAITING_RESPONSE) {
+    RCLCPP_DEBUG(
+      this->getLogger(), "Waiting for response");
+  } else {
+    su065d4380_interface::CommandUtil::logResponse(
+      this->getLogger(), enc_response);
+    return hardware_interface::return_type::ERROR;
   }
 
   return hardware_interface::return_type::OK;
@@ -267,10 +288,10 @@ hardware_interface::return_type SU065D4380System::write()
   static const double RPS2RPM = 60.0 / (2.0 * M_PI);
   const double left_rps =
     this->left_coefficient_ *
-    this->hw_commands_.at(static_cast<size_t>(WHEEL_IDX::LEFT));
+    this->hw_commands_.at(LEFT_WHEEL_IDX);
   const double right_rps =
     this->right_coefficient_ *
-    this->hw_commands_.at(static_cast<size_t>(WHEEL_IDX::RIGHT));
+    this->hw_commands_.at(RIGHT_WHEEL_IDX);
 
   static su065d4380_interface::RESPONSE_STATE response;
   if (this->last_command_accepted_) {
@@ -278,6 +299,7 @@ hardware_interface::return_type SU065D4380System::write()
       su065d4380_interface::FLAG_MODE_MOTOR_ON,
       static_cast<int16_t>(right_rps * RPS2RPM),
       static_cast<int16_t>(left_rps * RPS2RPM));
+    this->last_command_accepted_ = false;
   }
   if (response == su065d4380_interface::RESPONSE_STATE::OK) {
     return hardware_interface::return_type::OK;

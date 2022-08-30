@@ -40,9 +40,13 @@
 
 namespace su065d4380_control
 {
+using SU065D4380_RESPONSE_STATE = su065d4380_interface::RESPONSE_STATE;
 class SU065D4380System : public hardware_interface::SystemInterface
 {
 private:
+  static const size_t LEFT_WHEEL_IDX = 0;
+  static const size_t RIGHT_WHEEL_IDX = 1;
+
   double left_coefficient_;
   double right_coefficient_;
 
@@ -86,10 +90,5 @@ public:
 
 private:
   static rclcpp::Logger getLogger();
-  enum class WHEEL_IDX
-  {
-    LEFT,
-    RIGHT
-  };
 };
 }  // namespace su065d4380_control
