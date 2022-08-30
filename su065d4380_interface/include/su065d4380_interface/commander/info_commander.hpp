@@ -13,21 +13,117 @@
 // limitations under the License.
 
 #pragma once
-#include "su065d4380_interface/commander/common.hpp"
+
+#include <string>
+#include <memory>
+#include <rclcpp/rclcpp.hpp>
+
+#include "su065d4380_interface/packet_handler.hpp"
 
 namespace su065d4380_interface
 {
+using namespace std::chrono_literals;
 
-namespace info_packet
+class InfoPacket
 {
-namespace ids
-{
-const char * const RIGHT_GAIN = "A1";
-const char * const LEFT_GAIN = "A2";
-const char * const DRIVER_STATE = "A3";
-const char * const ENCODER_STATE = "A4";
-const char * const VOLTAGE_STATE = "A5";
-}  // namespace ids
-}  // namespace info_packet
+private:
+  std::string packet_;
+  bool is_updated_;
+  rclcpp::Clock::SharedPtr clock_;
+  const rclcpp::Duration TIMEOUT_;
+  rclcpp::Time last_updated_time_;
 
+public:
+  InfoPacket() = delete;
+  InfoPacket(rclcpp::Clock::SharedPtr, const rclcpp::Duration);
+  void setPacket(const std::string &) noexcept;
+  RESPONSE_STATE takePacket(std::string &)noexcept;
+};
+
+class DriverState
+{
+public:
+  enum class VOLTAGE_STATE
+  {
+    OK,
+    LOW_WARNING,
+    LOW,
+    LOW_EMERGENCY,
+    INVALID,
+  };
+  enum class ERROR_STATE
+  {
+    LOW_VOLTAGE,
+    HIGH_VOLTAGE,
+    INTERNAL_DRIVER_ERROR,
+    SENSOR_ERROR,
+    OVER_CURRENT,
+    INVALID_VELOCITY,
+    OVER_LOAD,
+    COMMUNICATION_ERROR,
+    OK,
+    INVALID,
+  };
+
+private:
+  bool in_operation_;
+  bool has_error_;
+
+  VOLTAGE_STATE voltage_state_;
+  ERROR_STATE error_state_;
+
+public:
+  bool hasError() const noexcept;
+  bool inOperation() const noexcept;
+
+  VOLTAGE_STATE getVoltageState() const noexcept;
+  ERROR_STATE getErrorState() const noexcept;
+
+  void setDriverState(const uint16_t &) noexcept;
+  void setErrorState(const uint16_t &) noexcept;
+};
+
+class InfoCommander
+{
+public:
+  enum class COMMAND_TYPE
+  {
+    RIGHT_WHEEL,
+    LEFT_WHEEL,
+    DRIVER_STATE,
+    ENCODE_DATA,
+    VOLTAGE,
+    INVALID
+  };
+
+private:
+  std::shared_ptr<PacketHandler> packet_handler_;
+  rclcpp::Clock::SharedPtr clock_;
+  const rclcpp::Duration TIMEOUT_;
+
+  std::unique_ptr<InfoPacket> last_right_wheel_packet_;
+  std::unique_ptr<InfoPacket> last_left_wheel_packet_;
+  std::unique_ptr<InfoPacket> last_driver_state_packet_;
+  std::unique_ptr<InfoPacket> last_encode_data_packet_;
+  std::unique_ptr<InfoPacket> last_voltage_packet_;
+
+public:
+  InfoCommander() = delete;
+  explicit InfoCommander(
+    std::shared_ptr<PacketHandler>,
+    const std::chrono::nanoseconds = 1s);
+
+  RESPONSE_STATE readRightRpm(uint8_t &, int16_t &);
+  RESPONSE_STATE readLeftRpm(uint8_t &, int16_t &);
+  RESPONSE_STATE readDriverState(DriverState &);
+  RESPONSE_STATE readEncoderData(uint16_t &, uint16_t &);
+  RESPONSE_STATE readVoltage(float &);
+
+  void evaluateResponse()  noexcept;
+
+private:
+  static const rclcpp::Logger getLogger();
+  COMMAND_TYPE getCommandType(const std::string &) const noexcept;
+
+};
 }  // namespace su065d4380_interface

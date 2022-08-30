@@ -15,14 +15,11 @@
 #pragma once
 
 #include <string>
-#include <queue>
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 
-#include "su065d4380_interface/port_handler.hpp"
-
-#include "su065d4380_interface/packet/velocity_packet.hpp"
-#include "su065d4380_interface/packet/info_packet.hpp"
+#include "su065d4380_interface/packet_pool.hpp"
+#include "su065d4380_interface/port_handler_base.hpp"
 
 namespace su065d4380_interface
 {
@@ -30,52 +27,20 @@ namespace su065d4380_interface
 class PacketHandler
 {
 private:
-  const rclcpp::Logger logger_ = rclcpp::get_logger("PacketHandler");
-  const std::shared_ptr<PortHandler> port_handler_;
-
-  const std::unique_ptr<std::queue<std::string>> queue_vel_rx;
-  const std::unique_ptr<std::queue<std::string>> queue_inf_rx;
-
-  const double ENC2RAD_ = 2.0 * M_PI / 65535;
-  const double RPS2RPM_ = 60.0 / M_PI / 2.0;
-  const double RPM2RPS_ = 1.0 / RPS2RPM_;
-
-  std::unique_ptr<info_packet::DriverState> driver_state_;
-
-  enum class VELCOM_STATE
-  {
-    WAITING_RESPONSE,
-    READY,
-  };
-
-  VELCOM_STATE velcom_state_;
-
-  float voltage_ = NAN;
-  int right_rpm_ = 0;
-  int left_rpm_ = 0;
-  uint32_t right_encoder_ = 0;
-  uint32_t left_encode_ = 0;
+  PortHandlerBase const * const port_handler_;
+  std::unique_ptr<PacketPool> pool_;
 
 public:
   PacketHandler() = delete;
-  explicit PacketHandler(std::shared_ptr<PortHandler>);
+  explicit PacketHandler(
+    PortHandlerBase const * const);
 
-  bool sendVelocityCommand(const double, const double);
-  bool sendVelocityCommand(const uint16_t, const int32_t, const int32_t);
-  void recvCommand();
+  size_t writePort(char const * const, const size_t) const;
+  size_t readPortIntoQueue();
+  size_t getBytesAvailable() const;
 
-  double getVoltage();
-  double getLeftPosition();
-  double getRightPosition();
-  double getLeftVelocity();
-  double getRightVelocity();
-
-  // TODO(m12watanabe1a): Implement it
-  // bool sendConfigCommand();
-  // bool recvConfigCommand();
-
-private:
-  void enqueueCommands(const std::string &);
-  void evaluateCommands();
+  bool takeVelocityPacket(std::string &);
+  bool takeInfoPacket(std::string &);
+  bool takeParamPacket(std::string &);
 };
 }  // namespace su065d4380_interface

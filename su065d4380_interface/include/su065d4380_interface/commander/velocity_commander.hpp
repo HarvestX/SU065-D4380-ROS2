@@ -14,19 +14,40 @@
 
 #pragma once
 
-#include "su065d4380_interface/commander/common.hpp"
+#include <memory>
+#include <string>
+#include <rclcpp/rclcpp.hpp>
+
+#include "su065d4380_interface/packet_handler.hpp"
 
 namespace su065d4380_interface
 {
-
-namespace velocity_packet
+using namespace std::chrono_literals;
+class VelocityCommander
 {
-namespace ids
-{
-const char * const VELOCITY_COMMAND = "8C";
-}  // namespace ids
+public:
+  static const int16_t MAX_RPM = 3000;
 
+private:
+  std::shared_ptr<PacketHandler> packet_handler_;
+  rclcpp::Clock::SharedPtr clock_;
+  const rclcpp::Duration TIMEOUT_;
 
-}  // namespace velocity_packet
+  rclcpp::Time packet_sent_time_;
 
+public:
+  VelocityCommander() = delete;
+  explicit VelocityCommander(
+    std::shared_ptr<PacketHandler>,
+    const std::chrono::nanoseconds = 1s);
+
+  RESPONSE_STATE writeVelocity(
+    const uint8_t,
+    const int16_t,
+    const int16_t) noexcept;
+  RESPONSE_STATE evaluateResponse() const noexcept;
+
+private:
+  static const rclcpp::Logger getLogger();
+};
 }  // namespace su065d4380_interface

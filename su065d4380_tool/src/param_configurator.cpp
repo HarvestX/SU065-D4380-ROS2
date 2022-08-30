@@ -63,9 +63,12 @@ ParamConfigurator::ParamConfigurator(const rclcpp::NodeOptions & options)
     std::make_shared<su065d4380_interface::PortHandler>(this->dev_);
   this->port_handler_->openPort();
 
+  auto packet_handler = std::make_shared<su065d4380_interface::PacketHandler>(
+    this->port_handler_.get());
+
   this->commander_ =
     std::make_shared<su065d4380_interface::ParameterCommander>(
-    this->port_handler_.get());
+    packet_handler);
 }
 
 ParamConfigurator::~ParamConfigurator()
@@ -83,24 +86,25 @@ void ParamConfigurator::readAll() const
 void ParamConfigurator::read(const CONFIGURABLE_PARAM & target) const
 {
   int val;
+  su065d4380_interface::RESPONSE_STATE response;
   switch (target) {
     case CONFIGURABLE_PARAM::RIGHT_WHEEL_GAIN:
-      val = this->commander_->readRightWheelGain();
+      response = this->commander_->readRightWheelGain(val);
       break;
     case CONFIGURABLE_PARAM::LEFT_WHEEL_GAIN:
-      val = this->commander_->readLeftWheelGain();
+      response = this->commander_->readLeftWheelGain(val);
       break;
     case CONFIGURABLE_PARAM::ACC_TIME:
-      val = this->commander_->readAccTime();
+      response = this->commander_->readAccTime(val);
       break;
     case CONFIGURABLE_PARAM::DEC_TIME:
-      val = this->commander_->readDecTime();
+      response = this->commander_->readDecTime(val);
       break;
     case CONFIGURABLE_PARAM::TIMEOUT:
-      val = this->commander_->readTimeout();
+      response = this->commander_->readTimeout(val);
       break;
     case CONFIGURABLE_PARAM::DEC_WITH_TIMEOUT:
-      val = this->commander_->readDecWithTimeout();
+      response = this->commander_->readDecWithTimeout(val);
       break;
     case CONFIGURABLE_PARAM::END:
     // fall through
@@ -111,8 +115,10 @@ void ParamConfigurator::read(const CONFIGURABLE_PARAM & target) const
       return;
   }
 
-  if (val < 0) {
-    // error
+  if (response != su065d4380_interface::RESPONSE_STATE::OK) {
+    su065d4380_interface::CommandUtil::logResponse(
+      this->get_logger(),
+      response);
     return;
   }
 
@@ -124,24 +130,25 @@ void ParamConfigurator::read(const CONFIGURABLE_PARAM & target) const
 void ParamConfigurator::write(
   const CONFIGURABLE_PARAM & target, const int val) const
 {
-  bool res = false;
+  su065d4380_interface::RESPONSE_STATE response;
   switch (target) {
     case CONFIGURABLE_PARAM::RIGHT_WHEEL_GAIN:
-      res = this->commander_->writeRightWheelGain(val);
+      response = this->commander_->writeRightWheelGain(val);
       break;
     case CONFIGURABLE_PARAM::LEFT_WHEEL_GAIN:
-      res = this->commander_->writeLeftWheelGain(val);
+      response = this->commander_->writeLeftWheelGain(val);
       break;
     case CONFIGURABLE_PARAM::ACC_TIME:
-      res = this->commander_->writeAccTime(val);
+      response = this->commander_->writeAccTime(val);
       break;
     case CONFIGURABLE_PARAM::DEC_TIME:
+      response = this->commander_->writeDecTime(val);
       break;
     case CONFIGURABLE_PARAM::TIMEOUT:
-      res = this->commander_->writeTimeout(val);
+      response = this->commander_->writeTimeout(val);
       break;
     case CONFIGURABLE_PARAM::DEC_WITH_TIMEOUT:
-      res = this->commander_->writeDecWithTimeout(val);
+      response = this->commander_->writeDecWithTimeout(val);
       break;
     case CONFIGURABLE_PARAM::END:
     // fall through
@@ -152,14 +159,13 @@ void ParamConfigurator::write(
       return;
   }
 
-  if (res) {
+  if (response == su065d4380_interface::RESPONSE_STATE::OK) {
     RCLCPP_INFO(
       this->get_logger(),
       "Parameter successfully configured!");
   } else {
-    RCLCPP_ERROR(
-      this->get_logger(),
-      "Configuration Failed");
+    su065d4380_interface::CommandUtil::logResponse(
+      this->get_logger(), response);
   }
 }
 
@@ -191,7 +197,7 @@ const std::string ParamConfigurator::getParamName(
 }
 }  // namespace su065d4380_tool
 
-int ask_val(const int min, const int max)
+int askValue(const int min, const int max)
 {
   std::cout << "Input value(" << min << "~" << max << "): ";
   int ret;
@@ -233,37 +239,37 @@ int main(int argc, char * argv[])
         switch (pressed_num) {
           case '1':
             {
-              const int val = ask_val(0, 100);
+              const int val = askValue(0, 100);
               configurator->write(su::RIGHT_WHEEL_GAIN, val);
               break;
             }
           case '2':
             {
-              const int val = ask_val(0, 100);
+              const int val = askValue(0, 100);
               configurator->write(su::LEFT_WHEEL_GAIN, val);
               break;
             }
           case '3':
             {
-              const int val = ask_val(0, 500);
+              const int val = askValue(0, 500);
               configurator->write(su::ACC_TIME, val);
               break;
             }
           case '4':
             {
-              const int val = ask_val(0, 500);
+              const int val = askValue(0, 500);
               configurator->write(su::DEC_TIME, val);
               break;
             }
           case '5':
             {
-              const int val = ask_val(0, 5);
+              const int val = askValue(0, 5);
               configurator->write(su::TIMEOUT, val);
               break;
             }
           case '6':
             {
-              const int val = ask_val(0, 500);
+              const int val = askValue(0, 500);
               configurator->write(su::DEC_WITH_TIMEOUT, val);
               break;
             }

@@ -17,7 +17,10 @@ ament_auto_add_library(
     ./src/packet_pool.cpp
     ./src/packet/velocity_packet.cpp
     ./src/packet/info_packet.cpp
+    ./src/commander/common.cpp
     ./src/commander/parameter_commander.cpp
+    ./src/commander/velocity_commander.cpp
+    ./src/commander/info_commander.cpp
 )
 set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 # End su065d4380 interface ==========================================
@@ -46,6 +49,16 @@ if(BUILD_TESTING)
     test_parameter_commander
     test/src/commander/test_parameter_commander.cpp)
   target_link_libraries(test_parameter_commander ${PROJECT_NAME})
+
+  ament_add_gmock(
+    test_velocity_commander
+    test/src/commander/test_velocity_commander.cpp)
+  target_link_libraries(test_velocity_commander ${PROJECT_NAME})
+
+  ament_add_gmock(
+    test_info_commander
+    test/src/commander/test_info_commander.cpp)
+  target_link_libraries(test_info_commander ${PROJECT_NAME})
 endif()
 
 ament_auto_package()

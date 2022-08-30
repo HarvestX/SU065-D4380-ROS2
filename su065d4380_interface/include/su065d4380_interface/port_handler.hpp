@@ -45,10 +45,10 @@ public:
   int getBaudRate() const noexcept;
   std::string getPortName() const noexcept;
 
-  int getBytesAvailable() const override;
-  int readPort(char *, const int)const override;
+  size_t getBytesAvailable() const override;
+  size_t readPort(char *, const size_t)const override;
 
-  int writePort(const char * const, const int) const override;
+  size_t writePort(const char * const, const size_t) const override;
 
 private:
   bool setupPort(const speed_t);

@@ -17,7 +17,6 @@
 
 using ::testing::_;
 using ::testing::StrEq;
-using ::testing::SetArrayArgument;
 using ::testing::Return;
 using ::testing::DoAll;
 
@@ -31,15 +30,13 @@ public:
   MockPortHandler()
   : su065d4380_interface::PortHandlerBase()
   {
-
   }
 
+  MOCK_METHOD(size_t, getBytesAvailable, (), (const override));
+  MOCK_METHOD(size_t, readPort, (char *, const size_t), (const override));
   MOCK_METHOD(
-    int, getBytesAvailable, (), (const override));
-  MOCK_METHOD(
-    int, readPort, (char *, const int), (const override));
-  MOCK_METHOD(
-    int, writePort, (const char *, const int), (const override));
+    size_t, writePort,
+    (const char *, const size_t), (const override));
 };
 
 using namespace std::chrono_literals;
@@ -48,12 +45,15 @@ class TestParameterCommander : public ::testing::Test
 {
 protected:
   std::unique_ptr<su065d4380_interface::ParameterCommander> commander;
-  MockPortHandler mock;
+  MockPortHandler mock_port_handler;
   virtual void SetUp()
   {
+    auto packet_handler =
+      std::make_shared<su065d4380_interface::PacketHandler>(
+      &mock_port_handler);
     this->commander =
       std::make_unique<su065d4380_interface::ParameterCommander>(
-      &this->mock, 1ms);
+      packet_handler, 1ms);
   }
 
   virtual void TearDown() {}
@@ -61,572 +61,642 @@ protected:
 
 TEST_F(TestParameterCommander, writeRightWheelGainOK) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W001E006405\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
-  ASSERT_TRUE(
-    this->commander->writeRightWheelGain(100));
+  ASSERT_EQ(
+    this->commander->writeRightWheelGain(100),
+    su065d4380_interface::RESPONSE_STATE::OK);
 }
 
 TEST_F(TestParameterCommander, writeRightWheelGainNG) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W001E006405\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17/\r"), Return(8)));
 
-  ASSERT_FALSE(
-    this->commander->writeRightWheelGain(100));
+  ASSERT_EQ(
+    this->commander->writeRightWheelGain(100),
+    su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }
 
 TEST_F(TestParameterCommander, writeRightWheelGainInvalidRange)
 {
-  ASSERT_FALSE(
-    this->commander->writeRightWheelGain(101));
+  ASSERT_EQ(
+    this->commander->writeRightWheelGain(101),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
 
-  ASSERT_FALSE(
-    this->commander->writeRightWheelGain(-1));
+  ASSERT_EQ(
+    this->commander->writeRightWheelGain(-1),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
 }
 
 TEST_F(TestParameterCommander, writeRightWheelGainInvalidResponse) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W001E006405\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   // Return invalid response here
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17x\r"), Return(8)));
 
-  ASSERT_THROW(
+  ASSERT_EQ(
     this->commander->writeRightWheelGain(100),
-    std::runtime_error);
+    su065d4380_interface::RESPONSE_STATE::ERROR_UNKNOWN);
 }
 
 
 TEST_F(TestParameterCommander, writeLeftWheelGainOK) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W001F006406\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
-  ASSERT_TRUE(
-    this->commander->writeLeftWheelGain(100));
+
+  ASSERT_EQ(
+    this->commander->writeLeftWheelGain(100),
+    su065d4380_interface::RESPONSE_STATE::OK);
 }
 
 TEST_F(TestParameterCommander, writeLeftWheelGainNG) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W001F006406\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17/\r"), Return(8)));
 
-  ASSERT_FALSE(
-    this->commander->writeLeftWheelGain(100));
+  ASSERT_EQ(
+    this->commander->writeLeftWheelGain(100),
+    su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }
 
 TEST_F(TestParameterCommander, writeLeftWheelGainInvalidRange)
 {
-  ASSERT_FALSE(
-    this->commander->writeLeftWheelGain(101));
+  ASSERT_EQ(
+    this->commander->writeLeftWheelGain(101),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
 
-  ASSERT_FALSE(
-    this->commander->writeLeftWheelGain(-1));
+  ASSERT_EQ(
+    this->commander->writeLeftWheelGain(-1),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
 }
 
 TEST_F(TestParameterCommander, writeLeftWheelGainInvalidResponse)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W001F006406\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   // Return invalid response here
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17x\r"), Return(8)));
 
-  ASSERT_THROW(
+  ASSERT_EQ(
     this->commander->writeLeftWheelGain(100),
-    std::runtime_error);
+    su065d4380_interface::RESPONSE_STATE::ERROR_UNKNOWN);
 }
 
 TEST_F(TestParameterCommander, writeAccTimeOK) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W002001F402\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
-  ASSERT_TRUE(
-    this->commander->writeAccTime(500));
+  ASSERT_EQ(
+    this->commander->writeAccTime(500),
+    su065d4380_interface::RESPONSE_STATE::OK);
 }
 
 TEST_F(TestParameterCommander, writeAccTimeNG) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W002001F402\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17/\r"), Return(8)));
 
-  ASSERT_FALSE(
-    this->commander->writeAccTime(500));
+  ASSERT_EQ(
+    this->commander->writeAccTime(500),
+    su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }
 
 TEST_F(TestParameterCommander, writeAccTimeInvalidRange)
 {
-  ASSERT_FALSE(
-    this->commander->writeAccTime(501));
-
-  ASSERT_FALSE(
-    this->commander->writeAccTime(-1));
+  ASSERT_EQ(
+    this->commander->writeAccTime(501),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
+  ASSERT_EQ(
+    this->commander->writeAccTime(-1),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
 }
 
 TEST_F(TestParameterCommander, writeAccTimeInvalidResponse)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W002001F402\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17x\r"), Return(8)));
 
-  ASSERT_THROW(
-    this->commander->writeAccTime(500), std::runtime_error);
+  ASSERT_EQ(
+    this->commander->writeAccTime(500),
+    su065d4380_interface::RESPONSE_STATE::ERROR_UNKNOWN);
 }
 
 TEST_F(TestParameterCommander, writeDecTimeOK) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W002101F403\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
-  ASSERT_TRUE(
-    this->commander->writeDecTime(500));
+  ASSERT_EQ(
+    this->commander->writeDecTime(500),
+    su065d4380_interface::RESPONSE_STATE::OK);
 }
 
 TEST_F(TestParameterCommander, writeDecTimeNG) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W002101F403\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17/\r"), Return(8)));
 
-  ASSERT_FALSE(
-    this->commander->writeDecTime(500));
+  ASSERT_EQ(
+    this->commander->writeDecTime(500),
+    su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }
 
 TEST_F(TestParameterCommander, writeDecTimeInvalidRange) {
-  ASSERT_FALSE(
-    this->commander->writeDecTime(501));
+  ASSERT_EQ(
+    this->commander->writeDecTime(501),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
 
-  ASSERT_FALSE(
-    this->commander->writeDecTime(-1));
+  ASSERT_EQ(
+    this->commander->writeDecTime(-1),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
 }
 
 TEST_F(TestParameterCommander, writeDecTimeInvalidResponse)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W002101F403\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17x\r"), Return(8)));
 
-  ASSERT_THROW(
-    this->commander->writeDecTime(500), std::runtime_error);
+  ASSERT_EQ(
+    this->commander->writeDecTime(500),
+    su065d4380_interface::RESPONSE_STATE::ERROR_UNKNOWN);
 }
 
 TEST_F(TestParameterCommander, writeTimeoutOK) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W0025000571\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
-  ASSERT_TRUE(
-    this->commander->writeTimeout(5));
+  ASSERT_EQ(
+    this->commander->writeTimeout(5),
+    su065d4380_interface::RESPONSE_STATE::OK);
 }
 
 TEST_F(TestParameterCommander, writeTimeoutNG) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W0025000571\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17/\r"), Return(8)));
 
-  ASSERT_FALSE(
-    this->commander->writeTimeout(5));
+  ASSERT_EQ(
+    this->commander->writeTimeout(5),
+    su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }
 
 TEST_F(TestParameterCommander, writeTimeoutInvalidRange)
 {
-  ASSERT_FALSE(
-    this->commander->writeTimeout(6));
+  ASSERT_EQ(
+    this->commander->writeTimeout(6),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
 
-  ASSERT_FALSE(
-    this->commander->writeTimeout(-1));
+  ASSERT_EQ(
+    this->commander->writeTimeout(-1),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
 }
 
 TEST_F(TestParameterCommander, writeTimeoutInvalidResponse) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W0025000571\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17x\r"), Return(8)));
 
-  ASSERT_THROW(
-    this->commander->writeTimeout(5), std::runtime_error);
+  ASSERT_EQ(
+    this->commander->writeTimeout(5),
+    su065d4380_interface::RESPONSE_STATE::ERROR_UNKNOWN);
 }
 
 TEST_F(TestParameterCommander, writeDecWithTimeoutOK) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W002601F404\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17*\r"), Return(8)));
 
-  ASSERT_TRUE(
-    this->commander->writeDecWithTimeout(500));
+  ASSERT_EQ(
+    this->commander->writeDecWithTimeout(500),
+    su065d4380_interface::RESPONSE_STATE::OK);
 }
 
 TEST_F(TestParameterCommander, writeDecWithTimeoutNG) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W002601F404\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17/\r"), Return(8)));
 
-  ASSERT_FALSE(
-    this->commander->writeDecWithTimeout(500));
+  ASSERT_EQ(
+    this->commander->writeDecWithTimeout(500),
+    su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }
 
 TEST_F(TestParameterCommander, writeDecWithTimeoutInvalidRange)
 {
-  ASSERT_FALSE(
-    this->commander->writeDecWithTimeout(501));
+  ASSERT_EQ(
+    this->commander->writeDecWithTimeout(501),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
 
-  ASSERT_FALSE(
-    this->commander->writeDecWithTimeout(-1));
+  ASSERT_EQ(
+    this->commander->writeDecWithTimeout(-1),
+    su065d4380_interface::RESPONSE_STATE::ERROR_INVALID_INPUT);
 }
 
 TEST_F(TestParameterCommander, writeDecWithTimeoutInvalidResponse) {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00W002601F404\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00W17x\r"), Return(8)));
 
-  ASSERT_THROW(
-    this->commander->writeDecWithTimeout(500), std::runtime_error);
+  ASSERT_EQ(
+    this->commander->writeDecWithTimeout(500),
+    su065d4380_interface::RESPONSE_STATE::ERROR_UNKNOWN);
 }
 
 
 TEST_F(TestParameterCommander, readRightWheelGainOK)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R001E02\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R006474*\r"), Return(12)));
 
-  ASSERT_EQ(this->commander->readRightWheelGain(), 100);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readRightWheelGain(ret),
+    su065d4380_interface::RESPONSE_STATE::OK);
+  ASSERT_EQ(ret, 100);
 }
 
 TEST_F(TestParameterCommander, readRightWheelGainNG)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R001E02\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
 
-  ASSERT_LT(this->commander->readRightWheelGain(), 0);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readRightWheelGain(ret),
+    su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }
 
 TEST_F(TestParameterCommander, readLeftWheelGainOK)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R001F01\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R006474*\r"), Return(12)));
 
-  ASSERT_EQ(this->commander->readLeftWheelGain(), 100);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readLeftWheelGain(ret),
+    su065d4380_interface::RESPONSE_STATE::OK);
+  ASSERT_EQ(ret, 100);
 }
 
 TEST_F(TestParameterCommander, readLeftWheelGainNG)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R001F01\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
 
-  ASSERT_LT(this->commander->readLeftWheelGain(), 0);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readLeftWheelGain(ret),
+    su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }
 
 TEST_F(TestParameterCommander, readAccTimeOK)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R002074\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R01F405*\r"), Return(12)));
 
-  ASSERT_EQ(this->commander->readAccTime(), 500);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readAccTime(ret),
+    su065d4380_interface::RESPONSE_STATE::OK);
+  ASSERT_EQ(ret, 500);
 }
 
 TEST_F(TestParameterCommander, readAccTimeNG)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R002074\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
 
-  ASSERT_LT(this->commander->readAccTime(), 0);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readAccTime(ret),
+    su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }
 
 TEST_F(TestParameterCommander, readDecTimeOK)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R002175\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R01F405*\r"), Return(12)));
 
-  ASSERT_EQ(this->commander->readDecTime(), 500);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readDecTime(ret),
+    su065d4380_interface::RESPONSE_STATE::OK);
+  ASSERT_EQ(ret, 500);
 }
 
 TEST_F(TestParameterCommander, readDecTimeNG)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R002175\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
 
-  ASSERT_LT(this->commander->readDecTime(), 0);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readDecTime(ret),
+    su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }
 
 TEST_F(TestParameterCommander, readTimeoutOK)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R002571\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R000076*\r"), Return(12)));
 
-  ASSERT_EQ(this->commander->readTimeout(), 0);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readTimeout(ret),
+    su065d4380_interface::RESPONSE_STATE::OK);
+  ASSERT_EQ(ret, 0);
 }
 
 TEST_F(TestParameterCommander, readTimeoutNG)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R002571\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
 
-  ASSERT_LT(this->commander->readTimeout(), 0);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readTimeout(ret),
+    su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }
 
 TEST_F(TestParameterCommander, readDecWithTimeoutOK)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R002672\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R01F405*\r"), Return(12)));
 
-  ASSERT_EQ(this->commander->readDecWithTimeout(), 500);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readDecWithTimeout(ret),
+    su065d4380_interface::RESPONSE_STATE::OK);
+  ASSERT_EQ(ret, 500);
 }
 
 TEST_F(TestParameterCommander, readDecWithTimeoutNG)
 {
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     writePort(StrEq("$00R002672\r"), _)).Times(1);
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     getBytesAvailable())
   .WillRepeatedly(Return(8));
   EXPECT_CALL(
-    mock,
+    mock_port_handler,
     readPort(_, _))
   .WillRepeatedly(DoAll(StrCpyToArg0("$00R12/\r"), Return(8)));
 
-  ASSERT_LT(this->commander->readDecWithTimeout(), 0);
+  int ret;
+  ASSERT_EQ(
+    this->commander->readDecWithTimeout(
+      ret), su065d4380_interface::RESPONSE_STATE::ERROR_EXPLICIT_NG);
 }

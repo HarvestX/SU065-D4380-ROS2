@@ -59,6 +59,9 @@ void PacketPool::enqueue(const std::string & in_packet)
       continue;
     }
     scanning = true;
+    if (ch == SU065D4380_PREFIX) {
+      item.clear();
+    }
 
     item += ch;
     if (ch != SU065D4380_SUFFIX) {
@@ -90,7 +93,7 @@ void PacketPool::enqueue(const std::string & in_packet)
       RCLCPP_WARN(
         this->getLogger(),
         "Command like packet [%s] given. Ignored.",
-        item.c_str());
+        PacketPool::fixEscapeSequence(item).c_str());
     }
     scanning = false;
     item.clear();
@@ -156,6 +159,27 @@ bool PacketPool::isParamPacket(const std::string & packet) const noexcept
 const rclcpp::Logger PacketPool::getLogger()
 {
   return rclcpp::get_logger("PacketPool");
+}
+
+const std::string PacketPool::fixEscapeSequence(const std::string & in)
+{
+  std::string out;
+  for (auto c : in) {
+    switch (c) {
+      case '\r':
+        out += "\\r";
+        break;
+      case '\n':
+        out += "\\n";
+        break;
+      case '\0':
+        out += "\\0";
+        break;
+      default:
+        out += c;
+    }
+  }
+  return out;
 }
 
 }  // namespace su065d4380_interface
