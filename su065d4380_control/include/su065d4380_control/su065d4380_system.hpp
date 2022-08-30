@@ -35,7 +35,7 @@
 #include <rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 
-#include <su065d4380_interface/packet_handler.hpp>
+#include <su065d4380_interface/su065d4380_interface.hpp>
 
 
 namespace su065d4380_control

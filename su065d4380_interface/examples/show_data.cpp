@@ -13,30 +13,71 @@
 // limitations under the License.
 
 
-#include "su065d4380_interface/port_handler.hpp"
-#include "su065d4380_interface/packet_handler.hpp"
+#include "su065d4380_interface/su065d4380_interface.hpp"
+
+
+static const rclcpp::Logger getLogger()
+{
+  return rclcpp::get_logger("ShowData");
+}
 
 int main(int argc, char ** argv)
 {
-  std::string port_name =
-    "/dev/ttyUSB0";
+  std::string port_name = "/dev/ttyUSB0";
   if (argc == 2) {
     port_name = argv[1];
   }
 
-  const rclcpp::Logger logger = rclcpp::get_logger("ShowData");
+  RCLCPP_INFO(
+    getLogger(),
+    "Selected dev: %s", port_name.c_str());
+
 
   auto port_handler =
     std::make_shared<su065d4380_interface::PortHandler>(port_name);
 
   if (!port_handler->openPort()) {
-    RCLCPP_ERROR(logger, "Failed to open the port!");
+    RCLCPP_ERROR(getLogger(), "Failed to open the port !");
     return EXIT_FAILURE;
   }
   RCLCPP_INFO(
-    logger, "Succeeded to open the port!");
+    getLogger(), "Succeeded to open the port !");
   RCLCPP_INFO(
-    logger, "BaudRate: %d", port_handler->getBaudRate());
+    getLogger(), "BaudRate : %d", port_handler->getBaudRate());
+
+  auto packet_handler =
+    std::make_shared<su065d4380_interface::PacketHandler>(port_handler.get());
+
+  auto velocity_commander =
+    std::make_unique<su065d4380_interface::VelocityCommander>(packet_handler);
+
+  auto info_commander =
+    std::make_unique<su065d4380_interface::InfoCommander>(packet_handler);
+
+  velocity_commander->writeVelocity(
+    su065d4380_interface::FLAG_MODE_MOTOR_ON, 0, 0);
+
+  rclcpp::Clock::SharedPtr clock =
+    std::make_shared<rclcpp::Clock>(RCL_STEADY_TIME);
+
+  auto time_started = clock->now();
+  using namespace std::chrono_literals;
+  float voltage = 0.0;
+  while (clock->now() - time_started > rclcpp::Duration(5s)) {
+    packet_handler->readPortIntoQueue();
+
+    if (info_commander->readVoltage(voltage) !=
+      su065d4380_interface::RESPONSE_STATE::OK)
+    {
+      continue;
+    }
+
+    RCLCPP_INFO(
+      getLogger(),
+      "Voltage %.3f",
+      voltage);
+    rclcpp::sleep_for(1ms);
+  }
 
   return EXIT_SUCCESS;
 }

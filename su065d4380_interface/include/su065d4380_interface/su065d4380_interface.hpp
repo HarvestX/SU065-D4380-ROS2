@@ -15,4 +15,7 @@
 #pragma once
 
 #include "su065d4380_interface/port_handler.hpp"
+#include "su065d4380_interface/packet_handler.hpp"
+#include "su065d4380_interface/commander/info_commander.hpp"
 #include "su065d4380_interface/commander/parameter_commander.hpp"
+#include "su065d4380_interface/commander/velocity_commander.hpp"
