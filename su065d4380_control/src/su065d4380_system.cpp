@@ -111,8 +111,7 @@ CallbackReturn SU065D4380System::on_init(
     }
   }
 
-  if (this->info_.joints.at(
-      static_cast<size_t>(LEFT_WHEEL_IDX)).name.find("left") ==
+  if (this->info_.joints.at(LEFT_WHEEL_IDX).name.find("left") ==
     std::string::npos)
   {
     RCLCPP_FATAL(
@@ -122,8 +121,7 @@ CallbackReturn SU065D4380System::on_init(
     return CallbackReturn::ERROR;
   }
 
-  if (this->info_.joints.at(
-      static_cast<size_t>(RIGHT_WHEEL_IDX)).name.find("right") ==
+  if (this->info_.joints.at(RIGHT_WHEEL_IDX).name.find("right") ==
     std::string::npos)
   {
     RCLCPP_FATAL(
@@ -133,6 +131,7 @@ CallbackReturn SU065D4380System::on_init(
     return CallbackReturn::ERROR;
   }
 
+  RCLCPP_INFO(this->getLogger(), "Successfully initialized!");
   return CallbackReturn::SUCCESS;
 }
 
@@ -210,17 +209,23 @@ CallbackReturn SU065D4380System::on_deactivate(const rclcpp_lifecycle::State &)
 
 hardware_interface::return_type SU065D4380System::read()
 {
-  if (this->packet_handler_->getBytesAvailable()) {
+  while (this->packet_handler_->getBytesAvailable()) {
     this->packet_handler_->readPortIntoQueue();
   }
-  static SU065D4380_RESPONSE_STATE velocity_response;
+  static SU065D4380_RESPONSE_STATE vel_response;
   if (!this->last_command_accepted_) {
-    velocity_response = this->velocity_commander_->evaluateResponse();
-    if (velocity_response == SU065D4380_RESPONSE_STATE::OK) {
+    vel_response = this->velocity_commander_->evaluateResponse();
+    if (vel_response == SU065D4380_RESPONSE_STATE::OK) {
+      RCLCPP_DEBUG(
+        this->getLogger(),
+        "Last command accepted!");
       this->last_command_accepted_ = true;
+    } else if (vel_response == SU065D4380_RESPONSE_STATE::WAITING_RESPONSE) {
+      RCLCPP_DEBUG(
+        this->getLogger(), "Waiting for response");
     } else {
       su065d4380_interface::CommandUtil::logResponse(
-        this->getLogger(), velocity_response);
+        this->getLogger(), vel_response);
       return hardware_interface::return_type::ERROR;
     }
   }
@@ -259,13 +264,12 @@ hardware_interface::return_type SU065D4380System::read()
     return hardware_interface::return_type::ERROR;
   }
 
-
   enc_response = this->info_commander_->readEncoderData(right_enc, left_enc);
   if (enc_response == su065d4380_interface::RESPONSE_STATE::OK) {
     // TODO(m12watanabe1a) make it absolute encoder
-    this->hw_positions_.at(static_cast<size_t>(RIGHT_WHEEL_IDX)) =
+    this->hw_positions_.at(RIGHT_WHEEL_IDX) =
       static_cast<double>(right_enc);
-    this->hw_positions_.at(static_cast<size_t>(LEFT_WHEEL_IDX)) =
+    this->hw_positions_.at(LEFT_WHEEL_IDX) =
       static_cast<double>(left_enc);
   } else if (enc_response == SU065D4380_RESPONSE_STATE::WAITING_RESPONSE) {
     RCLCPP_DEBUG(
@@ -293,22 +297,28 @@ hardware_interface::return_type SU065D4380System::write()
     this->right_coefficient_ *
     this->hw_commands_.at(RIGHT_WHEEL_IDX);
 
-  static su065d4380_interface::RESPONSE_STATE response;
+  static SU065D4380_RESPONSE_STATE response;
   if (this->last_command_accepted_) {
+    int16_t right_rpm = static_cast<int16_t>(right_rps * RPS2RPM);
+    int16_t left_rpm = static_cast<int16_t>(left_rps * RPS2RPM);
     response = this->velocity_commander_->writeVelocity(
-      su065d4380_interface::FLAG_MODE_MOTOR_ON,
-      static_cast<int16_t>(right_rps * RPS2RPM),
-      static_cast<int16_t>(left_rps * RPS2RPM));
+      su065d4380_interface::FLAG_MODE_MOTOR_ON, right_rpm, left_rpm);
     this->last_command_accepted_ = false;
   }
-  if (response == su065d4380_interface::RESPONSE_STATE::OK) {
-    return hardware_interface::return_type::OK;
+  hardware_interface::return_type ret = hardware_interface::return_type::ERROR;
+  if (response == SU065D4380_RESPONSE_STATE::OK) {
+    ret = hardware_interface::return_type::OK;
+  } else if (response == SU065D4380_RESPONSE_STATE::WAITING_RESPONSE) {
+    RCLCPP_DEBUG(
+      this->getLogger(),
+      "Waiting for response");
+    ret = hardware_interface::return_type::OK;
   } else {
     su065d4380_interface::CommandUtil::logResponse(
       this->getLogger(),
       response);
-    return hardware_interface::return_type::ERROR;
   }
+  return ret;
 }
 
 rclcpp::Logger SU065D4380System::getLogger()

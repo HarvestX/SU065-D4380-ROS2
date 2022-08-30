@@ -94,9 +94,12 @@ bool PortHandler::setupPort(const speed_t cflag_baud)
 
 size_t PortHandler::getBytesAvailable() const
 {
-  size_t bytes_available;
+  int bytes_available;
   ioctl(this->socket_fd_, FIONREAD, &bytes_available);
-  return bytes_available;
+  RCLCPP_DEBUG(
+    this->getLogger(),
+    "Available: %d", bytes_available);
+  return static_cast<size_t>(bytes_available);
 }
 
 size_t PortHandler::readPort(char * packet, const size_t length) const
@@ -105,7 +108,7 @@ size_t PortHandler::readPort(char * packet, const size_t length) const
   if (ret > 0) {
     RCLCPP_DEBUG(
       this->getLogger(),
-      "Recv: %s Length: %ld",
+      "Recv: %s Length: %zu",
       this->fixEscapeSequence(packet).c_str(), ret);
   }
   return ret;
@@ -116,7 +119,7 @@ size_t PortHandler::writePort(
 {
   RCLCPP_DEBUG(
     this->getLogger(),
-    "Send: %s Length: %ld",
+    "Send: %s Length: %zu",
     this->fixEscapeSequence(packet).c_str(), length);
   return write(this->socket_fd_, packet, length);
 }

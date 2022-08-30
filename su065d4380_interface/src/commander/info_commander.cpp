@@ -19,7 +19,8 @@ namespace su065d4380_interface
 InfoPacket::InfoPacket(
   rclcpp::Clock::SharedPtr clock,
   const rclcpp::Duration timeout)
-: clock_(clock),
+: is_updated_(false),
+  clock_(clock),
   TIMEOUT_(timeout)
 {
   this->last_updated_time_ = this->clock_->now();
