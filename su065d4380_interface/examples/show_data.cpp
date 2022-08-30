@@ -23,10 +23,8 @@ static const rclcpp::Logger getLogger()
 
 int main(int argc, char ** argv)
 {
+  rclcpp::init(argc, argv);
   std::string port_name = "/dev/ttyUSB0";
-  if (argc == 2) {
-    port_name = argv[1];
-  }
 
   RCLCPP_INFO(
     getLogger(),
@@ -63,7 +61,7 @@ int main(int argc, char ** argv)
   auto time_started = clock->now();
   using namespace std::chrono_literals;
   float voltage = 0.0;
-  while (clock->now() - time_started > rclcpp::Duration(5s)) {
+  while (clock->now() - time_started < rclcpp::Duration(5s)) {
     packet_handler->readPortIntoQueue();
 
     if (info_commander->readVoltage(voltage) !=

@@ -35,9 +35,9 @@ public:
   explicit PacketHandler(
     PortHandlerBase const * const);
 
-  int writePort(char const * const, const int) const;
-  int readPortIntoQueue();
-  int getBytesAvailable() const;
+  size_t writePort(char const * const, const size_t) const;
+  size_t readPortIntoQueue();
+  size_t getBytesAvailable() const;
 
   bool takeVelocityPacket(std::string &);
   bool takeInfoPacket(std::string &);

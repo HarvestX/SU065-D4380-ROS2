@@ -48,5 +48,6 @@ private:
   bool isParamPacket(const std::string &) const noexcept;
 
   static const rclcpp::Logger getLogger();
+  static const std::string fixEscapeSequence(const std::string &);
 };
 }  // namespace su065d4380_interface

@@ -32,12 +32,11 @@ public:
   {
   }
 
+  MOCK_METHOD(size_t, getBytesAvailable, (), (const override));
+  MOCK_METHOD(size_t, readPort, (char *, const size_t), (const override));
   MOCK_METHOD(
-    int, getBytesAvailable, (), (const override));
-  MOCK_METHOD(
-    int, readPort, (char *, const int), (const override));
-  MOCK_METHOD(
-    int, writePort, (const char *, const int), (const override));
+    size_t, writePort,
+    (const char *, const size_t), (const override));
 };
 
 using namespace std::chrono_literals;

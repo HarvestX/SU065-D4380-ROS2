@@ -26,21 +26,25 @@ PacketHandler::PacketHandler(
 
 }
 
-int PacketHandler::writePort(
-  char const * const packet, const int length) const
+size_t PacketHandler::writePort(
+  char const * const packet, const size_t length) const
 {
   return this->port_handler_->writePort(packet, length);
 }
 
-int PacketHandler::readPortIntoQueue()
+size_t PacketHandler::readPortIntoQueue()
 {
-  char buf[100];
-  int ret = this->port_handler_->readPort(buf, sizeof(buf));
-  this->pool_->enqueue(std::string(buf));
+  char buf[128];
+  size_t ret = this->port_handler_->readPort(buf, sizeof(buf));
+  std::string enqueue_buf;
+  for (size_t i = 0; i < ret; ++i) {
+    enqueue_buf += buf[i];
+  }
+  this->pool_->enqueue(enqueue_buf);
   return ret;
 }
 
-int PacketHandler::getBytesAvailable() const
+size_t PacketHandler::getBytesAvailable() const
 {
   return this->port_handler_->getBytesAvailable();
 }

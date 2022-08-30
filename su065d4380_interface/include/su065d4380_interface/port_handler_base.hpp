@@ -24,8 +24,8 @@ class PortHandlerBase
 public:
   PortHandlerBase() {}
 
-  virtual int getBytesAvailable() const = 0;
-  virtual int readPort(char *, const int) const = 0;
-  virtual int writePort(const char *, const int) const = 0;
+  virtual size_t getBytesAvailable() const = 0;
+  virtual size_t readPort(char *, const size_t) const = 0;
+  virtual size_t writePort(const char *, const size_t) const = 0;
 };
 }  // namespace su065d4380_interface
