@@ -26,9 +26,9 @@ VelocityCommander::VelocityCommander(
 }
 
 RESPONSE_STATE VelocityCommander::writeVelocity(
-  const uint16_t mode,
-  const int32_t right_rpm,
-  const int32_t left_rpm
+  const uint8_t mode,
+  const int16_t right_rpm,
+  const int16_t left_rpm
 ) noexcept
 {
   if (std::abs(right_rpm) > this->MAX_RPM) {

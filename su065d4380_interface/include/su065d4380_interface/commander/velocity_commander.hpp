@@ -26,7 +26,7 @@ using namespace std::chrono_literals;
 class VelocityCommander
 {
 public:
-  static const int32_t MAX_RPM = 3000;
+  static const int16_t MAX_RPM = 3000;
 
 private:
   std::shared_ptr<PacketHandler> packet_handler_;
@@ -42,9 +42,9 @@ public:
     const std::chrono::nanoseconds = 1s);
 
   RESPONSE_STATE writeVelocity(
-    const uint16_t,
-    const int32_t,
-    const int32_t) noexcept;
+    const uint8_t,
+    const int16_t,
+    const int16_t) noexcept;
   RESPONSE_STATE evaluateResponse() const noexcept;
 
 private:
