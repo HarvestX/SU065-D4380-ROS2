@@ -67,7 +67,7 @@ TEST_F(TestInfoCommander, readAllOK)
   EXPECT_CALL(
     mock_port_handler,
     getBytesAvailable())
-  .WillRepeatedly(Return(4 * 14));
+  .WillRepeatedly(Return(5 * 14));
   // Return invalid response here
   EXPECT_CALL(
     mock_port_handler,
@@ -79,7 +79,7 @@ TEST_F(TestInfoCommander, readAllOK)
         "$A20100F8302B\r"
         "$A3000200085C\r"
         "$A43FFF000125\r"
-        "$A512D3000024\r"), Return(4 * 14)));
+        "$A512D3000024\r"), Return(5 * 14)));
 
   this->packet_handler->readPortIntoQueue();
   this->commander->evaluateResponse();

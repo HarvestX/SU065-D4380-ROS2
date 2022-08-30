@@ -59,6 +59,9 @@ void PacketPool::enqueue(const std::string & in_packet)
       continue;
     }
     scanning = true;
+    if (ch == SU065D4380_PREFIX) {
+      item.clear();
+    }
 
     item += ch;
     if (ch != SU065D4380_SUFFIX) {
