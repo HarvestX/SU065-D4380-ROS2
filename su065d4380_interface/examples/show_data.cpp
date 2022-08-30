@@ -63,18 +63,23 @@ int main(int argc, char ** argv)
   float voltage = 0.0;
   while (clock->now() - time_started < rclcpp::Duration(5s)) {
     packet_handler->readPortIntoQueue();
+    info_commander->evaluateResponse();
 
-    if (info_commander->readVoltage(voltage) !=
-      su065d4380_interface::RESPONSE_STATE::OK)
-    {
-      continue;
+    su065d4380_interface::RESPONSE_STATE response_state =
+      info_commander->readVoltage(voltage);
+
+    if (response_state != su065d4380_interface::RESPONSE_STATE::OK) {
+      su065d4380_interface::CommandUtil::logResponse(
+        getLogger(),
+        response_state);
+    } else {
+      RCLCPP_INFO(
+        getLogger(),
+        "Voltage %.3f [V]",
+        voltage);
     }
 
-    RCLCPP_INFO(
-      getLogger(),
-      "Voltage %.3f",
-      voltage);
-    rclcpp::sleep_for(1ms);
+    rclcpp::sleep_for(100ms);
   }
 
   return EXIT_SUCCESS;
