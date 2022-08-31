@@ -34,6 +34,29 @@ enum class RESPONSE_STATE
   ERROR_UNKNOWN,
 };
 
+enum class VOLTAGE_STATE
+{
+  OK,
+  LOW_WARNING,
+  LOW,
+  LOW_EMERGENCY,
+  INVALID,
+};
+
+enum class ERROR_STATE
+{
+  LOW_VOLTAGE,
+  HIGH_VOLTAGE,
+  INTERNAL_DRIVER_ERROR,
+  SENSOR_ERROR,
+  OVER_CURRENT,
+  INVALID_VELOCITY,
+  OVER_LOAD,
+  COMMUNICATION_ERROR,
+  OK,
+  INVALID,
+};
+
 static const uint16_t FLAG_MODE_MOTOR_ON = 0b00000001;
 static const uint16_t FLAG_MODE_BREAK_OFF = 0b00000100;
 static const uint16_t FLAG_MODE_ERROR_REST = 0b00010000;
@@ -46,6 +69,9 @@ public:
   static bool confirmChecksum(const std::string &, const int);
   static void logResponse(
     const rclcpp::Logger &, const RESPONSE_STATE &);
+  static void logError(
+    const rclcpp::Logger &,
+    const ERROR_STATE &);
   static const rclcpp::Logger getLogger();
 };
 }  // namespace su065d4380_interface

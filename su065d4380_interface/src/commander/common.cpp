@@ -101,6 +101,57 @@ void CommandUtil::logResponse(
   }
 }
 
+void CommandUtil::logError(
+  const rclcpp::Logger & logger,
+  const ERROR_STATE & error)
+{
+  switch (error) {
+    case ERROR_STATE::OK:
+      RCLCPP_INFO(
+        logger,
+        "OK");
+      break;
+    case ERROR_STATE::HIGH_VOLTAGE:
+      RCLCPP_ERROR(
+        logger,
+        "High Voltage");
+      break;
+    case ERROR_STATE::INTERNAL_DRIVER_ERROR:
+      RCLCPP_ERROR(
+        logger,
+        "Internal Driver Error");
+      break;
+    case ERROR_STATE::SENSOR_ERROR:
+      RCLCPP_ERROR(
+        logger,
+        "Sensor Error");
+      break;
+    case ERROR_STATE::OVER_CURRENT:
+      RCLCPP_ERROR(
+        logger,
+        "Over Current");
+      break;
+    case ERROR_STATE::INVALID_VELOCITY:
+      RCLCPP_ERROR(
+        logger,
+        "Invalid Velocity");
+      break;
+    case ERROR_STATE::OVER_LOAD:
+      RCLCPP_ERROR(
+        logger,
+        "Over Load");
+      break;
+    case ERROR_STATE::COMMUNICATION_ERROR:
+      RCLCPP_ERROR(
+        logger,
+        "Communication Error");
+      break;
+    case ERROR_STATE::INVALID:
+    default:
+      break;
+  }
+}
+
 const rclcpp::Logger CommandUtil::getLogger()
 {
   return rclcpp::get_logger("CommandUtil");

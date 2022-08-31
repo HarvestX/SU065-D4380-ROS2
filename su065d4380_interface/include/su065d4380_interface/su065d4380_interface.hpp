@@ -57,6 +57,7 @@ public:
   bool readRightRpm(int16_t &)const noexcept;
   bool readLeftRpm(int16_t &) const noexcept;
   bool readEncoder(uint16_t &, uint16_t &) const noexcept;
+  bool readError() const noexcept;
 
   bool writeVelocity(const int16_t &, const int16_t &) noexcept;
 
