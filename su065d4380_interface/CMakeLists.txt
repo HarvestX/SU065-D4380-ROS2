@@ -12,6 +12,7 @@ ament_auto_find_build_dependencies()
 ament_auto_add_library(
   ${PROJECT_NAME}
   STATIC
+    ./src/${PROJECT_NAME}.cpp
     ./src/port_handler.cpp
     ./src/packet_handler.cpp
     ./src/packet_pool.cpp

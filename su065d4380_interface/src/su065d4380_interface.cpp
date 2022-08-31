@@ -50,17 +50,15 @@ bool SU065D4380Interface::activate()
   }
 
   this->packet_handler_ =
-    std::make_unique<PacketHandler>(
+    std::make_shared<PacketHandler>(
     this->port_handler_.get());
 
   this->velocity_commander_ =
     std::make_unique<VelocityCommander>(
-    this->packet_handler_,
-    this->TIMEOUT_);
+    this->packet_handler_);
   this->info_commander_ =
     std::make_unique<InfoCommander>(
-    this->packet_handler_,
-    this->TIMEOUT_);
+    this->packet_handler_);
 
   this->last_velocity_command_accepted = true;
 
@@ -161,7 +159,7 @@ bool SU065D4380Interface::writeVelocity(
 }
 
 
-const rclcpp::Logger getLogger() noexcept
+const rclcpp::Logger SU065D4380Interface::getLogger() noexcept
 {
   return rclcpp::get_logger("SU065D4380Interface");
 }
