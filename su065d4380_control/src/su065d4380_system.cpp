@@ -245,6 +245,10 @@ hardware_interface::return_type SU065D4380System::read()
     static_cast<double>(left_rpm) * RPM2RPS;
 
   // TODO(m12watanabe1a) make it absolute encoder
+  RCLCPP_WARN(
+    this->getLogger(),
+    "Left Enc: %d, Right Enc: %d",
+    left_enc, right_enc);
   this->hw_positions_.at(RIGHT_WHEEL_IDX) =
     static_cast<double>(right_enc);
   this->hw_positions_.at(LEFT_WHEEL_IDX) =
