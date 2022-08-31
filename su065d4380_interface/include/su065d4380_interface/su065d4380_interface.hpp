@@ -16,6 +16,7 @@
 
 #include <memory>
 #include <string>
+#include <rclcpp/rclcpp.hpp>
 
 #include "su065d4380_interface/port_handler.hpp"
 #include "su065d4380_interface/packet_handler.hpp"
@@ -26,7 +27,7 @@
 
 namespace su065d4380_interface
 {
-
+using namespace std::chrono_literals;
 class SU065D4380Interface
 {
 private:
