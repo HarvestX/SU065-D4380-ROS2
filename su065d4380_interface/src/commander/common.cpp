@@ -106,10 +106,9 @@ void CommandUtil::logError(
   const ERROR_STATE & error)
 {
   switch (error) {
-    case ERROR_STATE::OK:
-      RCLCPP_INFO(
-        logger,
-        "OK");
+    case ERROR_STATE::LOW_VOLTAGE:
+      RCLCPP_ERROR(
+        logger, "Low Voltage");
       break;
     case ERROR_STATE::HIGH_VOLTAGE:
       RCLCPP_ERROR(
@@ -145,6 +144,11 @@ void CommandUtil::logError(
       RCLCPP_ERROR(
         logger,
         "Communication Error");
+      break;
+    case ERROR_STATE::OK:
+      RCLCPP_INFO(
+        logger,
+        "No Error");
       break;
     case ERROR_STATE::INVALID:
     default:

@@ -139,6 +139,9 @@ bool SU065D4380Interface::readError() const noexcept
   response = this->info_commander_->readDriverState(driver_state);
   if (!this->processResponse(response)) {
     return false;
+  } else if (response == RESPONSE_STATE::WAITING_RESPONSE) {
+    // error state is not arrived yet
+    return true;
   }
 
   if (!driver_state.hasError()) {
