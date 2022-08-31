@@ -14,8 +14,54 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+
 #include "su065d4380_interface/port_handler.hpp"
 #include "su065d4380_interface/packet_handler.hpp"
 #include "su065d4380_interface/commander/info_commander.hpp"
 #include "su065d4380_interface/commander/parameter_commander.hpp"
 #include "su065d4380_interface/commander/velocity_commander.hpp"
+
+
+namespace su065d4380_interface
+{
+
+class SU065D4380Interface
+{
+private:
+  std::unique_ptr<PortHandler> port_handler_;
+  std::shared_ptr<PacketHandler> packet_handler_;
+
+  std::unique_ptr<VelocityCommander> velocity_commander_;
+  std::unique_ptr<InfoCommander> info_commander_;
+
+  bool last_velocity_command_accepted;
+
+  rclcpp::Clock::SharedPtr clock_;
+  const rclcpp::Duration TIMEOUT_;
+
+public:
+  SU065D4380Interface() = delete;
+  explicit SU065D4380Interface(
+    const std::string &,
+    const std::chrono::nanoseconds = 1s);
+
+  bool init();
+  bool activate();
+  bool deactivate();
+
+  bool readPreprocess()const noexcept;
+  bool readLastVelocityCommandState() noexcept;
+  bool readRightRpm(int16_t &)const noexcept;
+  bool readLeftRpm(int16_t &) const noexcept;
+  bool readEncoder(uint16_t &, uint16_t &) const noexcept;
+
+  bool writeVelocity(const int16_t &, const int16_t &) noexcept;
+
+private:
+  static const rclcpp::Logger getLogger() noexcept;
+  static bool processResponse(const RESPONSE_STATE &) noexcept;
+};
+
+}  // namespace su065d4380_interface
