@@ -15,8 +15,6 @@ ament_auto_add_library(
     ./src/port_handler.cpp
     ./src/packet_handler.cpp
     ./src/packet_pool.cpp
-    ./src/packet/velocity_packet.cpp
-    ./src/packet/info_packet.cpp
     ./src/commander/common.cpp
     ./src/commander/parameter_commander.cpp
     ./src/commander/velocity_commander.cpp
