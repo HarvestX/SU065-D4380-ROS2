@@ -42,29 +42,6 @@ public:
 
 class DriverState
 {
-public:
-  enum class VOLTAGE_STATE
-  {
-    OK,
-    LOW_WARNING,
-    LOW,
-    LOW_EMERGENCY,
-    INVALID,
-  };
-  enum class ERROR_STATE
-  {
-    LOW_VOLTAGE,
-    HIGH_VOLTAGE,
-    INTERNAL_DRIVER_ERROR,
-    SENSOR_ERROR,
-    OVER_CURRENT,
-    INVALID_VELOCITY,
-    OVER_LOAD,
-    COMMUNICATION_ERROR,
-    OK,
-    INVALID,
-  };
-
 private:
   bool in_operation_;
   bool has_error_;

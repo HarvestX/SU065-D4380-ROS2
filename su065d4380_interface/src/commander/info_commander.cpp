@@ -56,12 +56,12 @@ bool DriverState::inOperation() const noexcept
   return this->in_operation_;
 }
 
-DriverState::VOLTAGE_STATE DriverState::getVoltageState() const noexcept
+VOLTAGE_STATE DriverState::getVoltageState() const noexcept
 {
   return this->voltage_state_;
 }
 
-DriverState::ERROR_STATE DriverState::getErrorState() const noexcept
+ERROR_STATE DriverState::getErrorState() const noexcept
 {
   return this->error_state_;
 }
@@ -87,23 +87,23 @@ void DriverState::setDriverState(const uint16_t & driver_state) noexcept
 void DriverState::setErrorState(const uint16_t & error_state) noexcept
 {
   if (error_state & (1 << 0)) {
-    this->error_state_ = DriverState::ERROR_STATE::LOW_VOLTAGE;
+    this->error_state_ = ERROR_STATE::LOW_VOLTAGE;
   } else if (error_state & (1 << 1)) {
-    this->error_state_ = DriverState::ERROR_STATE::HIGH_VOLTAGE;
+    this->error_state_ = ERROR_STATE::HIGH_VOLTAGE;
   } else if (error_state & (1 << 2)) {
-    this->error_state_ = DriverState::ERROR_STATE::INTERNAL_DRIVER_ERROR;
+    this->error_state_ = ERROR_STATE::INTERNAL_DRIVER_ERROR;
   } else if (error_state & (1 << 3)) {
-    this->error_state_ = DriverState::ERROR_STATE::SENSOR_ERROR;
+    this->error_state_ = ERROR_STATE::SENSOR_ERROR;
   } else if (error_state & (1 << 4)) {
-    this->error_state_ = DriverState::ERROR_STATE::OVER_CURRENT;
+    this->error_state_ = ERROR_STATE::OVER_CURRENT;
   } else if (error_state & (1 << 5)) {
-    this->error_state_ = DriverState::ERROR_STATE::INVALID_VELOCITY;
+    this->error_state_ = ERROR_STATE::INVALID_VELOCITY;
   } else if (error_state & (1 << 6)) {
-    this->error_state_ = DriverState::ERROR_STATE::OVER_LOAD;
+    this->error_state_ = ERROR_STATE::OVER_LOAD;
   } else if (error_state & (1 << 7)) {
-    this->error_state_ = DriverState::ERROR_STATE::COMMUNICATION_ERROR;
+    this->error_state_ = ERROR_STATE::COMMUNICATION_ERROR;
   } else {
-    this->error_state_ = DriverState::ERROR_STATE::OK;
+    this->error_state_ = ERROR_STATE::OK;
   }
 }
 

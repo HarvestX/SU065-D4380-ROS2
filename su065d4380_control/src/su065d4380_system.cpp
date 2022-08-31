@@ -204,7 +204,9 @@ hardware_interface::return_type SU065D4380System::read()
     return hardware_interface::return_type::ERROR;
   }
 
-  // TODO(m12watanabe1a): Check hardware error state here
+  if (!this->interface_->readError()) {
+    return hardware_interface::return_type::ERROR;
+  }
 
   if (!this->interface_->readLastVelocityCommandState()) {
     RCLCPP_ERROR(

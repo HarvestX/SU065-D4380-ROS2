@@ -107,7 +107,7 @@ TEST_F(TestInfoCommander, readAllOK)
   ASSERT_TRUE(driver_state.hasError());
   ASSERT_EQ(
     driver_state.getErrorState(),
-    su065d4380_interface::DriverState::ERROR_STATE::SENSOR_ERROR);
+    su065d4380_interface::ERROR_STATE::SENSOR_ERROR);
 
   uint16_t right_encoder, left_encoder;
   ASSERT_EQ(

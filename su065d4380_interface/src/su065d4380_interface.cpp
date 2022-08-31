@@ -132,6 +132,25 @@ bool SU065D4380Interface::readEncoder(
   return this->processResponse(response);
 }
 
+bool SU065D4380Interface::readError() const noexcept
+{
+  static DriverState driver_state;
+  static RESPONSE_STATE response;
+  response = this->info_commander_->readDriverState(driver_state);
+  if (!this->processResponse(response)) {
+    return false;
+  } else if (response == RESPONSE_STATE::WAITING_RESPONSE) {
+    // error state is not arrived yet
+    return true;
+  }
+
+  if (!driver_state.hasError()) {
+    return true;
+  }
+  CommandUtil::logError(this->getLogger(), driver_state.getErrorState());
+  return false;
+}
+
 bool SU065D4380Interface::writeVelocity(
   const int16_t & right_rpm, const int16_t & left_rpm) noexcept
 {
