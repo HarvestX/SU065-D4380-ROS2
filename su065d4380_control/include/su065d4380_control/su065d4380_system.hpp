@@ -40,7 +40,6 @@
 
 namespace su065d4380_control
 {
-using SU065D4380_RESPONSE_STATE = su065d4380_interface::RESPONSE_STATE;
 class SU065D4380System : public hardware_interface::SystemInterface
 {
 private:
@@ -54,12 +53,7 @@ private:
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
 
-  bool last_command_accepted_ = true;
-
-  std::unique_ptr<su065d4380_interface::PortHandler> port_handler_;
-  std::shared_ptr<su065d4380_interface::PacketHandler> packet_handler_;
-  std::unique_ptr<su065d4380_interface::VelocityCommander> velocity_commander_;
-  std::unique_ptr<su065d4380_interface::InfoCommander> info_commander_;
+  std::shared_ptr<su065d4380_interface::SU065D4380Interface> interface_;
 
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(SU065D4380System)
