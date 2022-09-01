@@ -109,7 +109,7 @@ TEST_F(TestInfoCommander, readAllOK)
     driver_state.getErrorState(),
     su065d4380_interface::ERROR_STATE::SENSOR_ERROR);
 
-  uint16_t right_encoder, left_encoder;
+  int16_t right_encoder, left_encoder;
   ASSERT_EQ(
     this->commander->readEncoderData(right_encoder, left_encoder),
     su065d4380_interface::RESPONSE_STATE::OK);

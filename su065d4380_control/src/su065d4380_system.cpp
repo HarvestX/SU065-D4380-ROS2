@@ -34,22 +34,23 @@ CallbackReturn SU065D4380System::on_init(
     return CallbackReturn::ERROR;
   }
 
-  double left_rot_dir = 1.0, right_rot_dir = 1.0;
   const int ld_tmp =
     std::stoi(this->info_.hardware_parameters["left_rotation_direction"]);
   if (ld_tmp < 0) {
-    left_rot_dir = -1.0;
+    this->left_rot_dir_ = -1;
   }
   const int rd_tmp =
     std::stoi(this->info_.hardware_parameters["right_rotation_direction"]);
   if (rd_tmp < 0) {
-    right_rot_dir = -1.0;
+    this->right_rot_dir_ = -1;
   }
 
   const double reduction_ratio =
     std::stod(this->info_.hardware_parameters["reduction_ratio"]);
-  this->left_coefficient_ = reduction_ratio * left_rot_dir;
-  this->right_coefficient_ = reduction_ratio * right_rot_dir;
+  this->left_coefficient_ =
+    reduction_ratio * static_cast<double>(this->left_rot_dir_);
+  this->right_coefficient_ =
+    reduction_ratio * static_cast<double>(this->right_rot_dir_);
 
   this->hw_positions_.resize(
     this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -216,9 +217,8 @@ hardware_interface::return_type SU065D4380System::read()
   }
 
 
-  static const double RPM2RPS = (2.0 * M_PI) / 60.0;
   static int16_t right_rpm, left_rpm;
-  static uint16_t right_enc, left_enc;
+  static double right_enc, left_enc;
 
   if (!this->interface_->readRightRpm(right_rpm)) {
     RCLCPP_ERROR(
@@ -239,16 +239,16 @@ hardware_interface::return_type SU065D4380System::read()
     return hardware_interface::return_type::ERROR;
   }
 
+  static const double RPM2RPS = (2.0 * M_PI) / 60.0;
   this->hw_velocities_.at(RIGHT_WHEEL_IDX) =
     static_cast<double>(right_rpm) * RPM2RPS;
   this->hw_velocities_.at(LEFT_WHEEL_IDX) =
     static_cast<double>(left_rpm) * RPM2RPS;
 
-  // TODO(m12watanabe1a) make it absolute encoder
-  this->hw_positions_.at(RIGHT_WHEEL_IDX) =
-    static_cast<double>(right_enc);
-  this->hw_positions_.at(LEFT_WHEEL_IDX) =
-    static_cast<double>(left_enc);
+  this->hw_positions_.at(RIGHT_WHEEL_IDX) +=
+    static_cast<double>(this->right_rot_dir_) * right_enc;
+  this->hw_positions_.at(LEFT_WHEEL_IDX) +=
+    static_cast<double>(this->left_rot_dir_) * left_enc;
 
   return hardware_interface::return_type::OK;
 }
@@ -264,7 +264,7 @@ hardware_interface::return_type SU065D4380System::write()
     this->right_coefficient_ *
     this->hw_commands_.at(RIGHT_WHEEL_IDX);
 
-  if (!this->interface_->writeVelocity(
+  if (!this->interface_->writeRpm(
       static_cast<int16_t>(right_rps * RPS2RPM),
       static_cast<int16_t>(left_rps * RPS2RPM)
   ))

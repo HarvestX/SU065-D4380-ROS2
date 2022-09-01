@@ -93,7 +93,7 @@ public:
   RESPONSE_STATE readRightRpm(uint8_t &, int16_t &);
   RESPONSE_STATE readLeftRpm(uint8_t &, int16_t &);
   RESPONSE_STATE readDriverState(DriverState &);
-  RESPONSE_STATE readEncoderData(uint16_t &, uint16_t &);
+  RESPONSE_STATE readEncoderData(int16_t &, int16_t &);
   RESPONSE_STATE readVoltage(float &);
 
   void evaluateResponse()  noexcept;
