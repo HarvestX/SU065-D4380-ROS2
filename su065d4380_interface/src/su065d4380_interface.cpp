@@ -125,10 +125,16 @@ bool SU065D4380Interface::readLeftRpm(
 }
 
 bool SU065D4380Interface::readEncoder(
-  uint16_t & right_enc, uint16_t & left_enc) const noexcept
+  double & right_enc_diff, double & left_enc_diff) const noexcept
 {
   static RESPONSE_STATE response;
-  response = this->info_commander_->readEncoderData(right_enc, left_enc);
+  static int16_t right_enc_diff_in_pulse, left_enc_diff_in_pulse;
+  static double coefficient = 2.0 * M_PI / ((1 << 14) + 1);
+  response = this->info_commander_->readEncoderData(
+    right_enc_diff_in_pulse, left_enc_diff_in_pulse);
+
+  right_enc_diff = static_cast<double>(right_enc_diff_in_pulse) * coefficient;
+  left_enc_diff = static_cast<double>(left_enc_diff_in_pulse) * coefficient;
   return this->processResponse(response);
 }
 
