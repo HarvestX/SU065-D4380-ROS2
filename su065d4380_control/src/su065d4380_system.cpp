@@ -37,12 +37,12 @@ CallbackReturn SU065D4380System::on_init(
   const int ld_tmp =
     std::stoi(this->info_.hardware_parameters["left_rotation_direction"]);
   if (ld_tmp < 0) {
-    this->left_rot_dir_ = -1.0;
+    this->left_rot_dir_ = -1;
   }
   const int rd_tmp =
     std::stoi(this->info_.hardware_parameters["right_rotation_direction"]);
   if (rd_tmp < 0) {
-    this->right_rot_dir_ = -1.0;
+    this->right_rot_dir_ = -1;
   }
 
   const double reduction_ratio =
@@ -217,7 +217,6 @@ hardware_interface::return_type SU065D4380System::read()
   }
 
 
-  static const double RPM2RPS = (2.0 * M_PI) / 60.0;
   static int16_t right_rpm, left_rpm;
   static double right_enc, left_enc;
 
@@ -240,6 +239,7 @@ hardware_interface::return_type SU065D4380System::read()
     return hardware_interface::return_type::ERROR;
   }
 
+  static const double RPM2RPS = (2.0 * M_PI) / 60.0;
   this->hw_velocities_.at(RIGHT_WHEEL_IDX) =
     static_cast<double>(right_rpm) * RPM2RPS;
   this->hw_velocities_.at(LEFT_WHEEL_IDX) =
@@ -249,11 +249,6 @@ hardware_interface::return_type SU065D4380System::read()
     static_cast<double>(this->right_rot_dir_) * right_enc;
   this->hw_positions_.at(LEFT_WHEEL_IDX) +=
     static_cast<double>(this->left_rot_dir_) * left_enc;
-  RCLCPP_WARN(
-    this->getLogger(),
-    "Left Enc: %.3lf, Right Enc: %.3lf",
-    this->hw_positions_.at(LEFT_WHEEL_IDX),
-    this->hw_positions_.at(RIGHT_WHEEL_IDX));
 
   return hardware_interface::return_type::OK;
 }
@@ -269,7 +264,7 @@ hardware_interface::return_type SU065D4380System::write()
     this->right_coefficient_ *
     this->hw_commands_.at(RIGHT_WHEEL_IDX);
 
-  if (!this->interface_->writeVelocity(
+  if (!this->interface_->writeRpm(
       static_cast<int16_t>(right_rps * RPS2RPM),
       static_cast<int16_t>(left_rps * RPS2RPM)
   ))

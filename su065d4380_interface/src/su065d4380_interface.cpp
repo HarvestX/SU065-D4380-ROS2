@@ -129,7 +129,7 @@ bool SU065D4380Interface::readEncoder(
 {
   static RESPONSE_STATE response;
   static int16_t right_enc_diff_in_pulse, left_enc_diff_in_pulse;
-  static double coefficient = 2.0 * M_PI / ((1 << 14) + 1);
+  static double coefficient = 2.0 * M_PI / (1 << 16);
   response = this->info_commander_->readEncoderData(
     right_enc_diff_in_pulse, left_enc_diff_in_pulse);
 
@@ -157,7 +157,7 @@ bool SU065D4380Interface::readError() const noexcept
   return false;
 }
 
-bool SU065D4380Interface::writeVelocity(
+bool SU065D4380Interface::writeRpm(
   const int16_t & right_rpm, const int16_t & left_rpm) noexcept
 {
   if (!this->last_velocity_command_accepted) {
