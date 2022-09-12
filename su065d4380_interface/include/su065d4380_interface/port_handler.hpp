@@ -46,8 +46,7 @@ public:
   std::string getPortName() const noexcept;
 
   size_t getBytesAvailable() const override;
-  size_t readPort(char *, const size_t)const override;
-
+  size_t readPort(char * const, const size_t)const override;
   size_t writePort(const char * const, const size_t) const override;
 
 private:
