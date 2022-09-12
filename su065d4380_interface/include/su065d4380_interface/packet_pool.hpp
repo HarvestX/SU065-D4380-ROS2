@@ -14,9 +14,11 @@
 
 #pragma once
 
-#include <queue>
+#include <map>
 #include <memory>
+#include <queue>
 #include <string>
+
 #include <rclcpp/rclcpp.hpp>
 
 #include "su065d4380_interface/commander/common.hpp"
@@ -25,29 +27,31 @@ namespace su065d4380_interface
 {
 class PacketPool
 {
-private:
-  std::string previous_chunk_;
+public:
+  enum class PACKET_TYPE
+  {
+    VELOCITY,
+    INFO,
+    PARAM,
+    END_PACKET_TYPE
+  };
 
-  std::unique_ptr<std::queue<std::string>> velocity_queue_;
-  std::unique_ptr<std::queue<std::string>> info_queue_;
-  std::unique_ptr<std::queue<std::string>> param_queue_;
+private:
+  std::map<PACKET_TYPE, std::queue<std::string>> queue_map_;
 
 public:
   PacketPool();
   ~PacketPool();
 
   void enqueue(const std::string &);
-
-  bool takeVelocityPacket(std::string &);
-  bool takeInfoPacket(std::string &);
-  bool takeParamPacket(std::string &);
+  bool takePacket(const PACKET_TYPE &, std::string &);
 
 private:
   bool isVelocityPacket(const std::string &) const noexcept;
   bool isInfoPacket(const std::string &) const noexcept;
   bool isParamPacket(const std::string &) const noexcept;
 
-  static const rclcpp::Logger getLogger();
+  static const rclcpp::Logger getLogger() noexcept;
   static const std::string fixEscapeSequence(const std::string &);
 };
 }  // namespace su065d4380_interface

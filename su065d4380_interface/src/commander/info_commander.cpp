@@ -260,7 +260,9 @@ void InfoCommander::evaluateResponse() noexcept
 {
   static const size_t CHECKSUM_IDX = 11;
   std::string response;
-  while (this->packet_handler_->takeInfoPacket(response)) {
+  while (this->packet_handler_->takePacket(
+      PacketPool::PACKET_TYPE::INFO, response))
+  {
     if (!CommandUtil::confirmChecksum(response, CHECKSUM_IDX)) {
       continue;
     }

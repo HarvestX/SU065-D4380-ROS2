@@ -19,40 +19,30 @@ namespace su065d4380_interface
 {
 PacketPool::PacketPool()
 {
-  this->velocity_queue_ =
-    std::make_unique<std::queue<std::string>>();
-  this->info_queue_ =
-    std::make_unique<std::queue<std::string>>();
-  this->param_queue_ =
-    std::make_unique<std::queue<std::string>>();
-
-  this->previous_chunk_ = "";
 }
 
 PacketPool::~PacketPool()
 {
-  this->previous_chunk_ = "";
-
-  while (!this->velocity_queue_->empty()) {
-    this->velocity_queue_->pop();
-  }
-
-  while (!this->info_queue_->empty()) {
-    this->info_queue_->pop();
-  }
-
-  while (!this->param_queue_->empty()) {
-    this->param_queue_->pop();
+  for (size_t i = 0;
+    i < static_cast<size_t>(PACKET_TYPE::END_PACKET_TYPE);
+    ++i
+  )
+  {
+    auto queue = this->queue_map_[static_cast<PACKET_TYPE>(i)];
+    while (!queue.empty()) {
+      queue.pop();
+    }
   }
 }
 
 void PacketPool::enqueue(const std::string & in_packet)
 {
-  std::string chunk = this->previous_chunk_ + in_packet;
+  static std::string previous_chunk = "";
+  std::string chunk = previous_chunk + in_packet;
 
   std::vector<std::string> packet_candidates;
   bool scanning = false;
-  std::string item;
+  std::string item = "";
   for (char ch : chunk) {
     // Ignore until prefix found
     if (ch != SU065D4380_PREFIX && !scanning) {
@@ -76,17 +66,17 @@ void PacketPool::enqueue(const std::string & in_packet)
       RCLCPP_DEBUG(
         this->getLogger(),
         "Velocity packet enqueued");
-      this->velocity_queue_->push(item);
+      this->queue_map_[PACKET_TYPE::VELOCITY].push(item);
     } else if (this->isInfoPacket(item)) {
       RCLCPP_DEBUG(
         this->getLogger(),
         "Info packet enqueued");
-      this->info_queue_->push(item);
+      this->queue_map_[PACKET_TYPE::INFO].push(item);
     } else if (this->isParamPacket(item)) {
       RCLCPP_DEBUG(
         this->getLogger(),
         "Param packet enqueued");
-      this->param_queue_->push(item);
+      this->queue_map_[PACKET_TYPE::PARAM].push(item);
     } else {
       // Invalid item
       // Do noting
@@ -99,41 +89,17 @@ void PacketPool::enqueue(const std::string & in_packet)
     item.clear();
   }
   if (!item.empty()) {
-    this->previous_chunk_ = item;
+    previous_chunk = item;
   }
 }
 
-bool PacketPool::takeVelocityPacket(std::string & packet)
+bool PacketPool::takePacket(const PACKET_TYPE & type, std::string & packet)
 {
   bool res = false;
   packet.clear();
-  if (!this->velocity_queue_->empty()) {
-    packet = this->velocity_queue_->front();
-    this->velocity_queue_->pop();
-    res = true;
-  }
-  return res;
-}
-
-bool PacketPool::takeInfoPacket(std::string & packet)
-{
-  bool res = false;
-  packet.clear();
-  if (!this->info_queue_->empty()) {
-    packet = this->info_queue_->front();
-    this->info_queue_->pop();
-    res = true;
-  }
-  return res;
-}
-
-bool PacketPool::takeParamPacket(std::string & packet)
-{
-  bool res = false;
-  packet.clear();
-  if (!this->param_queue_->empty()) {
-    packet = this->param_queue_->front();
-    this->param_queue_->pop();
+  if (!this->queue_map_[type].empty()) {
+    packet = this->queue_map_[type].front();
+    this->queue_map_[type].pop();
     res = true;
   }
   return res;
@@ -156,7 +122,7 @@ bool PacketPool::isParamPacket(const std::string & packet) const noexcept
          packet.at(1) == '0';
 }
 
-const rclcpp::Logger PacketPool::getLogger()
+const rclcpp::Logger PacketPool::getLogger() noexcept
 {
   return rclcpp::get_logger("PacketPool");
 }
