@@ -39,7 +39,7 @@ public:
   VelocityCommander() = delete;
   explicit VelocityCommander(
     std::shared_ptr<PacketHandler>,
-    const std::chrono::nanoseconds = 1s);
+    const rclcpp::Duration &);
 
   RESPONSE_STATE writeVelocity(
     const uint8_t,

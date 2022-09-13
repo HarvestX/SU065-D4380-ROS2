@@ -23,6 +23,7 @@ static const rclcpp::Logger getLogger()
 
 int main(int argc, char ** argv)
 {
+  using namespace std::chrono_literals;
   rclcpp::init(argc, argv);
   std::string port_name = "/dev/ttyUSB0";
 
@@ -47,10 +48,12 @@ int main(int argc, char ** argv)
     std::make_shared<su065d4380_interface::PacketHandler>(port_handler.get());
 
   auto velocity_commander =
-    std::make_unique<su065d4380_interface::VelocityCommander>(packet_handler);
+    std::make_unique<su065d4380_interface::VelocityCommander>(
+    packet_handler, 500ms);
 
   auto info_commander =
-    std::make_unique<su065d4380_interface::InfoCommander>(packet_handler);
+    std::make_unique<su065d4380_interface::InfoCommander>(
+    packet_handler, 500ms);
 
   velocity_commander->writeVelocity(
     su065d4380_interface::FLAG_MODE_MOTOR_ON, 0, 0);
@@ -59,7 +62,6 @@ int main(int argc, char ** argv)
     std::make_shared<rclcpp::Clock>(RCL_STEADY_TIME);
 
   auto time_started = clock->now();
-  using namespace std::chrono_literals;
   float voltage = 0.0;
   while (clock->now() - time_started < rclcpp::Duration(5s)) {
     packet_handler->readPortIntoQueue();

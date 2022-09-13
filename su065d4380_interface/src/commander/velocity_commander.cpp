@@ -18,12 +18,12 @@ namespace su065d4380_interface
 {
 VelocityCommander::VelocityCommander(
   std::shared_ptr<PacketHandler> packet_handler,
-  const std::chrono::nanoseconds timeout)
+  const rclcpp::Duration & timeout
+)
 : packet_handler_(packet_handler),
   clock_(std::make_shared<rclcpp::Clock>(RCL_STEADY_TIME)),
-  TIMEOUT_(rclcpp::Duration(timeout))
-{
-}
+  TIMEOUT_(timeout)
+{}
 
 RESPONSE_STATE VelocityCommander::writeVelocity(
   const uint8_t mode,

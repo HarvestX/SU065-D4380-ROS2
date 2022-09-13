@@ -66,9 +66,11 @@ ParamConfigurator::ParamConfigurator(const rclcpp::NodeOptions & options)
   auto packet_handler = std::make_shared<su065d4380_interface::PacketHandler>(
     this->port_handler_.get());
 
+  using namespace std::chrono_literals;
   this->commander_ =
     std::make_shared<su065d4380_interface::ParameterCommander>(
-    packet_handler);
+    packet_handler,
+    500ms);
 }
 
 ParamConfigurator::~ParamConfigurator()

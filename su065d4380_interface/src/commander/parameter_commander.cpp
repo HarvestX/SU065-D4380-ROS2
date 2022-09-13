@@ -18,12 +18,12 @@ namespace su065d4380_interface
 {
 ParameterCommander::ParameterCommander(
   std::shared_ptr<PacketHandler> packet_handler,
-  const std::chrono::nanoseconds timeout)
+  const rclcpp::Duration & timeout
+)
 : packet_handler_(packet_handler),
   clock_(std::make_shared<rclcpp::Clock>(RCL_STEADY_TIME)),
-  TIMEOUT_(rclcpp::Duration(timeout))
-{
-}
+  TIMEOUT_(timeout)
+{}
 
 RESPONSE_STATE ParameterCommander::writeRightWheelGain(
   const uint gain) const noexcept
@@ -259,6 +259,7 @@ bool ParameterCommander::waitForResponse(std::string & response) const noexcept
   const auto start = this->clock_->now();
   while (this->clock_->now() - start < this->TIMEOUT_) {
     if (this->packet_handler_->getBytesAvailable() < 1) {
+      rclcpp::sleep_for(10ms);
       continue;
     }
     this->packet_handler_->readPortIntoQueue();
@@ -268,7 +269,7 @@ bool ParameterCommander::waitForResponse(std::string & response) const noexcept
       has_response = true;
       break;
     }
-    rclcpp::sleep_for(100ms);
+    rclcpp::sleep_for(10ms);
   }
   return has_response;
 }

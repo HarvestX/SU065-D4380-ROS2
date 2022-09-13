@@ -108,12 +108,17 @@ void DriverState::setErrorState(const uint16_t & error_state) noexcept
 }
 
 InfoCommander::InfoCommander(
-  std::shared_ptr<PacketHandler> packet_handler,
-  const std::chrono::nanoseconds timeout
+  std::shared_ptr<PacketHandler> _packet_handler,
+  const rclcpp::Duration & timeout
 )
-: packet_handler_(packet_handler),
+: packet_handler_(_packet_handler),
   clock_(std::make_shared<rclcpp::Clock>(RCL_STEADY_TIME)),
-  TIMEOUT_(rclcpp::Duration(timeout))
+  TIMEOUT_(timeout)
+{
+  this->init();
+}
+
+void InfoCommander::init()
 {
   this->last_right_wheel_packet_ =
     std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);

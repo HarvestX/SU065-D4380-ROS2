@@ -36,11 +36,7 @@ size_t PacketHandler::readPortIntoQueue()
 {
   char buf[128];
   size_t ret = this->port_handler_->readPort(buf, sizeof(buf));
-  std::string enqueue_buf;
-  for (size_t i = 0; i < ret; ++i) {
-    enqueue_buf += buf[i];
-  }
-  this->pool_->enqueue(enqueue_buf);
+  this->pool_->enqueue(std::string(buf, ret));
   return ret;
 }
 
