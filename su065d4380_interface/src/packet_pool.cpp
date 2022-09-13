@@ -39,18 +39,19 @@ void PacketPool::enqueue(const std::string & in_packet)
 {
   static std::string previous_chunk = "";
   std::string chunk = previous_chunk + in_packet;
+  previous_chunk.clear();
 
   std::vector<std::string> packet_candidates;
-  bool scanning = false;
+  bool scanning_started = false;
   std::string item = "";
   for (char ch : chunk) {
     // Ignore until prefix found
-    if (ch != SU065D4380_PREFIX && !scanning) {
-      continue;
-    }
-    scanning = true;
     if (ch == SU065D4380_PREFIX) {
       item.clear();
+      scanning_started = true;
+    }
+    if (!scanning_started) {
+      continue;
     }
 
     item += ch;
@@ -85,7 +86,7 @@ void PacketPool::enqueue(const std::string & in_packet)
         "Command like packet [%s] given. Ignored.",
         PacketPool::fixEscapeSequence(item).c_str());
     }
-    scanning = false;
+    scanning_started = false;
     item.clear();
   }
   if (!item.empty()) {

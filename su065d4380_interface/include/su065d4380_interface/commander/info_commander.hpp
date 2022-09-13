@@ -88,7 +88,7 @@ public:
   InfoCommander() = delete;
   explicit InfoCommander(
     std::shared_ptr<PacketHandler>,
-    const std::chrono::nanoseconds = 1s);
+    const rclcpp::Duration &);
 
   RESPONSE_STATE readRightRpm(uint8_t &, int16_t &);
   RESPONSE_STATE readLeftRpm(uint8_t &, int16_t &);
@@ -99,6 +99,7 @@ public:
   void evaluateResponse()  noexcept;
 
 private:
+  void init();
   static const rclcpp::Logger getLogger();
   COMMAND_TYPE getCommandType(const std::string &) const noexcept;
 

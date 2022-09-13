@@ -41,7 +41,7 @@ public:
   ParameterCommander() = delete;
   explicit ParameterCommander(
     std::shared_ptr<PacketHandler>,
-    const std::chrono::nanoseconds = 1s);
+    const rclcpp::Duration &);
 
   // Write parameter
   RESPONSE_STATE writeRightWheelGain(const uint) const noexcept;
