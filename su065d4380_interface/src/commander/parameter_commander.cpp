@@ -262,7 +262,9 @@ bool ParameterCommander::waitForResponse(std::string & response) const noexcept
       continue;
     }
     this->packet_handler_->readPortIntoQueue();
-    if (this->packet_handler_->takeParamPacket(response)) {
+    if (this->packet_handler_->takePacket(
+        PacketPool::PACKET_TYPE::PARAM, response))
+    {
       has_response = true;
       break;
     }

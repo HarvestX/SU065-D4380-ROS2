@@ -70,7 +70,8 @@ RESPONSE_STATE VelocityCommander::evaluateResponse() const noexcept
   static char const * const WRITE_NG = "$8C07\r";
 
   std::string response;
-  bool has_response = this->packet_handler_->takeVelocityPacket(response);
+  bool has_response = this->packet_handler_->takePacket(
+    PacketPool::PACKET_TYPE::VELOCITY, response);
   if (!has_response) {
     if (this->clock_->now() - this->packet_sent_time_ > TIMEOUT_) {
       return RESPONSE_STATE::ERROR_NOT_COMING_YET;

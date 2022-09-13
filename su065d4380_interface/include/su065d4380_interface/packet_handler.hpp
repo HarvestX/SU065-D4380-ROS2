@@ -39,8 +39,6 @@ public:
   size_t readPortIntoQueue();
   size_t getBytesAvailable() const;
 
-  bool takeVelocityPacket(std::string &);
-  bool takeInfoPacket(std::string &);
-  bool takeParamPacket(std::string &);
+  bool takePacket(const PacketPool::PACKET_TYPE &, std::string &);
 };
 }  // namespace su065d4380_interface

@@ -38,19 +38,25 @@ TEST_F(TestPacketPool, enqueueFineCommands) {
     param_response1 +
     param_response2);
 
-  std::string packet;
+  std::string packet = "";
 
-  ASSERT_TRUE(this->pool->takeVelocityPacket(packet));
+  using PT = su065d4380_interface::PacketPool::PACKET_TYPE;
+  ASSERT_TRUE(this->pool->takePacket(PT::VELOCITY, packet));
   EXPECT_EQ(packet, velocity_response);
 
-  ASSERT_TRUE(this->pool->takeInfoPacket(packet));
+  ASSERT_TRUE(this->pool->takePacket(PT::INFO, packet));
   EXPECT_EQ(packet, info_response);
 
-  ASSERT_TRUE(this->pool->takeParamPacket(packet));
+  ASSERT_TRUE(this->pool->takePacket(PT::PARAM, packet));
   EXPECT_EQ(packet, param_response1);
 
-  ASSERT_TRUE(this->pool->takeParamPacket(packet));
+  ASSERT_TRUE(this->pool->takePacket(PT::PARAM, packet));
   EXPECT_EQ(packet, param_response2);
+
+  ASSERT_FALSE(this->pool->takePacket(PT::VELOCITY, packet));
+  ASSERT_FALSE(this->pool->takePacket(PT::INFO, packet));
+  ASSERT_FALSE(this->pool->takePacket(PT::PARAM, packet));
+  ASSERT_FALSE(this->pool->takePacket(PT::PARAM, packet));
 }
 
 TEST_F(TestPacketPool, enqueueFineSeparatedCommands)
@@ -62,10 +68,11 @@ TEST_F(TestPacketPool, enqueueFineSeparatedCommands)
   const std::string info_response_part1 = "$A10100F";
   const std::string command1 = velocity_response + info_response_part1;
 
+  using PT = su065d4380_interface::PacketPool::PACKET_TYPE;
   this->pool->enqueue(command1);
-  ASSERT_TRUE(this->pool->takeVelocityPacket(packet));
+  ASSERT_TRUE(this->pool->takePacket(PT::VELOCITY, packet));
   EXPECT_EQ(packet, velocity_response);
-  ASSERT_FALSE(this->pool->takeInfoPacket(packet));
+  ASSERT_FALSE(this->pool->takePacket(PT::INFO, packet));
   EXPECT_EQ(packet, "");
 
   // 2nd part of '$A10100F83028\r'
@@ -74,9 +81,9 @@ TEST_F(TestPacketPool, enqueueFineSeparatedCommands)
   const std::string command2 = info_response_part2 + param_response;
 
   this->pool->enqueue(command2);
-  ASSERT_TRUE(this->pool->takeInfoPacket(packet));
+  ASSERT_TRUE(this->pool->takePacket(PT::INFO, packet));
   EXPECT_EQ(packet, info_response_part1 + info_response_part2);
-  ASSERT_TRUE(this->pool->takeParamPacket(packet));
+  ASSERT_TRUE(this->pool->takePacket(PT::PARAM, packet));
   EXPECT_EQ(packet, param_response);
 }
 
@@ -87,8 +94,9 @@ TEST_F(TestPacketPool, enqueueFineInnerCommands)
   const std::string info_response = "$A30000000056\r";
   const std::string command = "$" + info_response;
 
+  using PT = su065d4380_interface::PacketPool::PACKET_TYPE;
   this->pool->enqueue(command);
-  ASSERT_TRUE(this->pool->takeInfoPacket(packet));
+  ASSERT_TRUE(this->pool->takePacket(PT::INFO, packet));
   EXPECT_EQ(packet, info_response);
 }
 
@@ -100,6 +108,7 @@ TEST_F(TestPacketPool, enqueueInitiallyGarbageContainedFineCommands) {
 
   std::string packet;
 
-  ASSERT_TRUE(this->pool->takeParamPacket(packet));
+  using PT = su065d4380_interface::PacketPool::PACKET_TYPE;
+  ASSERT_TRUE(this->pool->takePacket(PT::PARAM, packet));
   EXPECT_EQ(packet, param_response);
 }

@@ -49,18 +49,10 @@ size_t PacketHandler::getBytesAvailable() const
   return this->port_handler_->getBytesAvailable();
 }
 
-bool PacketHandler::takeVelocityPacket(std::string & out)
+bool PacketHandler::takePacket(
+  const PacketPool::PACKET_TYPE & packet_type,
+  std::string & out)
 {
-  return this->pool_->takeVelocityPacket(out);
-}
-
-bool PacketHandler::takeInfoPacket(std::string & out)
-{
-  return this->pool_->takeInfoPacket(out);
-}
-
-bool PacketHandler::takeParamPacket(std::string & out)
-{
-  return this->pool_->takeParamPacket(out);
+  return this->pool_->takePacket(packet_type, out);
 }
 }  // namespace su065d4380_interface
