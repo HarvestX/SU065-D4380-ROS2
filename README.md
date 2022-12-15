@@ -1,5 +1,4 @@
-[![ci](https://github.com/HarvestX/SU065-D4380-ROS2/actions/workflows/ci.yml/badge.svg)](https://github.com/HarvestX/SU065-D4380-ROS2/actions/workflows/ci.yml)
-[![lint](https://github.com/HarvestX/SU065-D4380-ROS2/actions/workflows/lint.yml/badge.svg)](https://github.com/HarvestX/SU065-D4380-ROS2/actions/workflows/lint.yml)
+[![ci_galactic](https://github.com/HarvestX/SU065-D4380-ROS2/actions/workflows/ci_galactic.yml/badge.svg)](https://github.com/HarvestX/SU065-D4380-ROS2/actions/workflows/ci_galactic.yml)
 
 # SU065-D4380-ROS2
 Nidec Motor Driver interface for ROS2
