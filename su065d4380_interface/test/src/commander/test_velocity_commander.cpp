@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <gmock/gmock.h>
+#include <h6x_serial_interface/gmock_port_handler.hpp>
 #include <su065d4380_interface/commander/velocity_commander.hpp>
 
 using ::testing::_;
@@ -20,27 +21,7 @@ using ::testing::StrEq;
 using ::testing::Return;
 using ::testing::DoAll;
 
-
-ACTION_P(StrCpyToArg0, str) {
-  strcpy(arg0, str);
-}
-
-class MockPortHandler : public su065d4380_interface::PortHandlerBase
-{
-public:
-  MockPortHandler()
-  : su065d4380_interface::PortHandlerBase()
-  {
-  }
-
-  MOCK_METHOD(size_t, getBytesAvailable, (), (const override));
-  MOCK_METHOD(size_t, readPort, (char * const, const size_t), (const override));
-  MOCK_METHOD(
-    size_t, writePort,
-    (const char * const, const size_t), (const override));
-};
-
-using namespace std::chrono_literals;
+using namespace std::chrono_literals;  // NOLINT
 
 class TestVelocityCommander : public ::testing::Test
 {

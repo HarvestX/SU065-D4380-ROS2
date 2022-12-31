@@ -16,23 +16,27 @@
 
 #include <memory>
 #include <string>
+
+#include <h6x_serial_interface/h6x_serial_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include "su065d4380_interface/port_handler.hpp"
-#include "su065d4380_interface/packet_handler.hpp"
 #include "su065d4380_interface/commander/info_commander.hpp"
 #include "su065d4380_interface/commander/parameter_commander.hpp"
 #include "su065d4380_interface/commander/velocity_commander.hpp"
+#include "su065d4380_interface/logger.hpp"
+#include "su065d4380_interface/packet_handler.hpp"
 
 
 namespace su065d4380_interface
 {
-using namespace std::chrono_literals;
+using namespace std::chrono_literals;  // NOLINT
 class SU065D4380Interface
 {
 private:
-  std::unique_ptr<PortHandler> port_handler_;
-  std::shared_ptr<PacketHandler> packet_handler_;
+  using PortHandler = h6x_serial_interface::PortHandler;
+  PortHandler::UniquePtr port_handler_;
+  PacketHandler::SharedPtr packet_handler_;
+  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_interface_;
 
   std::unique_ptr<VelocityCommander> velocity_commander_;
   std::unique_ptr<InfoCommander> info_commander_;
@@ -46,6 +50,7 @@ public:
   SU065D4380Interface() = delete;
   explicit SU065D4380Interface(
     const std::string &,
+    rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr,
     const std::chrono::nanoseconds = 1s);
 
   bool init();
@@ -54,16 +59,16 @@ public:
 
   bool readPreprocess()const noexcept;
   bool readLastVelocityCommandState() noexcept;
-  bool readRightRpm(int16_t &) const noexcept;
-  bool readLeftRpm(int16_t &) const noexcept;
-  bool readEncoder(double &, double &) const noexcept;
-  bool readError() const noexcept;
+  bool readRightRpm(int16_t &) noexcept;
+  bool readLeftRpm(int16_t &)  noexcept;
+  bool readEncoder(double &, double &) noexcept;
+  bool readError() noexcept;
 
   bool writeRpm(const int16_t &, const int16_t &) noexcept;
 
 private:
-  static const rclcpp::Logger getLogger() noexcept;
-  static bool processResponse(const RESPONSE_STATE &) noexcept;
+  const rclcpp::Logger getLogger() noexcept;
+  bool processResponse(const RESPONSE_STATE &) noexcept;
 };
 
 }  // namespace su065d4380_interface

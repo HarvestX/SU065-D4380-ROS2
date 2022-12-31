@@ -60,17 +60,16 @@ ParamConfigurator::ParamConfigurator(const rclcpp::NodeOptions & options)
     this->dev_.c_str());
 
   this->port_handler_ =
-    std::make_shared<su065d4380_interface::PortHandler>(this->dev_);
+    std::make_unique<h6x_serial_interface::PortHandler>(
+    this->dev_, this->get_node_logging_interface());
   this->port_handler_->openPort();
 
   auto packet_handler = std::make_shared<su065d4380_interface::PacketHandler>(
     this->port_handler_.get());
 
-  using namespace std::chrono_literals;
+  using namespace std::chrono_literals;  // NOLINT
   this->commander_ =
-    std::make_shared<su065d4380_interface::ParameterCommander>(
-    packet_handler,
-    500ms);
+    std::make_shared<su065d4380_interface::ParameterCommander>(packet_handler, 500ms);
 }
 
 ParamConfigurator::~ParamConfigurator()
@@ -111,9 +110,7 @@ void ParamConfigurator::read(const CONFIGURABLE_PARAM & target) const
     case CONFIGURABLE_PARAM::END:
     // fall through
     default:
-      RCLCPP_ERROR(
-        this->get_logger(),
-        "Invalid configuration target");
+      RCLCPP_ERROR(this->get_logger(), "Invalid configuration target");
       return;
   }
 
@@ -124,9 +121,7 @@ void ParamConfigurator::read(const CONFIGURABLE_PARAM & target) const
     return;
   }
 
-  RCLCPP_INFO(
-    this->get_logger(),
-    "%s: %d", this->getParamName(target).c_str(), val);
+  RCLCPP_INFO(this->get_logger(), "%s: %d", this->getParamName(target).c_str(), val);
 }
 
 void ParamConfigurator::write(
@@ -155,16 +150,12 @@ void ParamConfigurator::write(
     case CONFIGURABLE_PARAM::END:
     // fall through
     default:
-      RCLCPP_ERROR(
-        this->get_logger(),
-        "Invalid configuration target");
+      RCLCPP_ERROR(this->get_logger(), "Invalid configuration target");
       return;
   }
 
   if (response == su065d4380_interface::RESPONSE_STATE::OK) {
-    RCLCPP_INFO(
-      this->get_logger(),
-      "Parameter successfully configured!");
+    RCLCPP_INFO(this->get_logger(), "Parameter successfully configured!");
   } else {
     su065d4380_interface::CommandUtil::logResponse(
       this->get_logger(), response);

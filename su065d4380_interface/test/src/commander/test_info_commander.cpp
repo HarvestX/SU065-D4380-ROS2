@@ -14,38 +14,19 @@
 
 #include <gmock/gmock.h>
 #include <su065d4380_interface/commander/info_commander.hpp>
+#include <h6x_serial_interface/gmock_port_handler.hpp>
 
 using ::testing::_;
 using ::testing::StrEq;
 using ::testing::Return;
 using ::testing::DoAll;
 
-
-ACTION_P(StrCpyToArg0, str) {
-  strcpy(arg0, str);
-}
-
-class MockPortHandler : public su065d4380_interface::PortHandlerBase
-{
-public:
-  MockPortHandler()
-  : su065d4380_interface::PortHandlerBase()
-  {
-  }
-
-  MOCK_METHOD(size_t, getBytesAvailable, (), (const override));
-  MOCK_METHOD(size_t, readPort, (char * const, const size_t), (const override));
-  MOCK_METHOD(
-    size_t, writePort,
-    (const char * const, const size_t), (const override));
-};
-
-using namespace std::chrono_literals;
+using namespace std::chrono_literals;  // NOLINT
 
 class TestInfoCommander : public ::testing::Test
 {
 protected:
-  std::shared_ptr<su065d4380_interface::PacketHandler> packet_handler;
+  su065d4380_interface::PacketHandler::SharedPtr packet_handler;
   std::unique_ptr<su065d4380_interface::InfoCommander> commander;
   MockPortHandler mock_port_handler;
   virtual void SetUp()

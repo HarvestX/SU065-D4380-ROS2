@@ -27,8 +27,9 @@ CallbackReturn SU065D4380System::on_init(
   }
 
   const std::string port_name = this->info_.hardware_parameters["dev"];
+  const auto logger = std::make_shared<su065d4380_interface::LoggingInterface>();
   this->interface_ =
-    std::make_unique<su065d4380_interface::SU065D4380Interface>(port_name);
+    std::make_unique<su065d4380_interface::SU065D4380Interface>(port_name, logger);
 
   if (!this->interface_->init()) {
     return CallbackReturn::ERROR;

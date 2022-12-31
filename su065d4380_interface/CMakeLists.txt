@@ -9,55 +9,40 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 # su065d4380 interface ==============================================
-ament_auto_add_library(
-  ${PROJECT_NAME}
-  STATIC
-    ./src/${PROJECT_NAME}.cpp
-    ./src/port_handler.cpp
-    ./src/packet_handler.cpp
-    ./src/packet_pool.cpp
-    ./src/commander/common.cpp
-    ./src/commander/parameter_commander.cpp
-    ./src/commander/velocity_commander.cpp
-    ./src/commander/info_commander.cpp
-)
-set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
-# End su065d4380 interface ==========================================
+file(GLOB src_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp)
+file(GLOB commander_src_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/commander/*.cpp)
+set(TARGET packet_handler)
+set(MYLIB ${PROJECT_NAME}_${TARGET})
+ament_auto_add_library(${MYLIB} SHARED ${src_files} ${commander_src_files})
 
 # show data executable ==============================================
-ament_auto_add_executable(show_data ./examples/show_data.cpp)
-target_link_libraries(show_data ${PROJECT_NAME})
-# End show data executable ==========================================
+set(TARGET show_data)
+ament_auto_add_executable(show_data ./examples/${TARGET}.cpp)
+target_link_libraries(${TARGET} ${MYLIB})
 
+# Testing ===========================================================
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 
-  find_package(ament_cmake_gtest REQUIRED)
-  find_package(ament_cmake_gmock REQUIRED)
-
   ament_add_gtest(
     test_packet_pool
     test/src/test_packet_pool.cpp)
-  target_include_directories(test_packet_pool PRIVATE "include")
-  target_link_libraries(test_packet_pool ${PROJECT_NAME})
+  target_link_libraries(test_packet_pool ${MYLIB})
 
-  ament_add_gmock(
+  set(TARGETS
     test_parameter_commander
-    test/src/commander/test_parameter_commander.cpp)
-  target_link_libraries(test_parameter_commander ${PROJECT_NAME})
-
-  ament_add_gmock(
     test_velocity_commander
-    test/src/commander/test_velocity_commander.cpp)
-  target_link_libraries(test_velocity_commander ${PROJECT_NAME})
+    test_info_commander)
 
-  ament_add_gmock(
-    test_info_commander
-    test/src/commander/test_info_commander.cpp)
-  target_link_libraries(test_info_commander ${PROJECT_NAME})
+  foreach(TARGET ${TARGETS})
+    ament_add_gmock(
+      ${TARGET}
+      test/src/commander/${TARGET}.cpp)
+    target_link_libraries(${TARGET} ${MYLIB})
+  endforeach()
 endif()
 
 ament_auto_package()

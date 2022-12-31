@@ -35,6 +35,7 @@ public:
     PARAM,
     END_PACKET_TYPE
   };
+  using UniquePtr = std::unique_ptr<PacketPool>;
 
 private:
   std::map<PACKET_TYPE, std::queue<std::string>> queue_map_;

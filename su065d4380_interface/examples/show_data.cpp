@@ -12,48 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "su065d4380_interface/su065d4380_interface.hpp"
-
-
-static const rclcpp::Logger getLogger()
-{
-  return rclcpp::get_logger("ShowData");
-}
 
 int main(int argc, char ** argv)
 {
-  using namespace std::chrono_literals;
+  using namespace std::chrono_literals;  // NOLINT
   rclcpp::init(argc, argv);
   std::string port_name = "/dev/ttyUSB0";
 
-  RCLCPP_INFO(
-    getLogger(),
-    "Selected dev: %s", port_name.c_str());
+  const auto logger = std::make_shared<su065d4380_interface::LoggingInterface>();
+
+  RCLCPP_INFO(logger->get_logger(), "Selected dev: %s", port_name.c_str());
 
 
-  auto port_handler =
-    std::make_shared<su065d4380_interface::PortHandler>(port_name);
+  using PortHandler = h6x_serial_interface::PortHandler;
+  auto port_handler = std::make_shared<PortHandler>(port_name, logger);
 
   if (!port_handler->openPort()) {
-    RCLCPP_ERROR(getLogger(), "Failed to open the port !");
+    RCLCPP_ERROR(logger->get_logger(), "Failed to open the port !");
     return EXIT_FAILURE;
   }
-  RCLCPP_INFO(
-    getLogger(), "Succeeded to open the port !");
-  RCLCPP_INFO(
-    getLogger(), "BaudRate : %d", port_handler->getBaudRate());
+  RCLCPP_INFO(logger->get_logger(), "Succeeded to open the port !");
+  RCLCPP_INFO(logger->get_logger(), "Baudrate: %d", port_handler->BAUDRATE);
 
   auto packet_handler =
     std::make_shared<su065d4380_interface::PacketHandler>(port_handler.get());
 
   auto velocity_commander =
-    std::make_unique<su065d4380_interface::VelocityCommander>(
-    packet_handler, 500ms);
+    std::make_unique<su065d4380_interface::VelocityCommander>(packet_handler, 500ms);
 
   auto info_commander =
-    std::make_unique<su065d4380_interface::InfoCommander>(
-    packet_handler, 500ms);
+    std::make_unique<su065d4380_interface::InfoCommander>(packet_handler, 500ms);
 
   velocity_commander->writeVelocity(
     su065d4380_interface::FLAG_MODE_MOTOR_ON, 0, 0);
@@ -71,14 +60,9 @@ int main(int argc, char ** argv)
       info_commander->readVoltage(voltage);
 
     if (response_state != su065d4380_interface::RESPONSE_STATE::OK) {
-      su065d4380_interface::CommandUtil::logResponse(
-        getLogger(),
-        response_state);
+      su065d4380_interface::CommandUtil::logResponse(logger->get_logger(), response_state);
     } else {
-      RCLCPP_INFO(
-        getLogger(),
-        "Voltage %.3f [V]",
-        voltage);
+      RCLCPP_INFO(logger->get_logger(), "Voltage %.3f [V]", voltage);
     }
 
     rclcpp::sleep_for(100ms);

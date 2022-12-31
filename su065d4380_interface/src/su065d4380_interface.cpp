@@ -16,24 +16,23 @@
 
 namespace su065d4380_interface
 {
-
 SU065D4380Interface::SU065D4380Interface(
-  const std::string & _port_name,
+  const std::string & port_name,
+  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logger,
   const std::chrono::nanoseconds _timeout)
-: clock_(std::make_shared<rclcpp::Clock>(RCL_STEADY_TIME)),
+: logging_interface_(logger),
+  clock_(std::make_shared<rclcpp::Clock>(RCL_STEADY_TIME)),
   TIMEOUT_(rclcpp::Duration(_timeout))
 {
   this->port_handler_ =
-    std::make_unique<PortHandler>(_port_name);
+    std::make_unique<PortHandler>(port_name, this->logging_interface_);
 }
 
 bool SU065D4380Interface::init()
 {
   // Dry run to check can open port or not
   if (!this->port_handler_->openPort()) {
-    RCLCPP_ERROR(
-      this->getLogger(),
-      "Failed to open port");
+    RCLCPP_ERROR(this->getLogger(), "Failed to open port");
     return false;
   }
   this->port_handler_->closePort();
@@ -43,9 +42,7 @@ bool SU065D4380Interface::init()
 bool SU065D4380Interface::activate()
 {
   if (!this->port_handler_->openPort()) {
-    RCLCPP_ERROR(
-      this->getLogger(),
-      "Failed to open port");
+    RCLCPP_ERROR(this->getLogger(), "Failed to open port");
     return false;
   }
 
@@ -55,12 +52,10 @@ bool SU065D4380Interface::activate()
 
   this->velocity_commander_ =
     std::make_unique<VelocityCommander>(
-    this->packet_handler_,
-    this->TIMEOUT_);
+    this->packet_handler_, this->TIMEOUT_);
   this->info_commander_ =
     std::make_unique<InfoCommander>(
-    this->packet_handler_,
-    this->TIMEOUT_);
+    this->packet_handler_, this->TIMEOUT_);
 
   this->last_velocity_command_accepted = true;
 
@@ -108,8 +103,7 @@ bool SU065D4380Interface::readLastVelocityCommandState() noexcept
   return res;
 }
 
-bool SU065D4380Interface::readRightRpm(
-  int16_t & right_rpm) const noexcept
+bool SU065D4380Interface::readRightRpm(int16_t & right_rpm) noexcept
 {
   static uint8_t mode;
   static RESPONSE_STATE response;
@@ -117,8 +111,7 @@ bool SU065D4380Interface::readRightRpm(
   return this->processResponse(response);
 }
 
-bool SU065D4380Interface::readLeftRpm(
-  int16_t & left_rpm) const noexcept
+bool SU065D4380Interface::readLeftRpm(int16_t & left_rpm) noexcept
 {
   static uint8_t mode;
   static RESPONSE_STATE response;
@@ -127,7 +120,7 @@ bool SU065D4380Interface::readLeftRpm(
 }
 
 bool SU065D4380Interface::readEncoder(
-  double & right_enc_diff, double & left_enc_diff) const noexcept
+  double & right_enc_diff, double & left_enc_diff) noexcept
 {
   static RESPONSE_STATE response;
   static int16_t right_enc_diff_in_pulse, left_enc_diff_in_pulse;
@@ -140,7 +133,7 @@ bool SU065D4380Interface::readEncoder(
   return this->processResponse(response);
 }
 
-bool SU065D4380Interface::readError() const noexcept
+bool SU065D4380Interface::readError() noexcept
 {
   static DriverState driver_state;
   static RESPONSE_STATE response;
@@ -188,7 +181,7 @@ bool SU065D4380Interface::writeRpm(
 
 const rclcpp::Logger SU065D4380Interface::getLogger() noexcept
 {
-  return rclcpp::get_logger("SU065D4380Interface");
+  return this->logging_interface_->get_logger();
 }
 
 bool SU065D4380Interface::processResponse(
@@ -200,9 +193,7 @@ bool SU065D4380Interface::processResponse(
       ret = true;
       break;
     case RESPONSE_STATE::WAITING_RESPONSE:
-      RCLCPP_DEBUG(
-        SU065D4380Interface::getLogger(),
-        "Waiting for response");
+      RCLCPP_DEBUG(this->getLogger(), "Waiting for response");
       ret = true;
       break;
     case RESPONSE_STATE::ERROR_EXPLICIT_NG:
@@ -210,9 +201,7 @@ bool SU065D4380Interface::processResponse(
     case RESPONSE_STATE::ERROR_INVALID_INPUT:
     case RESPONSE_STATE::ERROR_CRC:
     case RESPONSE_STATE::ERROR_UNKNOWN:
-      CommandUtil::logResponse(
-        SU065D4380Interface::getLogger(),
-        response);
+      CommandUtil::logResponse(this->getLogger(), response);
       ret = false;
       break;
     default:
