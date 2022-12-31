@@ -46,16 +46,12 @@ bool SU065D4380Interface::activate()
     return false;
   }
 
-  this->packet_handler_ =
-    std::make_shared<PacketHandler>(
-    this->port_handler_.get());
+  this->packet_handler_ = std::make_shared<PacketHandler>(this->port_handler_.get());
 
   this->velocity_commander_ =
-    std::make_unique<VelocityCommander>(
-    this->packet_handler_, this->TIMEOUT_);
+    std::make_unique<VelocityCommander>(this->packet_handler_, this->TIMEOUT_);
   this->info_commander_ =
-    std::make_unique<InfoCommander>(
-    this->packet_handler_, this->TIMEOUT_);
+    std::make_unique<InfoCommander>(this->packet_handler_, this->TIMEOUT_);
 
   this->last_velocity_command_accepted = true;
 

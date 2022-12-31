@@ -23,7 +23,6 @@ PacketHandler::PacketHandler(
 : port_handler_(port_handler),
   pool_(std::make_unique<PacketPool>())
 {
-
 }
 
 ssize_t PacketHandler::writePort(

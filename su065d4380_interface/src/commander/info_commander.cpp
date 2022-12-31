@@ -216,11 +216,9 @@ RESPONSE_STATE InfoCommander::readEncoderData(
   static const size_t LEFT_ENCODER_IDX = 7;
   try {
     right_encoder =
-      static_cast<int16_t>(
-      std::stoi(packet.substr(RIGHT_ENCODER_IDX, 4), nullptr, 16));
+      static_cast<int16_t>(std::stoi(packet.substr(RIGHT_ENCODER_IDX, 4), nullptr, 16));
     left_encoder =
-      static_cast<int16_t>(
-      std::stoi(packet.substr(LEFT_ENCODER_IDX, 4), nullptr, 16));
+      static_cast<int16_t>(std::stoi(packet.substr(LEFT_ENCODER_IDX, 4), nullptr, 16));
   } catch (std::invalid_argument &) {
     return RESPONSE_STATE::ERROR_UNKNOWN;
   }

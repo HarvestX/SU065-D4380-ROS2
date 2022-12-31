@@ -288,8 +288,7 @@ RESPONSE_STATE ParameterCommander::evaluateWriteResponse() const noexcept
   return RESPONSE_STATE::ERROR_UNKNOWN;
 }
 
-RESPONSE_STATE ParameterCommander::evaluateReadResponse(
-  int & out) const noexcept
+RESPONSE_STATE ParameterCommander::evaluateReadResponse(int & out) const noexcept
 {
   static const int READ_DATA_IDX = 4;
   static const int READ_CHECKSUM_IDX = 8;

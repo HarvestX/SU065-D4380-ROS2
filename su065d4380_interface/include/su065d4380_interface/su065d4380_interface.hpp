@@ -38,8 +38,8 @@ private:
   PacketHandler::SharedPtr packet_handler_;
   rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_interface_;
 
-  std::unique_ptr<VelocityCommander> velocity_commander_;
-  std::unique_ptr<InfoCommander> info_commander_;
+  VelocityCommander::UniquePtr velocity_commander_;
+  InfoCommander::UniquePtr info_commander_;
 
   bool last_velocity_command_accepted;
 
