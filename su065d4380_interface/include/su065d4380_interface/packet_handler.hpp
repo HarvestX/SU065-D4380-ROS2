@@ -40,9 +40,9 @@ public:
   PacketHandler() = delete;
   explicit PacketHandler(PortHandlerBase const * const);
 
-  size_t writePort(char const * const, const size_t) const;
-  size_t readPortIntoQueue();
-  size_t getBytesAvailable() const;
+  ssize_t writePort(char const * const, const size_t) const;
+  ssize_t readPortIntoQueue();
+  ssize_t getBytesAvailable() const;
 
   bool takePacket(const PacketPool::PACKET_TYPE &, std::string &);
 };

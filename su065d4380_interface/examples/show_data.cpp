@@ -53,7 +53,11 @@ int main(int argc, char ** argv)
   auto time_started = clock->now();
   float voltage = 0.0;
   while (clock->now() - time_started < rclcpp::Duration(5s)) {
-    packet_handler->readPortIntoQueue();
+    if (packet_handler->readPortIntoQueue() == -1) {
+      RCLCPP_ERROR(logger->get_logger(), "Failed to read port");
+      rclcpp::sleep_for(100ms);
+      continue;
+    }
     info_commander->evaluateResponse();
 
     su065d4380_interface::RESPONSE_STATE response_state =

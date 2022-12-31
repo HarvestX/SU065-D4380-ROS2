@@ -43,6 +43,7 @@ namespace su065d4380_control
 class SU065D4380System : public hardware_interface::SystemInterface
 {
 private:
+  using Interface = su065d4380_interface::SU065D4380Interface;
   static const size_t LEFT_WHEEL_IDX = 0;
   static const size_t RIGHT_WHEEL_IDX = 1;
 
@@ -56,7 +57,8 @@ private:
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
 
-  std::shared_ptr<su065d4380_interface::SU065D4380Interface> interface_;
+  std::shared_ptr<Interface> interface_;
+  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_interface_;
 
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(SU065D4380System)
@@ -86,6 +88,6 @@ public:
   hardware_interface::return_type write() override;
 
 private:
-  static rclcpp::Logger getLogger();
+  const rclcpp::Logger getLogger() noexcept;
 };
 }  // namespace su065d4380_control

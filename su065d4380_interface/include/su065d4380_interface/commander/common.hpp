@@ -32,6 +32,7 @@ enum class RESPONSE_STATE
   ERROR_INVALID_INPUT,
   ERROR_CRC,
   ERROR_UNKNOWN,
+  ERROR_SENDING,
 };
 
 enum class VOLTAGE_STATE
@@ -67,11 +68,7 @@ public:
   static uint16_t calcChecksum(char const * const, const int);
   static int setChecksum(char * const, const size_t, const int);
   static bool confirmChecksum(const std::string &, const int);
-  static void logResponse(
-    const rclcpp::Logger &, const RESPONSE_STATE &);
-  static void logError(
-    const rclcpp::Logger &,
-    const ERROR_STATE &);
-  static const rclcpp::Logger getLogger();
+  static void logResponse(const rclcpp::Logger &, const RESPONSE_STATE &);
+  static void logError(const rclcpp::Logger &, const ERROR_STATE &);
 };
 }  // namespace su065d4380_interface

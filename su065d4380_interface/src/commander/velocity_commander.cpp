@@ -52,7 +52,9 @@ RESPONSE_STATE VelocityCommander::writeVelocity(
 
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
-  this->packet_handler_->writePort(write_buf, cx);
+  if (this->packet_handler_->writePort(write_buf, cx) == -1) {
+    return RESPONSE_STATE::ERROR_SENDING;
+  }
   this->packet_sent_time_ = this->clock_->now();
 
   return RESPONSE_STATE::WAITING_RESPONSE;
