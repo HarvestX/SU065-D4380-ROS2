@@ -127,7 +127,7 @@ RESPONSE_STATE ParameterCommander::writeTimeout(
   cx = CommandUtil::setChecksum(write_buf, sizeof(write_buf), cx);
 
   // Send Command
-  if (this->packet_handler_->writePort(write_buf, cx)) {
+  if (this->packet_handler_->writePort(write_buf, cx) == -1) {
     return RESPONSE_STATE::ERROR_SENDING;
   }
   return this->evaluateWriteResponse();
