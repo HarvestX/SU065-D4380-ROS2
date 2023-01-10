@@ -14,36 +14,19 @@
 
 #pragma once
 
-#include <string>
 #include <memory>
 
-#include <h6x_serial_interface/h6x_serial_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
-
-#include "su065d4380_interface/packet_pool.hpp"
 
 namespace su065d4380_interface
 {
-
-class PacketHandler
+class LoggingInterface : public rclcpp::node_interfaces::NodeLoggingInterface
 {
 public:
-  using SharedPtr = std::shared_ptr<PacketHandler>;
-  using UniquePtr = std::unique_ptr<PacketHandler>;
-
-private:
-  using PortHandlerBase = h6x_serial_interface::PortHandlerBase;
-  PortHandlerBase const * const port_handler_;
-  PacketPool::UniquePtr pool_;
+  using SharedPtr = std::shared_ptr<LoggingInterface>;
 
 public:
-  PacketHandler() = delete;
-  explicit PacketHandler(PortHandlerBase const * const);
-
-  ssize_t writePort(char const * const, const size_t) const;
-  ssize_t readPortIntoQueue();
-  ssize_t getBytesAvailable() const;
-
-  bool takePacket(const PacketPool::PACKET_TYPE &, std::string &);
+  rclcpp::Logger get_logger() const override;
+  const char * get_logger_name() const override;
 };
 }  // namespace su065d4380_interface

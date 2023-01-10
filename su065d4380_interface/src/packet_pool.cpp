@@ -23,11 +23,7 @@ PacketPool::PacketPool()
 
 PacketPool::~PacketPool()
 {
-  for (size_t i = 0;
-    i < static_cast<size_t>(PACKET_TYPE::END_PACKET_TYPE);
-    ++i
-  )
-  {
+  for (size_t i = 0; i < static_cast<size_t>(PACKET_TYPE::END_PACKET_TYPE); ++i) {
     auto queue = this->queue_map_[static_cast<PACKET_TYPE>(i)];
     while (!queue.empty()) {
       queue.pop();
@@ -113,14 +109,12 @@ bool PacketPool::isVelocityPacket(const std::string & packet) const noexcept
 
 bool PacketPool::isInfoPacket(const std::string & packet) const noexcept
 {
-  // TODO(m12watanabe1a): write check sum validation here
   return packet.size() == 14 && packet.at(1) == 'A';
 }
 
 bool PacketPool::isParamPacket(const std::string & packet) const noexcept
 {
-  return (packet.size() == 8 || packet.size() == 12) &&
-         packet.at(1) == '0';
+  return (packet.size() == 8 || packet.size() == 12) && packet.at(1) == '0';
 }
 
 const rclcpp::Logger PacketPool::getLogger() noexcept

@@ -18,11 +18,13 @@
 class TestPacketPool : public ::testing::Test
 {
 protected:
-  std::unique_ptr<su065d4380_interface::PacketPool> pool;
+  using PacketPool = su065d4380_interface::PacketPool;
+  using PacketType = PacketPool::PACKET_TYPE;
+  PacketPool::UniquePtr pool;
   virtual void SetUp()
   {
     this->pool =
-      std::make_unique<su065d4380_interface::PacketPool>();
+      std::make_unique<PacketPool>();
   }
 };
 
@@ -40,23 +42,22 @@ TEST_F(TestPacketPool, enqueueFineCommands) {
 
   std::string packet = "";
 
-  using PT = su065d4380_interface::PacketPool::PACKET_TYPE;
-  ASSERT_TRUE(this->pool->takePacket(PT::VELOCITY, packet));
+  ASSERT_TRUE(this->pool->takePacket(PacketType::VELOCITY, packet));
   EXPECT_EQ(packet, velocity_response);
 
-  ASSERT_TRUE(this->pool->takePacket(PT::INFO, packet));
+  ASSERT_TRUE(this->pool->takePacket(PacketType::INFO, packet));
   EXPECT_EQ(packet, info_response);
 
-  ASSERT_TRUE(this->pool->takePacket(PT::PARAM, packet));
+  ASSERT_TRUE(this->pool->takePacket(PacketType::PARAM, packet));
   EXPECT_EQ(packet, param_response1);
 
-  ASSERT_TRUE(this->pool->takePacket(PT::PARAM, packet));
+  ASSERT_TRUE(this->pool->takePacket(PacketType::PARAM, packet));
   EXPECT_EQ(packet, param_response2);
 
-  ASSERT_FALSE(this->pool->takePacket(PT::VELOCITY, packet));
-  ASSERT_FALSE(this->pool->takePacket(PT::INFO, packet));
-  ASSERT_FALSE(this->pool->takePacket(PT::PARAM, packet));
-  ASSERT_FALSE(this->pool->takePacket(PT::PARAM, packet));
+  ASSERT_FALSE(this->pool->takePacket(PacketType::VELOCITY, packet));
+  ASSERT_FALSE(this->pool->takePacket(PacketType::INFO, packet));
+  ASSERT_FALSE(this->pool->takePacket(PacketType::PARAM, packet));
+  ASSERT_FALSE(this->pool->takePacket(PacketType::PARAM, packet));
 }
 
 TEST_F(TestPacketPool, enqueueFineSeparatedCommands)
@@ -68,11 +69,10 @@ TEST_F(TestPacketPool, enqueueFineSeparatedCommands)
   const std::string info_response_part1 = "$A10100F";
   const std::string command1 = velocity_response + info_response_part1;
 
-  using PT = su065d4380_interface::PacketPool::PACKET_TYPE;
   this->pool->enqueue(command1);
-  ASSERT_TRUE(this->pool->takePacket(PT::VELOCITY, packet));
+  ASSERT_TRUE(this->pool->takePacket(PacketType::VELOCITY, packet));
   EXPECT_EQ(packet, velocity_response);
-  ASSERT_FALSE(this->pool->takePacket(PT::INFO, packet));
+  ASSERT_FALSE(this->pool->takePacket(PacketType::INFO, packet));
   EXPECT_EQ(packet, "");
 
   // 2nd part of '$A10100F83028\r'
@@ -81,9 +81,9 @@ TEST_F(TestPacketPool, enqueueFineSeparatedCommands)
   const std::string command2 = info_response_part2 + param_response;
 
   this->pool->enqueue(command2);
-  ASSERT_TRUE(this->pool->takePacket(PT::INFO, packet));
+  ASSERT_TRUE(this->pool->takePacket(PacketType::INFO, packet));
   EXPECT_EQ(packet, info_response_part1 + info_response_part2);
-  ASSERT_TRUE(this->pool->takePacket(PT::PARAM, packet));
+  ASSERT_TRUE(this->pool->takePacket(PacketType::PARAM, packet));
   EXPECT_EQ(packet, param_response);
 }
 
@@ -94,9 +94,8 @@ TEST_F(TestPacketPool, enqueueFineInnerCommands)
   const std::string info_response = "$A30000000056\r";
   const std::string command = "$" + info_response;
 
-  using PT = su065d4380_interface::PacketPool::PACKET_TYPE;
   this->pool->enqueue(command);
-  ASSERT_TRUE(this->pool->takePacket(PT::INFO, packet));
+  ASSERT_TRUE(this->pool->takePacket(PacketType::INFO, packet));
   EXPECT_EQ(packet, info_response);
 }
 
@@ -108,7 +107,6 @@ TEST_F(TestPacketPool, enqueueInitiallyGarbageContainedFineCommands) {
 
   std::string packet;
 
-  using PT = su065d4380_interface::PacketPool::PACKET_TYPE;
-  ASSERT_TRUE(this->pool->takePacket(PT::PARAM, packet));
+  ASSERT_TRUE(this->pool->takePacket(PacketType::PARAM, packet));
   EXPECT_EQ(packet, param_response);
 }

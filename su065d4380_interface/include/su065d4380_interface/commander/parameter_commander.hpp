@@ -24,24 +24,25 @@
 
 namespace su065d4380_interface
 {
-using namespace std::chrono_literals;
+using namespace std::chrono_literals;  // NOLINT
 class ParameterCommander
 {
 public:
+  using SharedPtr = std::shared_ptr<ParameterCommander>;
+  using UniquePtr = std::unique_ptr<ParameterCommander>;
+
   static const uint MAX_GAIN = 100;
   static const uint MAX_ACCTIME = 500;
   static const uint MAX_TIMEOUT = 5;
 
 private:
-  std::shared_ptr<PacketHandler> packet_handler_;
+  PacketHandler::SharedPtr packet_handler_;
   rclcpp::Clock::SharedPtr clock_;
   const rclcpp::Duration TIMEOUT_;
 
 public:
   ParameterCommander() = delete;
-  explicit ParameterCommander(
-    std::shared_ptr<PacketHandler>,
-    const rclcpp::Duration &);
+  explicit ParameterCommander(PacketHandler::SharedPtr, const rclcpp::Duration &);
 
   // Write parameter
   RESPONSE_STATE writeRightWheelGain(const uint) const noexcept;

@@ -23,24 +23,25 @@ PacketHandler::PacketHandler(
 : port_handler_(port_handler),
   pool_(std::make_unique<PacketPool>())
 {
-
 }
 
-size_t PacketHandler::writePort(
+ssize_t PacketHandler::writePort(
   char const * const packet, const size_t length) const
 {
   return this->port_handler_->writePort(packet, length);
 }
 
-size_t PacketHandler::readPortIntoQueue()
+ssize_t PacketHandler::readPortIntoQueue()
 {
   char buf[128];
-  size_t ret = this->port_handler_->readPort(buf, sizeof(buf));
-  this->pool_->enqueue(std::string(buf, ret));
+  ssize_t ret = this->port_handler_->readPort(buf, sizeof(buf));
+  if (ret > 0) {
+    this->pool_->enqueue(std::string(buf, ret));
+  }
   return ret;
 }
 
-size_t PacketHandler::getBytesAvailable() const
+ssize_t PacketHandler::getBytesAvailable() const
 {
   return this->port_handler_->getBytesAvailable();
 }

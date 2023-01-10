@@ -8,9 +8,8 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-ament_auto_add_executable(
-  param_configurator
-  ./src/param_configurator.cpp)
+set(TARGET param_configurator)
+ament_auto_add_executable(${TARGET} ./src/${TARGET}.cpp)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

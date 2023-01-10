@@ -22,10 +22,14 @@
 
 namespace su065d4380_interface
 {
-using namespace std::chrono_literals;
+using namespace std::chrono_literals;  // NOLINT
 
 class InfoPacket
 {
+public:
+  using SharedPtr = std::shared_ptr<InfoPacket>;
+  using UniquePtr = std::unique_ptr<InfoPacket>;
+
 private:
   std::string packet_;
   bool is_updated_;
@@ -63,6 +67,9 @@ public:
 class InfoCommander
 {
 public:
+  using SharedPtr = std::shared_ptr<InfoCommander>;
+  using UniquePtr = std::unique_ptr<InfoCommander>;
+
   enum class COMMAND_TYPE
   {
     RIGHT_WHEEL,
@@ -74,21 +81,19 @@ public:
   };
 
 private:
-  std::shared_ptr<PacketHandler> packet_handler_;
+  PacketHandler::SharedPtr packet_handler_;
   rclcpp::Clock::SharedPtr clock_;
   const rclcpp::Duration TIMEOUT_;
 
-  std::unique_ptr<InfoPacket> last_right_wheel_packet_;
-  std::unique_ptr<InfoPacket> last_left_wheel_packet_;
-  std::unique_ptr<InfoPacket> last_driver_state_packet_;
-  std::unique_ptr<InfoPacket> last_encode_data_packet_;
-  std::unique_ptr<InfoPacket> last_voltage_packet_;
+  InfoPacket::UniquePtr last_right_wheel_packet_;
+  InfoPacket::UniquePtr last_left_wheel_packet_;
+  InfoPacket::UniquePtr last_driver_state_packet_;
+  InfoPacket::UniquePtr last_encode_data_packet_;
+  InfoPacket::UniquePtr last_voltage_packet_;
 
 public:
   InfoCommander() = delete;
-  explicit InfoCommander(
-    std::shared_ptr<PacketHandler>,
-    const rclcpp::Duration &);
+  explicit InfoCommander(PacketHandler::SharedPtr, const rclcpp::Duration &);
 
   RESPONSE_STATE readRightRpm(uint8_t &, int16_t &);
   RESPONSE_STATE readLeftRpm(uint8_t &, int16_t &);

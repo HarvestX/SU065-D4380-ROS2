@@ -120,16 +120,11 @@ InfoCommander::InfoCommander(
 
 void InfoCommander::init()
 {
-  this->last_right_wheel_packet_ =
-    std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
-  this->last_left_wheel_packet_ =
-    std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
-  this->last_driver_state_packet_ =
-    std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
-  this->last_encode_data_packet_ =
-    std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
-  this->last_voltage_packet_ =
-    std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
+  this->last_right_wheel_packet_ = std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
+  this->last_left_wheel_packet_ = std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
+  this->last_driver_state_packet_ = std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
+  this->last_encode_data_packet_ = std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
+  this->last_voltage_packet_ = std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
 }
 
 RESPONSE_STATE InfoCommander::readRightRpm(
@@ -169,10 +164,8 @@ RESPONSE_STATE InfoCommander::readLeftRpm(
   static const size_t MODE_IDX = 3;
   static const size_t RPM_IDX = 7;
   try {
-    mode =
-      static_cast<uint8_t>(std::stoi(packet.substr(MODE_IDX, 2), nullptr, 16));
-    rpm =
-      static_cast<int16_t>(std::stoi(packet.substr(RPM_IDX, 4), nullptr, 16));
+    mode = static_cast<uint8_t>(std::stoi(packet.substr(MODE_IDX, 2), nullptr, 16));
+    rpm = static_cast<int16_t>(std::stoi(packet.substr(RPM_IDX, 4), nullptr, 16));
   } catch (std::invalid_argument &) {
     return RESPONSE_STATE::ERROR_UNKNOWN;
   }
@@ -223,11 +216,9 @@ RESPONSE_STATE InfoCommander::readEncoderData(
   static const size_t LEFT_ENCODER_IDX = 7;
   try {
     right_encoder =
-      static_cast<int16_t>(
-      std::stoi(packet.substr(RIGHT_ENCODER_IDX, 4), nullptr, 16));
+      static_cast<int16_t>(std::stoi(packet.substr(RIGHT_ENCODER_IDX, 4), nullptr, 16));
     left_encoder =
-      static_cast<int16_t>(
-      std::stoi(packet.substr(LEFT_ENCODER_IDX, 4), nullptr, 16));
+      static_cast<int16_t>(std::stoi(packet.substr(LEFT_ENCODER_IDX, 4), nullptr, 16));
   } catch (std::invalid_argument &) {
     return RESPONSE_STATE::ERROR_UNKNOWN;
   }

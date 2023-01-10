@@ -7,9 +7,12 @@
       },
       "includePath": [
         "/opt/ros/galactic/include/**",
+        "/opt/ros/galactic/src/gmock_vendor/include/**",
         "/usr/include/**",
+        "${workspaceFolder}/../../install/h6x_serial_interface/include/**",
+        "${workspaceFolder}/su065d4380_control/include/**",
         "${workspaceFolder}/su065d4380_interface/include/**",
-        "${workspaceFolder}/su065d4380_tool/include/**"
+        "${workspaceFolder}/su065d4380_tool/include/**",
       ],
       "name": "ROS",
       "intelliSenseMode": "clang-x64",

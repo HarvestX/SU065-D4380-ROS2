@@ -22,14 +22,17 @@
 
 namespace su065d4380_interface
 {
-using namespace std::chrono_literals;
+using namespace std::chrono_literals;  // NOLINT
 class VelocityCommander
 {
 public:
+  using SharedPtr = std::shared_ptr<VelocityCommander>;
+  using UniquePtr = std::unique_ptr<VelocityCommander>;
+
   static const int16_t MAX_RPM = 3000;
 
 private:
-  std::shared_ptr<PacketHandler> packet_handler_;
+  PacketHandler::SharedPtr packet_handler_;
   rclcpp::Clock::SharedPtr clock_;
   const rclcpp::Duration TIMEOUT_;
 
@@ -37,9 +40,7 @@ private:
 
 public:
   VelocityCommander() = delete;
-  explicit VelocityCommander(
-    std::shared_ptr<PacketHandler>,
-    const rclcpp::Duration &);
+  explicit VelocityCommander(PacketHandler::SharedPtr, const rclcpp::Duration &);
 
   RESPONSE_STATE writeVelocity(
     const uint8_t,

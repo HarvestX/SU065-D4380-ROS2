@@ -48,7 +48,7 @@ public:
 
 private:
   const std::string dev_;
-  std::shared_ptr<su065d4380_interface::PortHandler> port_handler_;
+  h6x_serial_interface::PortHandler::UniquePtr port_handler_;
   std::shared_ptr<su065d4380_interface::ParameterCommander> commander_;
 
 public:

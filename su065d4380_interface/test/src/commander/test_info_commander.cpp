@@ -14,48 +14,28 @@
 
 #include <gmock/gmock.h>
 #include <su065d4380_interface/commander/info_commander.hpp>
+#include <h6x_serial_interface/gmock_port_handler.hpp>
 
 using ::testing::_;
 using ::testing::StrEq;
 using ::testing::Return;
 using ::testing::DoAll;
 
-
-ACTION_P(StrCpyToArg0, str) {
-  strcpy(arg0, str);
-}
-
-class MockPortHandler : public su065d4380_interface::PortHandlerBase
-{
-public:
-  MockPortHandler()
-  : su065d4380_interface::PortHandlerBase()
-  {
-  }
-
-  MOCK_METHOD(size_t, getBytesAvailable, (), (const override));
-  MOCK_METHOD(size_t, readPort, (char * const, const size_t), (const override));
-  MOCK_METHOD(
-    size_t, writePort,
-    (const char * const, const size_t), (const override));
-};
-
-using namespace std::chrono_literals;
+using namespace std::chrono_literals;  // NOLINT
 
 class TestInfoCommander : public ::testing::Test
 {
 protected:
-  std::shared_ptr<su065d4380_interface::PacketHandler> packet_handler;
-  std::unique_ptr<su065d4380_interface::InfoCommander> commander;
+  using PacketHandler = su065d4380_interface::PacketHandler;
+  using InfoCommander = su065d4380_interface::InfoCommander;
+  using RESPONSE_STATE = su065d4380_interface::RESPONSE_STATE;
+  PacketHandler::SharedPtr packet_handler;
+  InfoCommander::UniquePtr commander;
   MockPortHandler mock_port_handler;
   virtual void SetUp()
   {
-    this->packet_handler =
-      std::make_shared<su065d4380_interface::PacketHandler>(
-      &mock_port_handler);
-    this->commander =
-      std::make_unique<su065d4380_interface::InfoCommander>(
-      this->packet_handler, 1ms);
+    this->packet_handler = std::make_shared<PacketHandler>(&mock_port_handler);
+    this->commander = std::make_unique<InfoCommander>(this->packet_handler, 1ms);
   }
 
   virtual void TearDown() {}
@@ -64,14 +44,10 @@ protected:
 
 TEST_F(TestInfoCommander, readAllOK)
 {
-  EXPECT_CALL(
-    mock_port_handler,
-    getBytesAvailable())
+  EXPECT_CALL(mock_port_handler, getBytesAvailable())
   .WillRepeatedly(Return(5 * 14));
   // Return invalid response here
-  EXPECT_CALL(
-    mock_port_handler,
-    readPort(_, _))
+  EXPECT_CALL(mock_port_handler, readPort(_, _))
   .WillRepeatedly(
     DoAll(
       StrCpyToArg0(
@@ -86,40 +62,27 @@ TEST_F(TestInfoCommander, readAllOK)
 
   uint8_t mode = 0;
   int16_t rpm = 0;
-  ASSERT_EQ(
-    this->commander->readRightRpm(mode, rpm),
-    su065d4380_interface::RESPONSE_STATE::OK);
+  ASSERT_EQ(this->commander->readRightRpm(mode, rpm), RESPONSE_STATE::OK);
   ASSERT_TRUE(mode &= su065d4380_interface::FLAG_MODE_MOTOR_ON);
   ASSERT_EQ(rpm, -2000);
 
   mode = 0;
   rpm = 0;
-  ASSERT_EQ(
-    this->commander->readLeftRpm(mode, rpm),
-    su065d4380_interface::RESPONSE_STATE::OK);
+  ASSERT_EQ(this->commander->readLeftRpm(mode, rpm), RESPONSE_STATE::OK);
   ASSERT_TRUE(mode &= su065d4380_interface::FLAG_MODE_MOTOR_ON);
   ASSERT_EQ(rpm, -2000);
 
   su065d4380_interface::DriverState driver_state;
-  ASSERT_EQ(
-    this->commander->readDriverState(driver_state),
-    su065d4380_interface::RESPONSE_STATE::OK);
+  ASSERT_EQ(this->commander->readDriverState(driver_state), RESPONSE_STATE::OK);
   ASSERT_TRUE(driver_state.hasError());
-  ASSERT_EQ(
-    driver_state.getErrorState(),
-    su065d4380_interface::ERROR_STATE::SENSOR_ERROR);
+  ASSERT_EQ(driver_state.getErrorState(), su065d4380_interface::ERROR_STATE::SENSOR_ERROR);
 
   int16_t right_encoder, left_encoder;
-  ASSERT_EQ(
-    this->commander->readEncoderData(right_encoder, left_encoder),
-    su065d4380_interface::RESPONSE_STATE::OK);
-  ASSERT_EQ(
-    right_encoder, 16383);
+  ASSERT_EQ(this->commander->readEncoderData(right_encoder, left_encoder), RESPONSE_STATE::OK);
+  ASSERT_EQ(right_encoder, 16383);
   ASSERT_EQ(left_encoder, 1);
 
   float voltage;
-  ASSERT_EQ(
-    this->commander->readVoltage(voltage),
-    su065d4380_interface::RESPONSE_STATE::OK);
+  ASSERT_EQ(this->commander->readVoltage(voltage), RESPONSE_STATE::OK);
   ASSERT_FLOAT_EQ(voltage, 48.19);
 }

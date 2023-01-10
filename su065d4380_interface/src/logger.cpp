@@ -12,20 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
-#include <string>
+#include "su065d4380_interface/logger.hpp"
 
 namespace su065d4380_interface
 {
-
-class PortHandlerBase
+rclcpp::Logger LoggingInterface::get_logger() const
 {
-public:
-  PortHandlerBase() {}
+  return rclcpp::get_logger(this->get_logger_name());
+}
 
-  virtual size_t getBytesAvailable() const = 0;
-  virtual size_t readPort(char * const, const size_t) const = 0;
-  virtual size_t writePort(const char * const, const size_t) const = 0;
-};
+const char * LoggingInterface::get_logger_name() const
+{
+  return "SU065D4380Interface";
+}
 }  // namespace su065d4380_interface
