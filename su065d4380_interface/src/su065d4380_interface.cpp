@@ -120,7 +120,7 @@ bool SU065D4380Interface::readEncoder(
 {
   static RESPONSE_STATE response;
   static int16_t right_enc_diff_in_pulse, left_enc_diff_in_pulse;
-  static double coefficient = 2.0 * M_PI / (1 << 16);
+  static double coefficient = 2.0 * M_PI / (1 << 14);
   response = this->info_commander_->readEncoderData(
     right_enc_diff_in_pulse, left_enc_diff_in_pulse);
 
