@@ -17,16 +17,13 @@
 
 namespace su065d4380_interface
 {
-PacketHandler::PacketHandler(
-  PortHandlerBase const * const port_handler
-)
+PacketHandler::PacketHandler(PortHandlerBase const * const port_handler)
 : port_handler_(port_handler),
   pool_(std::make_unique<PacketPool>())
 {
 }
 
-ssize_t PacketHandler::writePort(
-  char const * const packet, const size_t length) const
+ssize_t PacketHandler::writePort(char const * const packet, const size_t length) const
 {
   return this->port_handler_->writePort(packet, length);
 }
@@ -46,9 +43,7 @@ ssize_t PacketHandler::getBytesAvailable() const
   return this->port_handler_->getBytesAvailable();
 }
 
-bool PacketHandler::takePacket(
-  const PacketPool::PACKET_TYPE & packet_type,
-  std::string & out)
+bool PacketHandler::takePacket(const PacketPool::PACKET_TYPE & packet_type, std::string & out)
 {
   return this->pool_->takePacket(packet_type, out);
 }

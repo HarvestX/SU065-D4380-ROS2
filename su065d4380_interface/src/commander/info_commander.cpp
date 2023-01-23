@@ -68,10 +68,8 @@ ERROR_STATE DriverState::getErrorState() const noexcept
 
 void DriverState::setDriverState(const uint16_t & driver_state) noexcept
 {
-  this->in_operation_ =
-    (driver_state & (1 << 0));
-  this->has_error_ =
-    (driver_state & (1 << 1));
+  this->in_operation_ = (driver_state & (1 << 0));
+  this->has_error_ = (driver_state & (1 << 1));
 
   if (driver_state & (1 << 2)) {
     this->voltage_state_ = VOLTAGE_STATE::LOW_WARNING;
@@ -127,8 +125,7 @@ void InfoCommander::init()
   this->last_voltage_packet_ = std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
 }
 
-RESPONSE_STATE InfoCommander::readRightRpm(
-  uint8_t & mode, int16_t & rpm)
+RESPONSE_STATE InfoCommander::readRightRpm(uint8_t & mode, int16_t & rpm)
 {
   std::string packet;
   const RESPONSE_STATE state =
@@ -140,10 +137,8 @@ RESPONSE_STATE InfoCommander::readRightRpm(
   static const size_t MODE_IDX = 3;
   static const size_t RPM_IDX = 7;
   try {
-    mode =
-      static_cast<uint8_t>(std::stoi(packet.substr(MODE_IDX, 2), nullptr, 16));
-    rpm =
-      static_cast<int16_t>(std::stoi(packet.substr(RPM_IDX, 4), nullptr, 16));
+    mode = static_cast<uint8_t>(std::stoi(packet.substr(MODE_IDX, 2), nullptr, 16));
+    rpm = static_cast<int16_t>(std::stoi(packet.substr(RPM_IDX, 4), nullptr, 16));
   } catch (std::invalid_argument &) {
     return RESPONSE_STATE::ERROR_UNKNOWN;
   }
@@ -151,8 +146,7 @@ RESPONSE_STATE InfoCommander::readRightRpm(
   return RESPONSE_STATE::OK;
 }
 
-RESPONSE_STATE InfoCommander::readLeftRpm(
-  uint8_t & mode, int16_t & rpm)
+RESPONSE_STATE InfoCommander::readLeftRpm(uint8_t & mode, int16_t & rpm)
 {
   std::string packet;
   const RESPONSE_STATE state =
@@ -186,14 +180,12 @@ RESPONSE_STATE InfoCommander::readDriverState(DriverState & _driver_state)
   static const size_t ERROR_STATE_IDX = 7;
 
   try {
-    const uint16_t driver_state =
-      std::stoi(packet.substr(DRIVER_STATE_IDX, 4), nullptr, 16);
+    const uint16_t driver_state = std::stoi(packet.substr(DRIVER_STATE_IDX, 4), nullptr, 16);
 
     _driver_state.setDriverState(driver_state);
 
     if (_driver_state.hasError()) {
-      const uint16_t error_state =
-        std::stoi(packet.substr(ERROR_STATE_IDX, 4), nullptr, 16);
+      const uint16_t error_state = std::stoi(packet.substr(ERROR_STATE_IDX, 4), nullptr, 16);
       _driver_state.setErrorState(error_state);
     }
   } catch (std::invalid_argument &) {
@@ -202,8 +194,7 @@ RESPONSE_STATE InfoCommander::readDriverState(DriverState & _driver_state)
   return RESPONSE_STATE::OK;
 }
 
-RESPONSE_STATE InfoCommander::readEncoderData(
-  int16_t & right_encoder, int16_t & left_encoder)
+RESPONSE_STATE InfoCommander::readEncoderData(int16_t & right_encoder, int16_t & left_encoder)
 {
   std::string packet;
   const RESPONSE_STATE state =
@@ -237,8 +228,7 @@ RESPONSE_STATE InfoCommander::readVoltage(float & voltage)
 
   static const size_t VOLTAGE_IDX = 3;
   try {
-    voltage = static_cast<float>(
-      std::stoi(packet.substr(VOLTAGE_IDX, 4), nullptr, 16)) * 1e-2;
+    voltage = static_cast<float>(std::stoi(packet.substr(VOLTAGE_IDX, 4), nullptr, 16)) * 1e-2;
   } catch (std::invalid_argument &) {
     return RESPONSE_STATE::ERROR_UNKNOWN;
   }
@@ -256,15 +246,12 @@ void InfoCommander::evaluateResponse() noexcept
 {
   static const size_t CHECKSUM_IDX = 11;
   std::string response;
-  while (this->packet_handler_->takePacket(
-      PacketPool::PACKET_TYPE::INFO, response))
-  {
+  while (this->packet_handler_->takePacket(PacketPool::PACKET_TYPE::INFO, response)) {
     if (!CommandUtil::confirmChecksum(response, CHECKSUM_IDX)) {
       continue;
     }
 
-    const InfoCommander::COMMAND_TYPE command_type =
-      this->getCommandType(response);
+    const InfoCommander::COMMAND_TYPE command_type = this->getCommandType(response);
 
     switch (command_type) {
       case InfoCommander::COMMAND_TYPE::RIGHT_WHEEL:
