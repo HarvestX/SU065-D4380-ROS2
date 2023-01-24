@@ -17,8 +17,7 @@
 
 namespace su065d4380_interface
 {
-uint16_t CommandUtil::calcChecksum(
-  char const * const buf, const int cx)
+uint16_t CommandUtil::calcChecksum(char const * const buf, const int cx)
 {
   uint16_t crc = 0;
   for (int i = 0; i < cx; ++i) {
@@ -27,8 +26,7 @@ uint16_t CommandUtil::calcChecksum(
   return crc;
 }
 
-int CommandUtil::setChecksum(
-  char * const buf, const size_t buf_size, const int cx)
+int CommandUtil::setChecksum(char * const buf, const size_t buf_size, const int cx)
 {
   const uint16_t crc = CommandUtil::calcChecksum(buf, cx);
   return snprintf(buf + cx, buf_size - cx, "%02hhX\r", crc) + cx;
@@ -48,9 +46,7 @@ bool CommandUtil::confirmChecksum(const std::string & buf, const int CRC_IDX)
   return expected_crc == actual_crc;
 }
 
-void CommandUtil::logResponse(
-  const rclcpp::Logger & logger,
-  const RESPONSE_STATE & response)
+void CommandUtil::logResponse(const rclcpp::Logger & logger, const RESPONSE_STATE & response)
 {
   switch (response) {
     case RESPONSE_STATE::OK:

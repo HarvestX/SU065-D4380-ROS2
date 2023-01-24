@@ -60,26 +60,19 @@ void PacketPool::enqueue(const std::string & in_packet)
     }
 
     if (this->isVelocityPacket(item)) {
-      RCLCPP_DEBUG(
-        this->getLogger(),
-        "Velocity packet enqueued");
+      RCLCPP_DEBUG(this->getLogger(), "Velocity packet enqueued");
       this->queue_map_[PACKET_TYPE::VELOCITY].push(item);
     } else if (this->isInfoPacket(item)) {
-      RCLCPP_DEBUG(
-        this->getLogger(),
-        "Info packet enqueued");
+      RCLCPP_DEBUG(this->getLogger(), "Info packet enqueued");
       this->queue_map_[PACKET_TYPE::INFO].push(item);
     } else if (this->isParamPacket(item)) {
-      RCLCPP_DEBUG(
-        this->getLogger(),
-        "Param packet enqueued");
+      RCLCPP_DEBUG(this->getLogger(), "Param packet enqueued");
       this->queue_map_[PACKET_TYPE::PARAM].push(item);
     } else {
       // Invalid item
       // Do noting
       RCLCPP_WARN(
-        this->getLogger(),
-        "Command like packet [%s] given. Ignored.",
+        this->getLogger(), "Command like packet [%s] given. Ignored.",
         PacketPool::fixEscapeSequence(item).c_str());
     }
     scanning_started = false;

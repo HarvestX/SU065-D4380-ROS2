@@ -61,8 +61,7 @@ bool SU065D4380Interface::activate()
 bool SU065D4380Interface::deactivate()
 {
   // Stop motor
-  this->velocity_commander_->writeVelocity(
-    su065d4380_interface::FLAG_MODE_MOTOR_ON, 0, 0);
+  this->velocity_commander_->writeVelocity(su065d4380_interface::FLAG_MODE_MOTOR_ON, 0, 0);
 
   this->port_handler_->closePort();
   this->packet_handler_ = nullptr;
@@ -120,9 +119,9 @@ bool SU065D4380Interface::readEncoder(
 {
   static RESPONSE_STATE response;
   static int16_t right_enc_diff_in_pulse, left_enc_diff_in_pulse;
-  static double coefficient = 2.0 * M_PI / (1 << 14);
-  response = this->info_commander_->readEncoderData(
-    right_enc_diff_in_pulse, left_enc_diff_in_pulse);
+  static const double coefficient = 2.0 * M_PI / (1 << 14);
+  response =
+    this->info_commander_->readEncoderData(right_enc_diff_in_pulse, left_enc_diff_in_pulse);
 
   right_enc_diff = static_cast<double>(right_enc_diff_in_pulse) * coefficient;
   left_enc_diff = static_cast<double>(left_enc_diff_in_pulse) * coefficient;
@@ -148,25 +147,19 @@ bool SU065D4380Interface::readError() noexcept
   return false;
 }
 
-bool SU065D4380Interface::writeRpm(
-  const int16_t & right_rpm, const int16_t & left_rpm) noexcept
+bool SU065D4380Interface::writeRpm(const int16_t & right_rpm, const int16_t & left_rpm) noexcept
 {
   if (!this->last_velocity_command_accepted) {
-    RCLCPP_ERROR(
-      this->getLogger(),
-      "Waiting previous command accept");
+    RCLCPP_ERROR(this->getLogger(), "Waiting previous command accept");
     return false;
   }
 
   static RESPONSE_STATE response;
-  response = this->velocity_commander_->writeVelocity(
-    FLAG_MODE_MOTOR_ON, right_rpm, left_rpm);
+  response = this->velocity_commander_->writeVelocity(FLAG_MODE_MOTOR_ON, right_rpm, left_rpm);
   this->last_velocity_command_accepted = false;
   if (response == RESPONSE_STATE::ERROR_INVALID_INPUT) {
     RCLCPP_ERROR(
-      this->getLogger(),
-      "Invalid Input Given right: %d [rpm] left: %d [rpm]",
-      right_rpm, left_rpm);
+      this->getLogger(), "Invalid Input Given right: %d [rpm] left: %d [rpm]", right_rpm, left_rpm);
     // Return true to don't stop the system
     return true;
   }
@@ -206,6 +199,4 @@ bool SU065D4380Interface::processResponse(
   }
   return ret;
 }
-
-
 }  // namespace su065d4380_interface

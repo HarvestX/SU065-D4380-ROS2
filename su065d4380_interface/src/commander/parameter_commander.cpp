@@ -17,16 +17,13 @@
 namespace su065d4380_interface
 {
 ParameterCommander::ParameterCommander(
-  std::shared_ptr<PacketHandler> packet_handler,
-  const rclcpp::Duration & timeout
-)
+  std::shared_ptr<PacketHandler> packet_handler, const rclcpp::Duration & timeout)
 : packet_handler_(packet_handler),
   clock_(std::make_shared<rclcpp::Clock>(RCL_STEADY_TIME)),
   TIMEOUT_(timeout)
 {}
 
-RESPONSE_STATE ParameterCommander::writeRightWheelGain(
-  const uint gain) const noexcept
+RESPONSE_STATE ParameterCommander::writeRightWheelGain(const uint gain) const noexcept
 {
   if (gain > this->MAX_GAIN) {
     RCLCPP_ERROR(this->getLogger(), "Input out of range 0 ~ 100 [%u]", gain);
@@ -67,8 +64,7 @@ RESPONSE_STATE ParameterCommander::writeLeftWheelGain(
   return this->evaluateWriteResponse();
 }
 
-RESPONSE_STATE ParameterCommander::writeAccTime(
-  const uint time) const noexcept
+RESPONSE_STATE ParameterCommander::writeAccTime(const uint time) const noexcept
 {
   if (time > this->MAX_ACCTIME) {
     RCLCPP_ERROR(this->getLogger(), "Input out of range 0 ~ 500 [%u]", time);
@@ -89,8 +85,7 @@ RESPONSE_STATE ParameterCommander::writeAccTime(
   return this->evaluateWriteResponse();
 }
 
-RESPONSE_STATE ParameterCommander::writeDecTime(
-  const uint time) const noexcept
+RESPONSE_STATE ParameterCommander::writeDecTime(const uint time) const noexcept
 {
   if (time > this->MAX_ACCTIME) {
     RCLCPP_ERROR(this->getLogger(), "Input out of range 0 ~ 500 [%u]", time);
@@ -111,8 +106,7 @@ RESPONSE_STATE ParameterCommander::writeDecTime(
   return this->evaluateWriteResponse();
 }
 
-RESPONSE_STATE ParameterCommander::writeTimeout(
-  const uint time) const noexcept
+RESPONSE_STATE ParameterCommander::writeTimeout(const uint time) const noexcept
 {
   if (time > this->MAX_TIMEOUT) {
     RCLCPP_ERROR(this->getLogger(), "Input out of range 0 ~ 5 [%u]", time);
@@ -133,8 +127,7 @@ RESPONSE_STATE ParameterCommander::writeTimeout(
   return this->evaluateWriteResponse();
 }
 
-RESPONSE_STATE ParameterCommander::writeDecWithTimeout(
-  const uint time) const noexcept
+RESPONSE_STATE ParameterCommander::writeDecWithTimeout(const uint time) const noexcept
 {
   if (time > this->MAX_ACCTIME) {
     RCLCPP_ERROR(this->getLogger(), "Input out of range 0 ~ 500 [%u]", time);
