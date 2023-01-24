@@ -196,11 +196,13 @@ hardware_interface::return_type SU065D4380System::read()
   }
 
   static const double RPM2RPS = (2.0 * M_PI) / 60.0;
-  this->hw_velocities_.at(RIGHT_WHEEL_IDX) = static_cast<double>(right_rpm) * RPM2RPS;
-  this->hw_velocities_.at(LEFT_WHEEL_IDX) = static_cast<double>(left_rpm) * RPM2RPS;
+  this->hw_velocities_.at(RIGHT_WHEEL_IDX) = static_cast<double>(right_rpm) * RPM2RPS /
+    this->right_coefficient_;
+  this->hw_velocities_.at(LEFT_WHEEL_IDX) = static_cast<double>(left_rpm) * RPM2RPS /
+    this->left_coefficient_;
 
-  this->hw_positions_.at(RIGHT_WHEEL_IDX) += static_cast<double>(this->right_rot_dir_) * right_enc;
-  this->hw_positions_.at(LEFT_WHEEL_IDX) += static_cast<double>(this->left_rot_dir_) * left_enc;
+  this->hw_positions_.at(RIGHT_WHEEL_IDX) += right_enc / this->right_coefficient_;
+  this->hw_positions_.at(LEFT_WHEEL_IDX) += left_enc / this->left_coefficient_;
 
   return hardware_interface::return_type::OK;
 }
