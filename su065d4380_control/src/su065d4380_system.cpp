@@ -31,19 +31,6 @@ CallbackReturn SU065D4380System::on_init(const hardware_interface::HardwareInfo 
     return CallbackReturn::ERROR;
   }
 
-  const int ld_tmp = std::stoi(this->info_.hardware_parameters["left_rotation_direction"]);
-  if (ld_tmp < 0) {
-    this->left_rot_dir_ = -1;
-  }
-  const int rd_tmp = std::stoi(this->info_.hardware_parameters["right_rotation_direction"]);
-  if (rd_tmp < 0) {
-    this->right_rot_dir_ = -1;
-  }
-
-  const double reduction_ratio = std::stod(this->info_.hardware_parameters["reduction_ratio"]);
-  this->left_coefficient_ = reduction_ratio * static_cast<double>(this->left_rot_dir_);
-  this->right_coefficient_ = reduction_ratio * static_cast<double>(this->right_rot_dir_);
-
   this->hw_positions_.resize(this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   this->hw_velocities_.resize(this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   this->hw_commands_.resize(this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -201,8 +188,8 @@ hardware_interface::return_type SU065D4380System::read()
   this->hw_velocities_.at(LEFT_WHEEL_IDX) = static_cast<double>(left_rpm) * RPM2RPS /
     this->left_coefficient_;
 
-  this->hw_positions_.at(RIGHT_WHEEL_IDX) += right_enc / this->right_coefficient_;
-  this->hw_positions_.at(LEFT_WHEEL_IDX) += left_enc / this->left_coefficient_;
+  this->hw_positions_.at(RIGHT_WHEEL_IDX) += right_enc;
+  this->hw_positions_.at(LEFT_WHEEL_IDX) += left_enc;
 
   return hardware_interface::return_type::OK;
 }
@@ -210,8 +197,8 @@ hardware_interface::return_type SU065D4380System::read()
 hardware_interface::return_type SU065D4380System::write()
 {
   static const double RPS2RPM = 60.0 / (2.0 * M_PI);
-  const double left_rps = this->left_coefficient_ * this->hw_commands_.at(LEFT_WHEEL_IDX);
-  const double right_rps = this->right_coefficient_ * this->hw_commands_.at(RIGHT_WHEEL_IDX);
+  const double left_rps = this->hw_commands_.at(LEFT_WHEEL_IDX);
+  const double right_rps = this->hw_commands_.at(RIGHT_WHEEL_IDX);
 
   const bool write_response = this->interface_->writeRpm(
     static_cast<int16_t>(right_rps * RPS2RPM), static_cast<int16_t>(left_rps * RPS2RPM));

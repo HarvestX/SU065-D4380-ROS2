@@ -47,12 +47,6 @@ private:
   static const size_t LEFT_WHEEL_IDX = 0;
   static const size_t RIGHT_WHEEL_IDX = 1;
 
-  int left_rot_dir_ = 1;
-  int right_rot_dir_ = 1;
-
-  double left_coefficient_;
-  double right_coefficient_;
-
   std::vector<double> hw_commands_;
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
