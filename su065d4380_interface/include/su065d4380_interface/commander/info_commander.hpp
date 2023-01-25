@@ -85,10 +85,11 @@ private:
   rclcpp::Clock::SharedPtr clock_;
   const rclcpp::Duration TIMEOUT_;
 
+  int32_t left_encoder_, right_encoder_;
+
   InfoPacket::UniquePtr last_right_wheel_packet_;
   InfoPacket::UniquePtr last_left_wheel_packet_;
   InfoPacket::UniquePtr last_driver_state_packet_;
-  InfoPacket::UniquePtr last_encode_data_packet_;
   InfoPacket::UniquePtr last_voltage_packet_;
 
 public:
@@ -98,7 +99,7 @@ public:
   RESPONSE_STATE readRightRpm(uint8_t &, int16_t &);
   RESPONSE_STATE readLeftRpm(uint8_t &, int16_t &);
   RESPONSE_STATE readDriverState(DriverState &);
-  RESPONSE_STATE readEncoderData(int16_t &, int16_t &);
+  RESPONSE_STATE readEncoderData(int32_t &, int32_t &);
   RESPONSE_STATE readVoltage(float &);
 
   void evaluateResponse()  noexcept;

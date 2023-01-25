@@ -118,7 +118,7 @@ bool SU065D4380Interface::readEncoder(
   double & right_enc_diff, double & left_enc_diff) noexcept
 {
   static RESPONSE_STATE response;
-  static int16_t right_enc_diff_in_pulse, left_enc_diff_in_pulse;
+  static int32_t right_enc_diff_in_pulse, left_enc_diff_in_pulse;
   static const double coefficient = 2.0 * M_PI / (1 << 14);
   response =
     this->info_commander_->readEncoderData(right_enc_diff_in_pulse, left_enc_diff_in_pulse);
