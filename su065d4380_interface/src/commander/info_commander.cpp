@@ -121,8 +121,10 @@ void InfoCommander::init()
   this->last_right_wheel_packet_ = std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
   this->last_left_wheel_packet_ = std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
   this->last_driver_state_packet_ = std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
-  this->last_encode_data_packet_ = std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
   this->last_voltage_packet_ = std::make_unique<InfoPacket>(this->clock_, this->TIMEOUT_);
+
+  this->right_encoder_ = 0;
+  this->left_encoder_ = 0;
 }
 
 RESPONSE_STATE InfoCommander::readRightRpm(uint8_t & mode, int16_t & rpm)
@@ -194,25 +196,10 @@ RESPONSE_STATE InfoCommander::readDriverState(DriverState & _driver_state)
   return RESPONSE_STATE::OK;
 }
 
-RESPONSE_STATE InfoCommander::readEncoderData(int16_t & right_encoder, int16_t & left_encoder)
+RESPONSE_STATE InfoCommander::readEncoderData(int32_t & right_encoder, int32_t & left_encoder)
 {
-  std::string packet;
-  const RESPONSE_STATE state =
-    this->last_encode_data_packet_->takePacket(packet);
-  if (state != RESPONSE_STATE::OK) {
-    return state;
-  }
-
-  static const size_t RIGHT_ENCODER_IDX = 3;
-  static const size_t LEFT_ENCODER_IDX = 7;
-  try {
-    right_encoder =
-      static_cast<int16_t>(std::stoi(packet.substr(RIGHT_ENCODER_IDX, 4), nullptr, 16));
-    left_encoder =
-      static_cast<int16_t>(std::stoi(packet.substr(LEFT_ENCODER_IDX, 4), nullptr, 16));
-  } catch (std::invalid_argument &) {
-    return RESPONSE_STATE::ERROR_UNKNOWN;
-  }
+  right_encoder = this->right_encoder_;
+  left_encoder = this->left_encoder_;
 
   return RESPONSE_STATE::OK;
 }
@@ -245,6 +232,10 @@ RESPONSE_STATE InfoCommander::readVoltage(float & voltage)
 void InfoCommander::evaluateResponse() noexcept
 {
   static const size_t CHECKSUM_IDX = 11;
+  static const size_t RIGHT_ENCODER_IDX = 3;
+  static const size_t LEFT_ENCODER_IDX = 7;
+  static int16_t right_enc_diff, left_enc_diff;
+
   std::string response;
   while (this->packet_handler_->takePacket(PacketPool::PACKET_TYPE::INFO, response)) {
     if (!CommandUtil::confirmChecksum(response, CHECKSUM_IDX)) {
@@ -264,7 +255,13 @@ void InfoCommander::evaluateResponse() noexcept
         this->last_driver_state_packet_->setPacket(response);
         break;
       case InfoCommander::COMMAND_TYPE::ENCODE_DATA:
-        this->last_encode_data_packet_->setPacket(response);
+        right_enc_diff =
+          static_cast<int16_t>(std::stoi(response.substr(RIGHT_ENCODER_IDX, 4), nullptr, 16));
+        left_enc_diff =
+          static_cast<int16_t>(std::stoi(response.substr(LEFT_ENCODER_IDX, 4), nullptr, 16));
+        this->right_encoder_ += right_enc_diff;
+        this->left_encoder_ += left_enc_diff;
+
         break;
       case InfoCommander::COMMAND_TYPE::VOLTAGE:
         this->last_voltage_packet_->setPacket(response);

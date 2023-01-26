@@ -45,7 +45,7 @@ protected:
 TEST_F(TestInfoCommander, readAllOK)
 {
   EXPECT_CALL(mock_port_handler, getBytesAvailable())
-  .WillRepeatedly(Return(5 * 14));
+  .WillRepeatedly(Return(9 * 14));
   // Return invalid response here
   EXPECT_CALL(mock_port_handler, readPort(_, _))
   .WillRepeatedly(
@@ -54,8 +54,12 @@ TEST_F(TestInfoCommander, readAllOK)
         "$A10100F83028\r"
         "$A20100F8302B\r"
         "$A3000200085C\r"
+        "$A40FFF000126\r"
+        "$A41FFF000127\r"
+        "$A42FFF000124\r"
         "$A43FFF000125\r"
-        "$A512D3000024\r"), Return(5 * 14)));
+        "$A44FFF000122\r"
+        "$A512D3000024\r"), Return(9 * 14)));
 
   this->packet_handler->readPortIntoQueue();
   this->commander->evaluateResponse();
@@ -77,10 +81,10 @@ TEST_F(TestInfoCommander, readAllOK)
   ASSERT_TRUE(driver_state.hasError());
   ASSERT_EQ(driver_state.getErrorState(), su065d4380_interface::ERROR_STATE::SENSOR_ERROR);
 
-  int16_t right_encoder, left_encoder;
+  int32_t right_encoder, left_encoder;
   ASSERT_EQ(this->commander->readEncoderData(right_encoder, left_encoder), RESPONSE_STATE::OK);
-  ASSERT_EQ(right_encoder, 16383);
-  ASSERT_EQ(left_encoder, 1);
+  ASSERT_EQ(right_encoder, 61435);
+  ASSERT_EQ(left_encoder, 5);
 
   float voltage;
   ASSERT_EQ(this->commander->readVoltage(voltage), RESPONSE_STATE::OK);
