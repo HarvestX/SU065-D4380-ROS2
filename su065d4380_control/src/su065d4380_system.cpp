@@ -79,6 +79,21 @@ CallbackReturn SU065D4380System::on_init(const hardware_interface::HardwareInfo 
     }
   }
 
+  for (const auto & transmission : this->info_.transmissions) {
+    for (const auto & joint : transmission.joints) {
+      if (joint.name.find("left") != std::string::npos) {
+        this->left_reduction_ratio_ = joint.mechanical_reduction;
+      }
+      if (joint.name.find("right") != std::string::npos) {
+        this->right_reduction_ratio_ = joint.mechanical_reduction;
+      }
+    }
+  }
+
+  RCLCPP_INFO(
+    this->getLogger(), "Reduction Ratio: %.3lf, %.3lf",
+    this->left_reduction_ratio_, this->right_reduction_ratio_);
+
   if (this->info_.joints.at(LEFT_WHEEL_IDX).name.find("left") == std::string::npos) {
     RCLCPP_FATAL(
       this->getLogger(), "The index for left wheel expected to be %zu", LEFT_WHEEL_IDX);
@@ -90,6 +105,7 @@ CallbackReturn SU065D4380System::on_init(const hardware_interface::HardwareInfo 
       this->getLogger(), "The index for wright wheel expected to be %zu", RIGHT_WHEEL_IDX);
     return CallbackReturn::ERROR;
   }
+
 
   RCLCPP_INFO(this->getLogger(), "Successfully initialized!");
   return CallbackReturn::SUCCESS;
@@ -184,12 +200,12 @@ hardware_interface::return_type SU065D4380System::read()
 
   static const double RPM2RPS = (2.0 * M_PI) / 60.0;
   this->hw_velocities_.at(RIGHT_WHEEL_IDX) = static_cast<double>(right_rpm) * RPM2RPS /
-    this->right_coefficient_;
+    this->right_reduction_ratio_;
   this->hw_velocities_.at(LEFT_WHEEL_IDX) = static_cast<double>(left_rpm) * RPM2RPS /
-    this->left_coefficient_;
+    this->left_reduction_ratio_;
 
-  this->hw_positions_.at(RIGHT_WHEEL_IDX) += right_enc;
-  this->hw_positions_.at(LEFT_WHEEL_IDX) += left_enc;
+  this->hw_positions_.at(RIGHT_WHEEL_IDX) += right_enc / this->right_reduction_ratio_;
+  this->hw_positions_.at(LEFT_WHEEL_IDX) += left_enc / this->left_reduction_ratio_;
 
   return hardware_interface::return_type::OK;
 }
@@ -201,7 +217,8 @@ hardware_interface::return_type SU065D4380System::write()
   const double right_rps = this->hw_commands_.at(RIGHT_WHEEL_IDX);
 
   const bool write_response = this->interface_->writeRpm(
-    static_cast<int16_t>(right_rps * RPS2RPM), static_cast<int16_t>(left_rps * RPS2RPM));
+    static_cast<int16_t>(right_rps * RPS2RPM * this->right_reduction_ratio_),
+    static_cast<int16_t>(left_rps * RPS2RPM * this->left_reduction_ratio_));
 
   if (!write_response) {
     RCLCPP_ERROR(this->getLogger(), "Write velocity failed");
