@@ -201,6 +201,9 @@ RESPONSE_STATE InfoCommander::readEncoderData(int32_t & right_encoder, int32_t &
   right_encoder = this->right_encoder_;
   left_encoder = this->left_encoder_;
 
+  this->right_encoder_ = 0.0;
+  this->left_encoder_ = 0.0;
+
   return RESPONSE_STATE::OK;
 }
 
