@@ -25,7 +25,7 @@ SU065D4380Interface::SU065D4380Interface(
   TIMEOUT_(rclcpp::Duration(_timeout))
 {
   this->port_handler_ =
-    std::make_unique<PortHandler>(port_name, this->logging_interface_);
+    std::make_unique<PortHandler>(port_name, 115200, this->logging_interface_);
 }
 
 bool SU065D4380Interface::init()

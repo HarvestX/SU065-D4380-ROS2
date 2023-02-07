@@ -61,7 +61,7 @@ ParamConfigurator::ParamConfigurator(const rclcpp::NodeOptions & options)
 
   this->port_handler_ =
     std::make_unique<h6x_serial_interface::PortHandler>(
-    this->dev_, this->get_node_logging_interface());
+    this->dev_, 115200, this->get_node_logging_interface());
   this->port_handler_->openPort();
 
   auto packet_handler = std::make_shared<su065d4380_interface::PacketHandler>(
