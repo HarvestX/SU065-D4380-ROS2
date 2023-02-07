@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
 
 
   using PortHandler = h6x_serial_interface::PortHandler;
-  auto port_handler = std::make_shared<PortHandler>(port_name, logger);
+  auto port_handler = std::make_shared<PortHandler>(port_name, 115200, logger);
 
   if (!port_handler->openPort()) {
     RCLCPP_ERROR(logger->get_logger(), "Failed to open the port !");
