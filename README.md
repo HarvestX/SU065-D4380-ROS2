@@ -7,9 +7,6 @@ Nidec Motor Driver interface for ROS2
 ![Image](./media/SU065-M4380.jpg)
 
 ## Requirements
-- Linux OS
-  - [Ubuntu 20.04](https://releases.ubuntu.com/20.04/)
-  - [Ubuntu 22.04](https://releases.ubuntu.com/22.04/)
 - ROS 2
   - Ubuntu20 : [Galactic Geochelone](https://docs.ros.org/en/galactic/Installation.html)
   - Ubuntu22 : [Humble Hawksbill](https://docs.ros.org/en/humble/Installation.html)
