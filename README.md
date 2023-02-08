@@ -1,4 +1,5 @@
 [![ci_galactic](https://github.com/HarvestX/SU065-D4380-ROS2/actions/workflows/ci_galactic.yml/badge.svg)](https://github.com/HarvestX/SU065-D4380-ROS2/actions/workflows/ci_galactic.yml)
+[![ci_humble](https://github.com/HarvestX/SU065-D4380-ROS2/actions/workflows/ci_humble.yml/badge.svg)](https://github.com/HarvestX/SU065-D4380-ROS2/actions/workflows/ci_humble.yml)
 
 # SU065-D4380-ROS2
 Nidec Motor Driver interface for ROS2
@@ -8,8 +9,10 @@ Nidec Motor Driver interface for ROS2
 ## Requirements
 - Linux OS
   - [Ubuntu 20.04](https://releases.ubuntu.com/20.04/)
+  - [Ubuntu 22.04](https://releases.ubuntu.com/22.04/)
 - ROS 2
-  - [Galactic Geochelone](https://index.ros.org/doc/ros2/Installation/Galactic/)
+  - Ubuntu20 : [Galactic Geochelone](https://docs.ros.org/en/galactic/Installation.html)
+  - Ubuntu22 : [Humble Hawksbill](https://docs.ros.org/en/humble/Installation.html)
 
 ## Setup
 Add user to dialout group.
