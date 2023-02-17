@@ -37,6 +37,8 @@
 
 #include <su065d4380_interface/su065d4380_interface.hpp>
 
+using hardware_interface::CallbackReturn;
+using hardware_interface::return_type;
 
 namespace su065d4380_control
 {
@@ -79,10 +81,14 @@ public:
   CallbackReturn on_deactivate(const rclcpp_lifecycle::State &) override;
 
   HARDWARE_INTERFACE_PUBLIC
-  hardware_interface::return_type read() override;
+  hardware_interface::return_type read(
+    const rclcpp::Time & time,
+    const rclcpp::Duration & period) override;
 
   HARDWARE_INTERFACE_PUBLIC
-  hardware_interface::return_type write() override;
+  hardware_interface::return_type write(
+    const rclcpp::Time & time,
+    const rclcpp::Duration & period) override;
 
 private:
   const rclcpp::Logger getLogger() noexcept;
