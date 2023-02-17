@@ -12,9 +12,6 @@ SU065-D4380 ROS2 Control Package for diff_drive_controllers.
 ```xml
     <plugin>su065d4380_control/SU065D4380System</plugin>
     <param name="dev">${dev}</param>
-    <param name="left_rotation_direction">1</param>
-    <param name="right_rotation_direction">-1</param>
-    <param name="reduction_ratio">9.0</param>
 ```
 
 ## References.
