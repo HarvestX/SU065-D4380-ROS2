@@ -166,7 +166,9 @@ CallbackReturn SU065D4380System::on_deactivate(const rclcpp_lifecycle::State &)
   return CallbackReturn::SUCCESS;
 }
 
-hardware_interface::return_type SU065D4380System::read()
+hardware_interface::return_type SU065D4380System::read(
+  const rclcpp::Time &,
+  const rclcpp::Duration &)
 {
   if (!this->interface_->readPreprocess()) {
     RCLCPP_ERROR(this->getLogger(), "Read preprocess failed");
@@ -210,7 +212,9 @@ hardware_interface::return_type SU065D4380System::read()
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type SU065D4380System::write()
+hardware_interface::return_type SU065D4380System::write(
+  const rclcpp::Time &,
+  const rclcpp::Duration &)
 {
   static const double RPS2RPM = 60.0 / (2.0 * M_PI);
   const double left_rps = this->hw_commands_.at(LEFT_WHEEL_IDX);
