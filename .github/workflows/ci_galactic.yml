@@ -34,4 +34,4 @@ jobs:
             su065d4380_control
             su065d4380_interface
             su065d4380_tool
-          vcs-repo-file-url: su065d4380.repos
+          vcs-repo-file-url: build_depends.repos
