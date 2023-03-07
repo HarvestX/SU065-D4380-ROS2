@@ -32,6 +32,7 @@ jobs:
           target-ros2-distro: ${{ matrix.ros_distribution }}
           import-token: ${{ secrets.GITHUB_TOKEN }}
           package-name: |
+            su065d4380
             su065d4380_bringup
             su065d4380_control
             su065d4380_interface
