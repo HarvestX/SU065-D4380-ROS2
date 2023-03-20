@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot
+    xmlns:xacro="http://ros.org/wiki/xacro"
+    name="su065d4380">
+  <!-- constants -->
+  <xacro:include
+      filename="$(find su065d4380_description)/urdf/common/constants.xacro"
+      ns="const" />
+  <xacro:property
+      name="wheel_col_len"
+      value="0.055" />
+  <xacro:property
+      name="wheel_col_radius"
+      value="0.075" /> <!-- = 0.0785/2 -->
+
+  <xacro:macro
+      name="su065d4380"
+      params="parent prefix *origin">
+
+    <!-- Link -->
+    <link name="${prefix}su065d4380_wheel_link">
+      <inertial>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <mass value="6.141" />
+        <inertia
+            ixx="0.00349"
+            ixy="0.0"
+            ixz="0.0"
+            iyy="0.00630"
+            iyz="0.0"
+            izz="0.00349" />
+      </inertial>
+      <visual>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://su065d4380_description/meshes/wheel.dae" />
+        </geometry>
+      </visual>
+      <collision>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <geometry>
+          <cylinder
+              length="${wheel_col_len}"
+              radius="${wheel_col_radius}" />
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- wheel offset is 18iuse_nominal_extrinsics} -->
+    <link name="${prefix}su065d4380_wheel_motor_link">
+      <inertial>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <mass value="1.105" />
+        <inertia
+            ixx=".000285"
+            ixy="0.0"
+            ixz="0.0"
+            iyy="0.00286"
+            iyz="0.0"
+            izz="0.00285" />
+      </inertial>
+      <visual>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://su065d4380_description/meshes/wheel_motor.dae" />
+        </geometry>
+      </visual>
+      <collision>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <geometry>
+          <box size="0 0 0" />
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Joints -->
+    <joint
+        name="${prefix}su065d4380_wheel_joint"
+        type="continuous">
+      <!-- type="fixed"> -->
+      <parent link="${prefix}su065d4380_wheel_motor_link" />
+      <child link="${prefix}su065d4380_wheel_link" />
+      <axis xyz="0 1 0" />
+      <origin
+          xyz="0 0.018 0"
+          rpy="0 0 0" />
+      <limit
+          effort="30"
+          velocity="1.0"
+          lower="-2.2"
+          upper="0.7" />
+    </joint>
+
+
+    <joint
+        name="${prefix}su065d4380_joint"
+        type="fixed">
+      <parent link="${parent}" />
+      <child link="${prefix}su065d4380_wheel_motor_link" />
+      <xacro:insert_block name="origin" />
+    </joint>
+
+  </xacro:macro>
+</robot>
