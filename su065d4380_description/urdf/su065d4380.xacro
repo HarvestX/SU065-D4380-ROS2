@@ -12,40 +12,6 @@
       params="parent prefix *origin">
 
     <!-- Link -->
-    <link name="${prefix}su065d4380_wheel_link">
-      <inertial>
-        <origin
-            xyz="0 0 0"
-            rpy="0 0 0" />
-        <mass value="6.141" />
-        <inertia
-            ixx="0.00349"
-            ixy="0.0"
-            ixz="0.0"
-            iyy="0.00630"
-            iyz="0.0"
-            izz="0.00349" />
-      </inertial>
-      <visual>
-        <origin
-            xyz="0 0 0"
-            rpy="0 0 0" />
-        <geometry>
-          <mesh filename="package://su065d4380_description/meshes/wheel.dae" />
-        </geometry>
-      </visual>
-      <collision>
-        <origin
-            xyz="0 0 0"
-            rpy="${90.0 * const.TO_RADIAN} 0 0" />
-        <geometry>
-          <cylinder
-              length="45.0e-3"
-              radius="75.0e-3" />
-        </geometry>
-      </collision>
-    </link>
-
     <link name="${prefix}su065d4380_wheel_motor_link">
       <inertial>
         <origin
@@ -76,6 +42,40 @@
           <cylinder
               length="205.50e-3"
               radius="30.08e-3" />
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}su065d4380_wheel_link">
+      <inertial>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <mass value="6.141" />
+        <inertia
+            ixx="0.00349"
+            ixy="0.0"
+            ixz="0.0"
+            iyy="0.00630"
+            iyz="0.0"
+            izz="0.00349" />
+      </inertial>
+      <visual>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://su065d4380_description/meshes/wheel.dae" />
+        </geometry>
+      </visual>
+      <collision>
+        <origin
+            xyz="0 0 0"
+            rpy="${90.0 * const.TO_RADIAN} 0 0" />
+        <geometry>
+          <cylinder
+              length="45.0e-3"
+              radius="75.0e-3" />
         </geometry>
       </collision>
     </link>
