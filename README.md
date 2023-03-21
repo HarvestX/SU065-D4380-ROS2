@@ -4,7 +4,7 @@
 # SU065-D4380-ROS2
 Nidec Motor Driver interface for ROS2
 
-![Image](./media/SU065-M4380.jpg)
+![Image](./media/SU065-D4380.png)
 
 ## Requirements
 - ROS 2
