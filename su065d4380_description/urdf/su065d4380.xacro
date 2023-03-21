@@ -6,12 +6,6 @@
   <xacro:include
       filename="$(find su065d4380_description)/urdf/common/constants.xacro"
       ns="const" />
-  <xacro:property
-      name="wheel_col_len"
-      value="0.055" />
-  <xacro:property
-      name="wheel_col_radius"
-      value="0.075" /> <!-- = 0.0785/2 -->
 
   <xacro:macro
       name="su065d4380"
@@ -43,16 +37,15 @@
       <collision>
         <origin
             xyz="0 0 0"
-            rpy="0 0 0" />
+            rpy="${90.0 * const.TO_RADIAN} 0 0" />
         <geometry>
           <cylinder
-              length="${wheel_col_len}"
-              radius="${wheel_col_radius}" />
+              length="45.0e-3"
+              radius="75.0e-3" />
         </geometry>
       </collision>
     </link>
 
-    <!-- wheel offset is 18iuse_nominal_extrinsics} -->
     <link name="${prefix}su065d4380_wheel_motor_link">
       <inertial>
         <origin
@@ -77,33 +70,17 @@
       </visual>
       <collision>
         <origin
-            xyz="0 0 0"
-            rpy="0 0 0" />
+            xyz="0 -89.75e-3 0"
+            rpy="${-90.0 * const.TO_RADIAN} 0 0" />
         <geometry>
-          <box size="0 0 0" />
+          <cylinder
+              length="205.50e-3"
+              radius="30.08e-3" />
         </geometry>
       </collision>
     </link>
 
     <!-- Joints -->
-    <joint
-        name="${prefix}su065d4380_wheel_joint"
-        type="continuous">
-      <!-- type="fixed"> -->
-      <parent link="${prefix}su065d4380_wheel_motor_link" />
-      <child link="${prefix}su065d4380_wheel_link" />
-      <axis xyz="0 1 0" />
-      <origin
-          xyz="0 0.018 0"
-          rpy="0 0 0" />
-      <limit
-          effort="30"
-          velocity="1.0"
-          lower="-2.2"
-          upper="0.7" />
-    </joint>
-
-
     <joint
         name="${prefix}su065d4380_joint"
         type="fixed">
@@ -112,5 +89,16 @@
       <xacro:insert_block name="origin" />
     </joint>
 
+    <joint
+        name="${prefix}su065d4380_wheel_joint"
+        type="continuous">
+      <!-- type="fixed"> -->
+      <parent link="${prefix}su065d4380_wheel_motor_link" />
+      <child link="${prefix}su065d4380_wheel_link" />
+      <axis xyz="0 1 0" />
+      <origin
+          xyz="0 40.5e-3 0"
+          rpy="0 0 0" />
+    </joint>
   </xacro:macro>
 </robot>
