@@ -3,9 +3,6 @@ SU065-D4380 ROS2 Control Package for diff_drive_controllers.
 
 ## Parameters
 - `dev` : Absolute path for the device
-- `left_rotation_direction` : Left wheel rotation direction  `1/-1`.
-- `right_rotation_direction` : Right wheel rotation direction `1/-1`.
-- `reduction_rotation` : Mechanical reduction ratio for the wheel rotation.
 
 #### Example
 

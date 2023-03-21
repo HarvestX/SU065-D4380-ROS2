@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot
+    xmlns:xacro="http://ros.org/wiki/xacro"
+    name="su065d4380">
+  <xacro:include filename="$(find su065d4380_description)/urdf/su065d4380.xacro" />
+
+  <link name="base_link" />
+
+  <xacro:su065d4380
+      prefix=""
+      parent="base_link">
+    <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+  </xacro:su065d4380>
+</robot>
