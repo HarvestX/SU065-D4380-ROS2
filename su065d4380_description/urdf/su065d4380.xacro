@@ -15,16 +15,16 @@
     <link name="${prefix}su065d4380_wheel_motor_link">
       <inertial>
         <origin
-            xyz="0 0 0"
+            xyz="0 -68.0e-3 0"
             rpy="0 0 0" />
-        <mass value="1.105" />
+        <mass value="3.27" />
         <inertia
-            ixx=".000285"
+            ixx="0.03"
             ixy="0.0"
             ixz="0.0"
-            iyy="0.00286"
+            iyy="0.003"
             iyz="0.0"
-            izz="0.00285" />
+            izz="0.03" />
       </inertial>
       <visual>
         <origin
@@ -51,14 +51,14 @@
         <origin
             xyz="0 0 0"
             rpy="0 0 0" />
-        <mass value="6.141" />
+        <mass value="3.63" />
         <inertia
-            ixx="0.00349"
+            ixx="0.006"
             ixy="0.0"
             ixz="0.0"
-            iyy="0.00630"
+            iyy="0.011"
             iyz="0.0"
-            izz="0.00349" />
+            izz="0.006" />
       </inertial>
       <visual>
         <origin
