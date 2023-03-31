@@ -8,7 +8,7 @@ package_name = 'su065d4380_bringup'
 
 setup(
     name=package_name,
-    version='1.2.0',
+    version='1.2.1',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
