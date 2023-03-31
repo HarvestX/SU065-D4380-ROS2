@@ -16,6 +16,7 @@ on:
           - su065d4380
           - su065d4380_bringup
           - su065d4380_control
+          - su065d4380_description
           - su065d4380_interface
           - su065d4380_tool
 jobs:
