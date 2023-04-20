@@ -68,7 +68,7 @@ void CommandUtil::logResponse(const rclcpp::Logger & logger, const RESPONSE_STAT
       RCLCPP_ERROR(logger, "Crc calculation failed");
       break;
     case RESPONSE_STATE::ERROR_UNKNOWN:
-      RCLCPP_ERROR(logger, "Uknown error");
+      RCLCPP_ERROR(logger, "Unknown error");
       break;
     case RESPONSE_STATE::ERROR_SENDING:
       RCLCPP_ERROR(logger, "Error sending");
