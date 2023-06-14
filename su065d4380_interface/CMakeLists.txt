@@ -20,6 +20,12 @@ set(TARGET show_data)
 ament_auto_add_executable(show_data ./examples/${TARGET}.cpp)
 target_link_libraries(${TARGET} ${MYLIB})
 
+
+# show error ========================================================
+set(TARGET show_error)
+ament_auto_add_executable(show_error ./examples/${TARGET}.cpp)
+target_link_libraries(${TARGET} ${MYLIB})
+
 # Testing ===========================================================
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
