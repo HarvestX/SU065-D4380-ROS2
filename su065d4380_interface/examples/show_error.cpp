@@ -29,6 +29,12 @@ int main(int argc, char ** argv)
 
 
   if (!interface->init()) {
+    RCLCPP_ERROR(logger->get_logger(), "Failed to init");
+    return EXIT_FAILURE;
+  }
+
+  if (!interface->activate()) {
+    RCLCPP_ERROR(logger->get_logger(), "Failed to activate");
     return EXIT_FAILURE;
   }
 
@@ -38,10 +44,15 @@ int main(int argc, char ** argv)
 
   auto time_started = clock->now();
   while (clock->now() - time_started < rclcpp::Duration(5s)) {
+    if (!interface->readPreprocess()) {
+      continue;
+    }
+
     interface->readError();
 
     rclcpp::sleep_for(100ms);
   }
 
+  interface->deactivate();
   return EXIT_SUCCESS;
 }
