@@ -24,16 +24,14 @@ CallbackReturn SU065D4380System::on_init(const hardware_interface::HardwareInfo 
   }
 
   const std::string port_name = this->info_.hardware_parameters["dev"];
-  this->logging_interface_ = std::make_shared<su065d4380_interface::LoggingInterface>();
-  this->interface_ = std::make_unique<Interface>(port_name, this->logging_interface_);
+  this->interface_ = std::make_unique<Interface>(port_name);
 
-  if (!this->interface_->init()) {
-    return CallbackReturn::ERROR;
-  }
-
-  this->hw_positions_.resize(this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  this->hw_velocities_.resize(this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-  this->hw_commands_.resize(this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  this->state_positions_.resize(
+    this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  this->state_velocities_.resize(
+    this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  this->command_velocities_.resize(
+    this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
   for (const hardware_interface::ComponentInfo & joint : this->info_.joints) {
     if (joint.command_interfaces.size() != 1) {
@@ -94,20 +92,52 @@ CallbackReturn SU065D4380System::on_init(const hardware_interface::HardwareInfo 
     this->getLogger(), "Reduction Ratio: %.3lf, %.3lf",
     this->left_reduction_ratio_, this->right_reduction_ratio_);
 
-  if (this->info_.joints.at(LEFT_WHEEL_IDX).name.find("left") == std::string::npos) {
-    RCLCPP_FATAL(
-      this->getLogger(), "The index for left wheel expected to be %zu", LEFT_WHEEL_IDX);
+  if (this->info_.joints.at(0).name.find("left") == std::string::npos) {
+    RCLCPP_FATAL(this->getLogger(), "The index for left wheel expected to be 0");
     return CallbackReturn::ERROR;
   }
 
-  if (this->info_.joints.at(RIGHT_WHEEL_IDX).name.find("right") == std::string::npos) {
-    RCLCPP_FATAL(
-      this->getLogger(), "The index for wright wheel expected to be %zu", RIGHT_WHEEL_IDX);
+  if (this->info_.joints.at(1).name.find("right") == std::string::npos) {
+    RCLCPP_FATAL(this->getLogger(), "The index for wright wheel expected to be 1");
     return CallbackReturn::ERROR;
   }
 
+  return CallbackReturn::SUCCESS;
+}
 
-  RCLCPP_INFO(this->getLogger(), "Successfully initialized!");
+CallbackReturn SU065D4380System::on_configure(const State & state)
+{
+  if (this->interface_->on_configure(state) != CallbackReturn::SUCCESS) {
+    return CallbackReturn::FAILURE;
+  }
+
+  return CallbackReturn::SUCCESS;
+}
+
+CallbackReturn SU065D4380System::on_activate(const State & state)
+{
+  if (this->interface_->on_activate(state) != CallbackReturn::SUCCESS) {
+    return CallbackReturn::FAILURE;
+  }
+
+  // Set default value
+  for (size_t i = 0; i < this->state_positions_.size(); ++i) {
+    if (std::isnan(this->state_positions_.at(i))) {
+      this->state_positions_.at(i) = 0.0;
+      this->state_velocities_.at(i) = 0.0;
+      this->command_velocities_.at(i) = 0.0;
+    }
+  }
+
+  return CallbackReturn::SUCCESS;
+}
+
+CallbackReturn SU065D4380System::on_deactivate(const State & state)
+{
+  if (this->interface_->on_deactivate(state) != CallbackReturn::SUCCESS) {
+    return CallbackReturn::ERROR;
+  }
+
   return CallbackReturn::SUCCESS;
 }
 
@@ -117,10 +147,12 @@ std::vector<hardware_interface::StateInterface> SU065D4380System::export_state_i
   for (size_t i = 0; i < info_.joints.size(); ++i) {
     state_interface.emplace_back(
       hardware_interface::StateInterface(
-        this->info_.joints.at(i).name, hardware_interface::HW_IF_POSITION, &hw_positions_.at(i)));
+        this->info_.joints.at(i).name, hardware_interface::HW_IF_POSITION,
+        &this->state_positions_.at(i)));
     state_interface.emplace_back(
       hardware_interface::StateInterface(
-        this->info_.joints.at(i).name, hardware_interface::HW_IF_VELOCITY, &hw_velocities_.at(i)));
+        this->info_.joints.at(i).name, hardware_interface::HW_IF_VELOCITY,
+        &this->state_velocities_.at(i)));
   }
   return state_interface;
 }
@@ -132,108 +164,36 @@ std::vector<hardware_interface::CommandInterface> SU065D4380System::export_comma
     command_interfaces.emplace_back(
       hardware_interface::CommandInterface(
         this->info_.joints.at(i).name, hardware_interface::HW_IF_VELOCITY,
-        &this->hw_commands_.at(i)));
+        &this->command_velocities_.at(i)));
   }
 
   return command_interfaces;
 }
 
-CallbackReturn SU065D4380System::on_activate(const rclcpp_lifecycle::State &)
+return_type SU065D4380System::read(const rclcpp::Time &, const rclcpp::Duration &)
 {
-  if (!this->interface_->activate()) {
-    return CallbackReturn::FAILURE;
-  }
+  this->interface_->read();
 
-  // Set default value
-  for (size_t i = 0; i < this->hw_positions_.size(); ++i) {
-    if (std::isnan(this->hw_positions_.at(i))) {
-      this->hw_positions_.at(i) = 0.0;
-      this->hw_velocities_.at(i) = 0.0;
-      this->hw_commands_.at(i) = 0.0;
-    }
-  }
+  this->state_positions_.at(0) = this->interface_->getLeftRadian();
+  this->state_positions_.at(1) = this->interface_->getRightRadian();
 
-  RCLCPP_INFO(this->getLogger(), "Successfully activated!");
-  return CallbackReturn::SUCCESS;
+  this->state_velocities_.at(0) = this->interface_->getLeftVelocity();
+  this->state_velocities_.at(1) = this->interface_->getRightVelocity();
+
+  return return_type::OK;
 }
 
-CallbackReturn SU065D4380System::on_deactivate(const rclcpp_lifecycle::State &)
+return_type SU065D4380System::write(const rclcpp::Time &, const rclcpp::Duration &)
 {
-  if (!this->interface_->deactivate()) {
-    return CallbackReturn::ERROR;
-  }
-  RCLCPP_INFO(this->getLogger(), "Successfully deactivated!");
-  return CallbackReturn::SUCCESS;
-}
+  this->interface_->setVelocity(this->command_velocities_.at(0), this->command_velocities_.at(1));
+  this->interface_->write();
 
-hardware_interface::return_type SU065D4380System::read(
-  const rclcpp::Time &,
-  const rclcpp::Duration &)
-{
-  if (!this->interface_->readPreprocess()) {
-    RCLCPP_ERROR(this->getLogger(), "Read preprocess failed");
-    return hardware_interface::return_type::ERROR;
-  }
-
-  if (!this->interface_->readError()) {
-    return hardware_interface::return_type::ERROR;
-  }
-
-  if (!this->interface_->readLastVelocityCommandState()) {
-    RCLCPP_ERROR(this->getLogger(), "Read last velocity command state failed");
-    return hardware_interface::return_type::ERROR;
-  }
-
-  static int16_t right_rpm, left_rpm;
-  static double right_enc, left_enc;
-
-  if (!this->interface_->readRightRpm(right_rpm)) {
-    RCLCPP_ERROR(this->getLogger(), "Read right rpm failed");
-    return hardware_interface::return_type::ERROR;
-  }
-  if (!this->interface_->readLeftRpm(left_rpm)) {
-    RCLCPP_ERROR(this->getLogger(), "Read left rpm failed");
-    return hardware_interface::return_type::ERROR;
-  }
-  if (!this->interface_->readEncoder(right_enc, left_enc)) {
-    RCLCPP_ERROR(this->getLogger(), "Read encoder failed");
-    return hardware_interface::return_type::ERROR;
-  }
-
-  static const double RPM2RPS = (2.0 * M_PI) / 60.0;
-  this->hw_velocities_.at(RIGHT_WHEEL_IDX) = static_cast<double>(right_rpm) * RPM2RPS /
-    this->right_reduction_ratio_;
-  this->hw_velocities_.at(LEFT_WHEEL_IDX) = static_cast<double>(left_rpm) * RPM2RPS /
-    this->left_reduction_ratio_;
-
-  this->hw_positions_.at(RIGHT_WHEEL_IDX) += right_enc / this->right_reduction_ratio_;
-  this->hw_positions_.at(LEFT_WHEEL_IDX) += left_enc / this->left_reduction_ratio_;
-
-  return hardware_interface::return_type::OK;
-}
-
-hardware_interface::return_type SU065D4380System::write(
-  const rclcpp::Time &,
-  const rclcpp::Duration &)
-{
-  static const double RPS2RPM = 60.0 / (2.0 * M_PI);
-  const double left_rps = this->hw_commands_.at(LEFT_WHEEL_IDX);
-  const double right_rps = this->hw_commands_.at(RIGHT_WHEEL_IDX);
-
-  const bool write_response = this->interface_->writeRpm(
-    static_cast<int16_t>(right_rps * RPS2RPM * this->right_reduction_ratio_),
-    static_cast<int16_t>(left_rps * RPS2RPM * this->left_reduction_ratio_));
-
-  if (!write_response) {
-    RCLCPP_ERROR(this->getLogger(), "Write velocity failed");
-    return hardware_interface::return_type::ERROR;
-  }
-  return hardware_interface::return_type::OK;
+  return return_type::OK;
 }
 
 const rclcpp::Logger SU065D4380System::getLogger() noexcept
 {
-  return this->logging_interface_->get_logger();
+  return rclcpp::get_logger("SU065D4380System");
 }
 }  // namespace su065d4380_control
 

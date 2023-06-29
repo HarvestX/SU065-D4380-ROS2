@@ -21,6 +21,11 @@ SU065D4380Interface::SU065D4380Interface(const std::string & dev)
   this->port_handler_ = std::make_unique<PortHandler>(dev);
 }
 
+SU065D4380Interface::~SU065D4380Interface()
+{
+  this->port_handler_.reset();
+}
+
 CallbackReturn SU065D4380Interface::on_configure(const State &)
 {
   if (!this->port_handler_->configure(115200)) {
@@ -52,16 +57,15 @@ CallbackReturn SU065D4380Interface::on_deactivate(const State &)
 
 void SU065D4380Interface::read() noexcept
 {
-  std::string buf;
+  std::stringstream buf;
   this->port_handler_->readUntil(buf, '\r');
 
   return;
 }
 
-
-bool SU065D4380Interface::setRpm(const int16_t & right_rpm, const int16_t & left_rpm) noexcept
+void SU065D4380Interface::write() noexcept
 {
-  return true;
+
 }
 
 

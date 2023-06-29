@@ -20,19 +20,19 @@ using namespace su065d4380_interface;  // NOLINT
 
 TEST(RxInfoPacket, RxLeftVelPacket) {
   const auto left_packet = std::make_unique<RxLeftVelPacket>();
-  const std::string data = "$A10100F83028\r";
+  const std::string data = "$A10100F83028";
   ASSERT_FALSE(left_packet->isOK());
   ASSERT_TRUE(left_packet->set(data));
   ASSERT_TRUE(left_packet->isOK());
   ASSERT_EQ(left_packet->getMode(), 1);
   ASSERT_EQ(left_packet->getRPM(), -2000);
-  left_packet->consumed();
+  left_packet->consume();
   ASSERT_FALSE(left_packet->isOK());
 }
 
 TEST(RxInfoPacket, RxRightVelPacket) {
   const auto right_packet = std::make_unique<RxRightVelPacket>();
-  const std::string data = "$A20100F8302B\r";
+  const std::string data = "$A20100F8302B";
   ASSERT_TRUE(right_packet->set(data));
   ASSERT_EQ(right_packet->getMode(), 1);
   ASSERT_EQ(right_packet->getRPM(), -2000);
@@ -40,7 +40,7 @@ TEST(RxInfoPacket, RxRightVelPacket) {
 
 TEST(RxInfoPacket, RxDrvPacket) {
   const auto driver_info_packet = std::make_unique<RxDrvPacket>();
-  const std::string data = "$A3000200085C\r";
+  const std::string data = "$A3000200085C";
   ASSERT_TRUE(driver_info_packet->set(data));
   ASSERT_EQ(driver_info_packet->getDriverState(), 0x0002);
   ASSERT_EQ(driver_info_packet->getErrorState(), 0x0008);
@@ -49,11 +49,11 @@ TEST(RxInfoPacket, RxDrvPacket) {
 TEST(RxInfoPacket, RxEncPacket) {
   const auto encoder_packet = std::make_unique<RxEncPacket>();
   const std::vector<std::string> data_list = {
-    "$A40FFF000126\r",
-    "$A41FFF000127\r",
-    "$A42FFF000124\r",
-    "$A43FFF000125\r",
-    "$A44FFF000122\r"
+    "$A40FFF000126",
+    "$A41FFF000127",
+    "$A42FFF000124",
+    "$A43FFF000125",
+    "$A44FFF000122"
   };
 
   // Encoder should be ready for all the time.
@@ -86,7 +86,7 @@ TEST(RxInfoPacket, RxEncPacket) {
 
 TEST(RxInfoPacket, RxVolPacket) {
   const auto voltage_packet = std::make_unique<RxVolPacket>();
-  const std::string data = "$A512D3000024\r";
+  const std::string data = "$A512D3000024";
   ASSERT_TRUE(voltage_packet->set(data));
   ASSERT_EQ(voltage_packet->getVoltage(), 48.19);
 }

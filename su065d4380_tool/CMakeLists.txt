@@ -8,9 +8,10 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-set(TARGET param_configurator)
-ament_auto_add_executable(${TARGET} ./src/${TARGET}.cpp)
+# set(TARGET param_configurator)
+# ament_auto_add_executable(${TARGET} ./src/${TARGET}.cpp)
 
+# TESTING ===========================================================
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   set(ament_cmake_copyright_FOUND TRUE)

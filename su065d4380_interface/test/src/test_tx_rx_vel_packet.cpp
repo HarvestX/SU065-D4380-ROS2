@@ -35,19 +35,19 @@ TEST(RxVelPacket, ReadResponse) {
   auto vel_packet = std::make_shared<RxVelPacket>();
 
   ASSERT_FALSE(vel_packet->isOK());
-  const std::string dataNG = "$8C07\r";
+  const std::string dataNG = "$8C07";
   ASSERT_TRUE(vel_packet->set(dataNG));
   ASSERT_TRUE(vel_packet->isOK());
   ASSERT_FALSE(vel_packet->isResponseOK());
-  vel_packet->consumed();
+  vel_packet->consume();
 
 
   ASSERT_FALSE(vel_packet->isOK());
-  const std::string dataOK = "$8C06\r";
+  const std::string dataOK = "$8C06";
   ASSERT_TRUE(vel_packet->set(dataOK));
   ASSERT_TRUE(vel_packet->isOK());
   ASSERT_TRUE(vel_packet->isResponseOK());
-  vel_packet->consumed();
+  vel_packet->consume();
 }
 
 
@@ -65,7 +65,7 @@ TEST(TxRxVelPacket, WriteAndWaitResponse) {
   // Can not set new TX until response processed
   ASSERT_FALSE(vel_packet->getTx(tx_ret));
 
-  const std::string dataOK = "$8C06\r";
+  const std::string dataOK = "$8C06";
   ASSERT_TRUE(vel_packet->setRx(dataOK));
   ASSERT_FALSE(vel_packet->isWaitingResponse());
   ASSERT_TRUE(vel_packet->isOK());
@@ -75,7 +75,7 @@ TEST(TxRxVelPacket, WriteAndWaitResponse) {
   ASSERT_EQ(tx_ret, "$8C01000BB8000056\r");
   ASSERT_TRUE(vel_packet->isWaitingResponse());
 
-  const std::string dataNG = "$8C07\r";
+  const std::string dataNG = "$8C07";
   ASSERT_FALSE(vel_packet->setRx(dataNG));
   ASSERT_FALSE(vel_packet->isWaitingResponse());
   ASSERT_TRUE(vel_packet->isOK());

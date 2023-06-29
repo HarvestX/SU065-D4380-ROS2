@@ -20,38 +20,35 @@
 
 namespace su065d4380_interface
 {
-class TxVelPacket : public h6x_packet_handler::TxPacket<3, 12, 3>
+class TxVelPacket : public h6x_packet_handler::TxPacket<3, 12, 2>
 {
 public:
   RCLCPP_UNIQUE_PTR_DEFINITIONS(TxVelPacket)
 
 public:
   TxVelPacket()
-  : TxPacket<3, 12, 3>::TxPacket({'$', '8', 'C'})
+  : TxPacket<3, 12, 2>::TxPacket({'$', '8', 'C'})
   {}
 
   void setVelocity(const uint8_t mode, const int16_t right, const int16_t left)
   {
     this->bin_data[0] = mode;
 
-    this->bin_data[2] = (right >> 8) & 0x00FF;
-    this->bin_data[3] = (right & 0x00FF);
-
-    this->bin_data[4] = (left >> 8) & 0x00FF;
-    this->bin_data[5] = (left & 0x00FF);
+    this->set2ByteData<int16_t>(2, right);
+    this->set2ByteData<int16_t>(4, left);
 
     this->makeOK();
   }
 };
 
-class RxVelPacket : public h6x_packet_handler::RxPacket<3, 2, 1>
+class RxVelPacket : public h6x_packet_handler::RxPacket<3, 2, 0>
 {
 public:
   RCLCPP_UNIQUE_PTR_DEFINITIONS(RxVelPacket)
 
 public:
   RxVelPacket()
-  : RxPacket<3, 2, 1>::RxPacket({'$', '8', 'C'})
+  : RxPacket<3, 2, 0>::RxPacket({'$', '8', 'C'})
   {}
 
   bool isResponseOK()

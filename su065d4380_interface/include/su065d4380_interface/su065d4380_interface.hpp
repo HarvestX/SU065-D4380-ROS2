@@ -28,27 +28,30 @@ using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 using State = rclcpp_lifecycle::State;
 class SU065D4380Interface : public rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 {
-private:
+public:
   RCLCPP_SHARED_PTR_DEFINITIONS(SU065D4380Interface)
 
+private:
   using PortHandler = h6x_serial_interface::PortHandler;
   PortHandler::UniquePtr port_handler_;
 
 public:
   SU065D4380Interface() = delete;
   explicit SU065D4380Interface(const std::string &);
+  ~SU065D4380Interface();
 
   CallbackReturn on_configure(const State &) override;
   CallbackReturn on_activate(const State &) override;
   CallbackReturn on_deactivate(const State &) override;
 
   void read() noexcept;
+  void write() noexcept;
 
-  bool getRightRpm(int16_t &) noexcept;
-  bool getLeftRpm(int16_t &)  noexcept;
-  bool getEncoder(double &, double &) noexcept;
-
-  bool setRpm(const int16_t &, const int16_t &) noexcept;
+  double getRightVelocity()  noexcept;
+  double getLeftVelocity()  noexcept;
+  double getRightRadian() noexcept;
+  double getLeftRadian() noexcept;
+  void setVelocity(const double, const double) noexcept;
 
 private:
   static const rclcpp::Logger getLogger() noexcept;

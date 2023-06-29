@@ -19,10 +19,12 @@
 
 namespace su065d4380_interface
 {
-class RxInfoPacketBase : public h6x_packet_handler::RxPacket<3, 8, 3>
+class RxInfoPacketBase : public h6x_packet_handler::RxPacket<3, 8, 2>
 {
 public:
-  using RxPacket<3, 8, 3>::RxPacket;
+  RxInfoPacketBase() = delete;
+  explicit RxInfoPacketBase(const char id)
+  : h6x_packet_handler::RxPacket<3, 8, 2>::RxPacket({'$', 'A', id}) {}
 };
 
 class RxVelPacketBase : public RxInfoPacketBase
@@ -48,7 +50,7 @@ public:
 
 public:
   RxLeftVelPacket()
-  : RxVelPacketBase({'$', 'A', '1'}) {}
+  : RxVelPacketBase('1') {}
 };
 
 class RxRightVelPacket : public RxVelPacketBase
@@ -58,7 +60,7 @@ public:
 
 public:
   RxRightVelPacket()
-  :  RxVelPacketBase({'$', 'A', '2'}) {}
+  :  RxVelPacketBase('2') {}
 };
 
 class RxDrvPacket : public RxInfoPacketBase
@@ -68,7 +70,7 @@ public:
 
 public:
   RxDrvPacket()
-  : RxInfoPacketBase({'$', 'A', '3'}) {}
+  : RxInfoPacketBase('3') {}
 
   uint16_t getDriverState()
   {
@@ -91,13 +93,13 @@ private:
 
 public:
   RxEncPacket()
-  : RxInfoPacketBase({'$', 'A', '4'})
+  : RxInfoPacketBase('4')
   {
     this->reset();
     this->makeOK();
   }
 
-  inline void consumed() = delete;
+  inline void consume() = delete;
 
   bool set(const std::string & buf) noexcept override
   {
@@ -135,7 +137,7 @@ public:
 
 public:
   RxVolPacket()
-  : RxInfoPacketBase({'$', 'A', '5'}) {}
+  : RxInfoPacketBase('5') {}
 
   double getVoltage()
   {
