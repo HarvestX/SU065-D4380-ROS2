@@ -19,56 +19,39 @@
 
 #include <h6x_serial_interface/h6x_serial_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
-
-#include "su065d4380_interface/commander/info_commander.hpp"
-#include "su065d4380_interface/commander/parameter_commander.hpp"
-#include "su065d4380_interface/commander/velocity_commander.hpp"
-#include "su065d4380_interface/logger.hpp"
-#include "su065d4380_interface/packet_handler.hpp"
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 
 namespace su065d4380_interface
 {
-using namespace std::chrono_literals;  // NOLINT
-class SU065D4380Interface
+using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+using State = rclcpp_lifecycle::State;
+class SU065D4380Interface : public rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 {
 private:
+  RCLCPP_SHARED_PTR_DEFINITIONS(SU065D4380Interface)
+
   using PortHandler = h6x_serial_interface::PortHandler;
   PortHandler::UniquePtr port_handler_;
-  PacketHandler::SharedPtr packet_handler_;
-  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_interface_;
-
-  VelocityCommander::UniquePtr velocity_commander_;
-  InfoCommander::UniquePtr info_commander_;
-
-  bool last_velocity_command_accepted;
-
-  rclcpp::Clock::SharedPtr clock_;
-  const rclcpp::Duration TIMEOUT_;
 
 public:
   SU065D4380Interface() = delete;
-  explicit SU065D4380Interface(
-    const std::string &,
-    rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr,
-    const std::chrono::nanoseconds = 1s);
+  explicit SU065D4380Interface(const std::string &);
 
-  bool init();
-  bool activate();
-  bool deactivate();
+  CallbackReturn on_configure(const State &) override;
+  CallbackReturn on_activate(const State &) override;
+  CallbackReturn on_deactivate(const State &) override;
 
-  bool readPreprocess()const noexcept;
-  bool readLastVelocityCommandState() noexcept;
-  bool readRightRpm(int16_t &) noexcept;
-  bool readLeftRpm(int16_t &)  noexcept;
-  bool readEncoder(double &, double &) noexcept;
-  bool readError() noexcept;
+  void read() noexcept;
 
-  bool writeRpm(const int16_t &, const int16_t &) noexcept;
+  bool getRightRpm(int16_t &) noexcept;
+  bool getLeftRpm(int16_t &)  noexcept;
+  bool getEncoder(double &, double &) noexcept;
+
+  bool setRpm(const int16_t &, const int16_t &) noexcept;
 
 private:
-  const rclcpp::Logger getLogger() noexcept;
-  bool processResponse(const RESPONSE_STATE &) noexcept;
+  static const rclcpp::Logger getLogger() noexcept;
 };
 
 }  // namespace su065d4380_interface
