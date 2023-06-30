@@ -64,6 +64,7 @@ public:
 
   return_type read(const rclcpp::Time &, const rclcpp::Duration &) override;
   return_type write(const rclcpp::Time &, const rclcpp::Duration &) override;
+
 private:
   static const rclcpp::Logger getLogger() noexcept;
 };
