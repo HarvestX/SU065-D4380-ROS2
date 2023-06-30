@@ -42,8 +42,8 @@ TEST(RxInfoPacket, RxDrvPacket) {
   const auto driver_info_packet = std::make_unique<RxDrvPacket>();
   const std::string data = "$A3000200085C";
   ASSERT_TRUE(driver_info_packet->set(data));
-  ASSERT_EQ(driver_info_packet->getDriverState(), 0x0002);
-  ASSERT_EQ(driver_info_packet->getErrorState(), 0x0008);
+  ASSERT_EQ(driver_info_packet->getDriverState(), driver_state_t::LOW_VOLTAGE_WARN);
+  ASSERT_EQ(driver_info_packet->getErrorState(), error_state_t::SENSOR_ERROR);
 }
 
 TEST(RxInfoPacket, RxEncPacket) {

@@ -22,7 +22,7 @@ TEST(TxVelPacket, WriteVelPacket) {
   auto vel_packet = std::make_shared<TxVelPacket>();
 
   ASSERT_FALSE(vel_packet->isOK());
-  vel_packet->setVelocity(1, 3000, 0);
+  vel_packet->setVelocity(mode_flag_t::FLAG_MODE_MOTOR_ON, 3000, 0);
 
   ASSERT_TRUE(vel_packet->isOK());
   std::string out;
@@ -57,7 +57,7 @@ TEST(TxRxVelPacket, WriteAndWaitResponse) {
   // Packet sendable
   ASSERT_TRUE(vel_packet->isOK());
 
-  vel_packet->setVelocity(1, 3000, 0);
+  vel_packet->setVelocity(mode_flag_t::FLAG_MODE_MOTOR_ON, 3000, 0);
   ASSERT_TRUE(vel_packet->getTx(tx_ret));
   ASSERT_EQ(tx_ret, "$8C01000BB8000056\r");
   ASSERT_TRUE(vel_packet->isWaitingResponse());
@@ -70,7 +70,7 @@ TEST(TxRxVelPacket, WriteAndWaitResponse) {
   ASSERT_FALSE(vel_packet->isWaitingResponse());
   ASSERT_TRUE(vel_packet->isOK());
 
-  vel_packet->setVelocity(1, 3000, 0);
+  vel_packet->setVelocity(mode_flag_t::FLAG_MODE_MOTOR_ON, 3000, 0);
   ASSERT_TRUE(vel_packet->getTx(tx_ret));
   ASSERT_EQ(tx_ret, "$8C01000BB8000056\r");
   ASSERT_TRUE(vel_packet->isWaitingResponse());

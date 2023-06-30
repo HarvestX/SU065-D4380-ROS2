@@ -20,6 +20,8 @@
 #include <h6x_serial_interface/h6x_serial_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include "su065d4380_interface/rx_info_packet.hpp"
+#include "su065d4380_interface/tx_rx_vel_packet.hpp"
 
 
 namespace su065d4380_interface
@@ -31,9 +33,20 @@ class SU065D4380Interface : public rclcpp_lifecycle::node_interfaces::LifecycleN
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(SU065D4380Interface)
 
+  static constexpr double RPM2RPS = M_2_PI / 60.0;
+  static constexpr double RPS2RPM = 60.0 / M_2_PI;
+  static constexpr double ENC2RAD = M_2_PI / (1 << 14);
+
 private:
   using PortHandler = h6x_serial_interface::PortHandler;
   PortHandler::UniquePtr port_handler_;
+
+  RxLeftVelPacket::UniquePtr rx_left_vel_packet_;
+  RxRightVelPacket::UniquePtr rx_right_vel_packet_;
+  RxDrvPacket::UniquePtr rx_drv_packet_;
+  RxEncPacket::UniquePtr rx_enc_packet_;
+  RxVolPacket::UniquePtr rx_vol_packet_;
+  TxRxVelPacket::UniquePtr tx_rx_vel_packet_;
 
 public:
   SU065D4380Interface() = delete;
@@ -46,9 +59,11 @@ public:
 
   void read() noexcept;
   void write() noexcept;
+  void consumeAll() noexcept;
 
-  double getRightVelocity()  noexcept;
-  double getLeftVelocity()  noexcept;
+  bool hasError() noexcept;
+  double getRightVelocity() noexcept;
+  double getLeftVelocity() noexcept;
   double getRightRadian() noexcept;
   double getLeftRadian() noexcept;
   void setVelocity(const double, const double) noexcept;

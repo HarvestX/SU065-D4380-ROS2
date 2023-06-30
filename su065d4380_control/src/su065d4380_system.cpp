@@ -34,28 +34,12 @@ CallbackReturn SU065D4380System::on_init(const hardware_interface::HardwareInfo 
     this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
   for (const hardware_interface::ComponentInfo & joint : this->info_.joints) {
-    if (joint.command_interfaces.size() != 1) {
-      RCLCPP_FATAL(
-        this->getLogger(),
-        "Joint '%s' has %zu command interfaces found. 1 expected.",
-        joint.name.c_str(), joint.command_interfaces.size());
-      return CallbackReturn::ERROR;
-    }
-
     if (joint.command_interfaces.at(0).name != hardware_interface::HW_IF_VELOCITY) {
       RCLCPP_FATAL(
         this->getLogger(),
         "Joint '%s' have '%s' command interface found. '%s' expected.",
         joint.name.c_str(), joint.command_interfaces.at(0).name.c_str(),
         hardware_interface::HW_IF_VELOCITY);
-      return CallbackReturn::ERROR;
-    }
-
-    if (joint.state_interfaces.size() != 2) {
-      RCLCPP_FATAL(
-        this->getLogger(),
-        "Joint '%s' has %zu state interface. 2 expected.",
-        joint.name.c_str(), joint.state_interfaces.size());
       return CallbackReturn::ERROR;
     }
 

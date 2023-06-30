@@ -20,6 +20,20 @@
 
 namespace su065d4380_interface
 {
+
+enum class mode_flag_t : uint8_t
+{
+  FLAG_MODE_MOTOR_ON = 1 << 0,
+  FLAG_MODE_BREAK_OFF = 1 << 3,
+  FLAG_MODE_ERROR_REST = 1 << 5,
+};
+
+constexpr mode_flag_t operator|(const mode_flag_t & lhs, const mode_flag_t & rhs)
+{
+  return static_cast<mode_flag_t>(
+    static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+}
+
 class TxVelPacket : public h6x_packet_handler::TxPacket<3, 12, 2>
 {
 public:
@@ -30,9 +44,9 @@ public:
   : TxPacket<3, 12, 2>::TxPacket({'$', '8', 'C'})
   {}
 
-  void setVelocity(const uint8_t mode, const int16_t right, const int16_t left)
+  void setVelocity(const mode_flag_t mode, const int16_t right, const int16_t left)
   {
-    this->bin_data[0] = mode;
+    this->bin_data[0] = static_cast<uint8_t>(mode);
 
     this->set2ByteData<int16_t>(2, right);
     this->set2ByteData<int16_t>(4, left);
@@ -72,7 +86,7 @@ public:
   : TxRxPacketBase<TxVelPacket, RxVelPacket>()
   {}
 
-  void setVelocity(const uint8_t mode, const int16_t right, const int16_t left)
+  void setVelocity(const mode_flag_t mode, const int16_t right, const int16_t left)
   {
     tx_packet.setVelocity(mode, right, left);
   }

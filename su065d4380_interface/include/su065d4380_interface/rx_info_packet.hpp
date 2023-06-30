@@ -22,9 +22,14 @@ namespace su065d4380_interface
 class RxInfoPacketBase : public h6x_packet_handler::RxPacket<3, 8, 2>
 {
 public:
+  static const char ID = 'A';
+  static const std::size_t ID_IDX = 1;
+  static const std::size_t SUB_ID_IDX = 2;
+
+public:
   RxInfoPacketBase() = delete;
-  explicit RxInfoPacketBase(const char id)
-  : h6x_packet_handler::RxPacket<3, 8, 2>::RxPacket({'$', 'A', id}) {}
+  explicit RxInfoPacketBase(const char sub_id)
+  : h6x_packet_handler::RxPacket<3, 8, 2>::RxPacket({'$', ID, sub_id}) {}
 };
 
 class RxVelPacketBase : public RxInfoPacketBase
@@ -47,39 +52,64 @@ class RxLeftVelPacket : public RxVelPacketBase
 {
 public:
   RCLCPP_UNIQUE_PTR_DEFINITIONS(RxLeftVelPacket)
+  static const char SUB_ID = '1';
 
 public:
   RxLeftVelPacket()
-  : RxVelPacketBase('1') {}
+  : RxVelPacketBase(SUB_ID) {}
 };
 
 class RxRightVelPacket : public RxVelPacketBase
 {
 public:
   RCLCPP_UNIQUE_PTR_DEFINITIONS(RxRightVelPacket)
+  static const char SUB_ID = '2';
 
 public:
   RxRightVelPacket()
-  :  RxVelPacketBase('2') {}
+  :  RxVelPacketBase(SUB_ID) {}
+};
+
+enum class driver_state_t : uint16_t
+{
+  OK = 0,
+  ERROR = 1 << 0,
+  LOW_VOLTAGE_WARN = 1 << 1,
+  LOW_VOLTAGE = 1 << 2,
+  LOW_VOLTAGE_EMERGENCY = 1 << 3,
+};
+
+enum class error_state_t : uint16_t
+{
+  OK = 0,
+  LOW_VOLTAGE = 1 << 0,
+  HIGH_VOLTAGE = 1 << 1,
+  INTERNAL_DRIVER_ERROR = 1 << 2,
+  SENSOR_ERROR = 1 << 3,
+  OVER_CURRENT = 1 << 4,
+  INVALID_VELOCITY = 1 << 5,  // Solvable
+  OVER_LOAD = 1 << 6,  // Solvable
+  COMMUNICATION_ERROR = 1 << 7  // Solvable
 };
 
 class RxDrvPacket : public RxInfoPacketBase
 {
 public:
   RCLCPP_UNIQUE_PTR_DEFINITIONS(RxDrvPacket)
+  static const char SUB_ID = '3';
 
 public:
   RxDrvPacket()
-  : RxInfoPacketBase('3') {}
+  : RxInfoPacketBase(SUB_ID) {}
 
-  uint16_t getDriverState()
+  driver_state_t getDriverState()
   {
-    return this->get2byteData<uint16_t>(0);
+    return static_cast<driver_state_t>(this->get2byteData<uint16_t>(0));
   }
 
-  uint16_t getErrorState()
+  error_state_t getErrorState()
   {
-    return this->get2byteData<uint16_t>(2);
+    return static_cast<error_state_t>(this->get2byteData<uint16_t>(2));
   }
 };
 
@@ -87,13 +117,14 @@ class RxEncPacket : public RxInfoPacketBase
 {
 public:
   RCLCPP_UNIQUE_PTR_DEFINITIONS(RxEncPacket)
+  static const char SUB_ID = '4';
 
 private:
   int64_t left_, right_;
 
 public:
   RxEncPacket()
-  : RxInfoPacketBase('4')
+  : RxInfoPacketBase(SUB_ID)
   {
     this->reset();
     this->makeOK();
@@ -125,8 +156,8 @@ public:
 
   void reset()
   {
-    left_ = 0;
-    right_ = 0;
+    this->left_ = 0;
+    this->right_ = 0;
   }
 };
 
@@ -134,10 +165,11 @@ class RxVolPacket : public RxInfoPacketBase
 {
 public:
   RCLCPP_UNIQUE_PTR_DEFINITIONS(RxVolPacket)
+  static const char SUB_ID = '5';
 
 public:
   RxVolPacket()
-  : RxInfoPacketBase('5') {}
+  : RxInfoPacketBase(SUB_ID) {}
 
   double getVoltage()
   {
