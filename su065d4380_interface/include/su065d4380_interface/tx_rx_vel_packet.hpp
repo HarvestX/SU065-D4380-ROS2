@@ -88,12 +88,12 @@ public:
 
   void setVelocity(const mode_flag_t mode, const int16_t right, const int16_t left)
   {
-    tx_packet.setVelocity(mode, right, left);
+    this->tx_packet.setVelocity(mode, right, left);
   }
 
   bool isResponseOK() override
   {
-    return rx_packet.isResponseOK();
+    return this->rx_packet.isResponseOK();
   }
 };
 }   // namespace su065d4380_interface

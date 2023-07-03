@@ -22,12 +22,16 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 
-  set(TARGET test_rx_info_packet)
-  ament_auto_add_gtest(${TARGET} ./test/src/${TARGET}.cpp)
+  set(TARGETS
+    test_rx_info_packet
+    test_tx_rx_vel_packet
+    test_tx_rx_param_read_packet
+    test_tx_rx_param_write_packet)
 
-  set(TARGET test_tx_rx_vel_packet)
-  ament_add_gmock(${TARGET} ./test/src/${TARGET}.cpp)
-  target_link_libraries(${TARGET} ${MYLIB})
+  foreach(TARGET ${TARGETS})
+    ament_add_gmock(${TARGET} ./test/src/${TARGET}.cpp)
+    target_link_libraries(${TARGET} ${MYLIB})
+  endforeach()
 endif()
 
 ament_auto_package()

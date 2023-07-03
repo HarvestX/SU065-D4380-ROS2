@@ -23,6 +23,18 @@
   "files.associations": {
     "*.repos": "yaml",
     "/usr/include/c++/11/**": "cpp",
+    "cctype": "cpp",
+    "clocale": "cpp",
+    "cmath": "cpp",
+    "csignal": "cpp",
+    "cstdarg": "cpp",
+    "cstddef": "cpp",
+    "cstdio": "cpp",
+    "cstdlib": "cpp",
+    "cstring": "cpp",
+    "ctime": "cpp",
+    "cwchar": "cpp",
+    "cwctype": "cpp"
   },
   "cmake.sourceDirectory": "/home/m12watanabe1a/ws_humble/src/SU065-D4380-ROS2/su065d4380"
 }
