@@ -9,10 +9,12 @@
         "/opt/ros/humble/include/**",
         "/opt/ros/humble/src/gmock_vendor/include/**",
         "/usr/include/**",
+        "${workspaceFolder}/../../install/h6x_packet_handler/include/**",
         "${workspaceFolder}/../../install/h6x_serial_interface/include/**",
         "${workspaceFolder}/su065d4380_control/include/**",
         "${workspaceFolder}/su065d4380_interface/include/**",
-        "${workspaceFolder}/su065d4380_tool/include/**",
+        "${workspaceFolder}/su065d4380_interface/src/**",
+        "${workspaceFolder}/su065d4380_tool/include/**"
       ],
       "name": "ROS",
       "intelliSenseMode": "clang-x64",

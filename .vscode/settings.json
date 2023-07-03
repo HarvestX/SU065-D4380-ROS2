@@ -21,8 +21,8 @@
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
   "files.associations": {
-    "MLTable": "yaml",
     "*.repos": "yaml",
-    "chrono": "cpp"
-  }
+    "/usr/include/c++/11/**": "cpp",
+  },
+  "cmake.sourceDirectory": "/home/m12watanabe1a/ws_humble/src/SU065-D4380-ROS2/su065d4380"
 }

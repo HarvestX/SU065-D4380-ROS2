@@ -16,187 +16,182 @@
 
 namespace su065d4380_interface
 {
-SU065D4380Interface::SU065D4380Interface(
-  const std::string & port_name,
-  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logger,
-  const std::chrono::nanoseconds _timeout)
-: logging_interface_(logger),
-  clock_(std::make_shared<rclcpp::Clock>(RCL_STEADY_TIME)),
-  TIMEOUT_(rclcpp::Duration(_timeout))
+SU065D4380Interface::SU065D4380Interface(const std::string & dev)
 {
-  this->port_handler_ =
-    std::make_unique<PortHandler>(port_name, 115200, this->logging_interface_);
+  this->port_handler_ = std::make_unique<PortHandler>(dev);
+
+  this->rx_left_vel_packet_ = std::make_unique<RxLeftVelPacket>();
+  this->rx_right_vel_packet_ = std::make_unique<RxRightVelPacket>();
+  this->rx_drv_packet_ = std::make_unique<RxDrvPacket>();
+  this->rx_enc_packet_ = std::make_unique<RxEncPacket>();
+  this->rx_vol_packet_ = std::make_unique<RxVolPacket>();
+  this->tx_rx_vel_packet_ = std::make_unique<TxRxVelPacket>();
 }
 
-bool SU065D4380Interface::init()
+SU065D4380Interface::~SU065D4380Interface()
 {
-  // Dry run to check can open port or not
-  if (!this->port_handler_->openPort()) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to open port");
-    return false;
+  this->port_handler_.reset();
+
+  this->rx_left_vel_packet_.reset();
+  this->rx_right_vel_packet_.reset();
+  this->rx_drv_packet_.reset();
+  this->rx_enc_packet_.reset();
+  this->rx_vol_packet_.reset();
+  this->tx_rx_vel_packet_.reset();
+}
+
+CallbackReturn SU065D4380Interface::on_configure(const State &)
+{
+  if (!this->port_handler_->configure(115200)) {
+    return CallbackReturn::FAILURE;
   }
-  this->port_handler_->closePort();
-  return true;
+
+  return CallbackReturn::SUCCESS;
 }
 
-bool SU065D4380Interface::activate()
+CallbackReturn SU065D4380Interface::on_activate(const State &)
 {
-  if (!this->port_handler_->openPort()) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to open port");
-    return false;
+  if (!this->port_handler_->open()) {
+    return CallbackReturn::FAILURE;
   }
 
-  this->packet_handler_ = std::make_shared<PacketHandler>(this->port_handler_.get());
-
-  this->velocity_commander_ =
-    std::make_unique<VelocityCommander>(this->packet_handler_, this->TIMEOUT_);
-  this->info_commander_ =
-    std::make_unique<InfoCommander>(this->packet_handler_, this->TIMEOUT_);
-
-  this->last_velocity_command_accepted = true;
-
-  return true;
+  return CallbackReturn::SUCCESS;
 }
 
-bool SU065D4380Interface::deactivate()
+CallbackReturn SU065D4380Interface::on_deactivate(const State &)
 {
-  // Stop motor
-  this->velocity_commander_->writeVelocity(su065d4380_interface::FLAG_MODE_MOTOR_ON, 0, 0);
+  // TODO(anyone): Stop motor;
+  this->setVelocity(0.0, 0.0);
+  this->write();
 
-  this->port_handler_->closePort();
-  this->packet_handler_ = nullptr;
+  if (!this->port_handler_->close()) {
+    return CallbackReturn::FAILURE;
+  }
 
-  this->velocity_commander_ = nullptr;
-  this->info_commander_ = nullptr;
-
-  return true;
+  return CallbackReturn::SUCCESS;
 }
 
-bool SU065D4380Interface::readPreprocess() const noexcept
+void SU065D4380Interface::read() noexcept
 {
-  rclcpp::Time time_started = this->clock_->now();
-  while (this->packet_handler_->getBytesAvailable()) {
-    this->packet_handler_->readPortIntoQueue();
-    if (this->clock_->now() - time_started > TIMEOUT_) {
-      return false;
+  std::stringstream buf;
+  this->port_handler_->readUntil(buf, '\r');
+  std::string packet;
+  while (std::getline(buf, packet, '\r')) {
+    if (packet.size() < 1 || packet.at(0) != '$') {
+      continue;
+    }
+
+    if (packet.size() == RxInfoPacketBase::ASCII_BUF_SIZE &&
+      packet[RxInfoPacketBase::ID_IDX] == RxInfoPacketBase::ID)
+    {
+      switch (packet[RxInfoPacketBase::SUB_ID_IDX]) {
+        case RxLeftVelPacket::SUB_ID:
+          this->rx_left_vel_packet_->set(packet);
+          break;
+        case RxRightVelPacket::SUB_ID:
+          this->rx_right_vel_packet_->set(packet);
+          break;
+        case RxDrvPacket::SUB_ID:
+          this->rx_drv_packet_->set(packet);
+          break;
+        case RxEncPacket::SUB_ID:
+          this->rx_enc_packet_->set(packet);
+          break;
+        case RxVolPacket::SUB_ID:
+          this->rx_vol_packet_->set(packet);
+          break;
+        default:
+          RCLCPP_WARN(
+            this->getLogger(), "Invalid packet ID given %c",
+            packet[RxInfoPacketBase::SUB_ID_IDX]);
+          break;
+      }
+    } else if (packet.size() == RxVelPacket::ASCII_BUF_SIZE) {
+      try {
+        this->tx_rx_vel_packet_->setRx(packet);
+      } catch (const std::runtime_error & e) {
+        RCLCPP_ERROR(this->getLogger(), e.what());
+      }
     }
   }
-  this->info_commander_->evaluateResponse();
-  return true;
+
+  return;
 }
 
-bool SU065D4380Interface::readLastVelocityCommandState() noexcept
+void SU065D4380Interface::write() noexcept
 {
-  static RESPONSE_STATE response;
-  if (this->last_velocity_command_accepted) {
-    return true;
+  std::string buf;
+  if (!this->tx_rx_vel_packet_->getTx(buf)) {
+    RCLCPP_WARN(this->getLogger(), "Waiting response from driver...");
+    return;
   }
-
-  response = this->velocity_commander_->evaluateResponse();
-  bool res = this->processResponse(response);
-  this->last_velocity_command_accepted = res;
-  return res;
+  this->port_handler_->write(buf.data(), buf.size());
 }
 
-bool SU065D4380Interface::readRightRpm(int16_t & right_rpm) noexcept
+void SU065D4380Interface::consumeAll() noexcept
 {
-  static uint8_t mode;
-  static RESPONSE_STATE response;
-  response = this->info_commander_->readRightRpm(mode, right_rpm);
-  return this->processResponse(response);
+  this->rx_left_vel_packet_->consume();
+  this->rx_right_vel_packet_->consume();
+  this->rx_drv_packet_->consume();
+  this->rx_vol_packet_->consume();
 }
 
-bool SU065D4380Interface::readLeftRpm(int16_t & left_rpm) noexcept
+bool SU065D4380Interface::hasError() noexcept
 {
-  static uint8_t mode;
-  static RESPONSE_STATE response;
-  response = this->info_commander_->readLeftRpm(mode, left_rpm);
-  return this->processResponse(response);
-}
-
-bool SU065D4380Interface::readEncoder(
-  double & right_enc_diff, double & left_enc_diff) noexcept
-{
-  static RESPONSE_STATE response;
-  static int32_t right_enc_diff_in_pulse, left_enc_diff_in_pulse;
-  static const double coefficient = 2.0 * M_PI / (1 << 14);
-  response =
-    this->info_commander_->readEncoderData(right_enc_diff_in_pulse, left_enc_diff_in_pulse);
-
-  right_enc_diff = static_cast<double>(right_enc_diff_in_pulse) * coefficient;
-  left_enc_diff = static_cast<double>(left_enc_diff_in_pulse) * coefficient;
-  return this->processResponse(response);
-}
-
-bool SU065D4380Interface::readError() noexcept
-{
-  static DriverState driver_state;
-  static RESPONSE_STATE response;
-  response = this->info_commander_->readDriverState(driver_state);
-  if (!this->processResponse(response)) {
-    return false;
-  } else if (response == RESPONSE_STATE::WAITING_RESPONSE) {
-    // error state is not arrived yet
-    return true;
-  }
-
-  if (!driver_state.hasError()) {
-    return true;
-  }
-  CommandUtil::logError(this->getLogger(), driver_state.getErrorState());
-  return false;
-}
-
-bool SU065D4380Interface::writeRpm(const int16_t & right_rpm, const int16_t & left_rpm) noexcept
-{
-  if (!this->last_velocity_command_accepted) {
-    RCLCPP_ERROR(this->getLogger(), "Waiting previous command accept");
+  if (!this->rx_drv_packet_->isOK()) {
     return false;
   }
 
-  static RESPONSE_STATE response;
-  response = this->velocity_commander_->writeVelocity(FLAG_MODE_MOTOR_ON, right_rpm, left_rpm);
-  this->last_velocity_command_accepted = false;
-  if (response == RESPONSE_STATE::ERROR_INVALID_INPUT) {
-    RCLCPP_ERROR(
-      this->getLogger(), "Invalid Input Given right: %d [rpm] left: %d [rpm]", right_rpm, left_rpm);
-    // Return true to don't stop the system
-    return true;
-  }
+  const error_state_t e = this->rx_drv_packet_->getErrorState();
 
-  return this->processResponse(response);
+  return e != error_state_t::OK;
 }
 
+double SU065D4380Interface::getRightVelocity() noexcept
+{
+  if (!this->rx_right_vel_packet_->isOK()) {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+
+  return this->rx_right_vel_packet_->getRPM() * RPM2RPS;
+}
+
+double SU065D4380Interface::getLeftVelocity() noexcept
+{
+  if (!this->rx_left_vel_packet_->isOK()) {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+
+  return this->rx_left_vel_packet_->getRPM() * RPM2RPS;
+}
+
+double SU065D4380Interface::getRightRadian() noexcept
+{
+  if (!this->rx_enc_packet_->isOK()) {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+
+  return this->rx_enc_packet_->getRightEncoder() * ENC2RAD;
+}
+
+double SU065D4380Interface::getLeftRadian() noexcept
+{
+  if (!this->rx_enc_packet_->isOK()) {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+
+  return this->rx_enc_packet_->getLeftEncoder() * ENC2RAD;
+}
+
+void SU065D4380Interface::setVelocity(const double left_rps, const double right_rps) noexcept
+{
+  this->tx_rx_vel_packet_->setVelocity(
+    mode_flag_t::FLAG_MODE_MOTOR_ON,
+    static_cast<int16_t>(left_rps * RPS2RPM), static_cast<int16_t>(-1.0 * right_rps * RPS2RPM));
+}
 
 const rclcpp::Logger SU065D4380Interface::getLogger() noexcept
 {
-  return this->logging_interface_->get_logger();
-}
-
-bool SU065D4380Interface::processResponse(
-  const RESPONSE_STATE & response) noexcept
-{
-  bool ret;
-  switch (response) {
-    case RESPONSE_STATE::OK:
-      ret = true;
-      break;
-    case RESPONSE_STATE::WAITING_RESPONSE:
-      RCLCPP_DEBUG(this->getLogger(), "Waiting for response");
-      ret = true;
-      break;
-    case RESPONSE_STATE::ERROR_EXPLICIT_NG:
-    case RESPONSE_STATE::ERROR_NOT_COMING_YET:
-    case RESPONSE_STATE::ERROR_INVALID_INPUT:
-    case RESPONSE_STATE::ERROR_CRC:
-    case RESPONSE_STATE::ERROR_UNKNOWN:
-      CommandUtil::logResponse(this->getLogger(), response);
-      ret = false;
-      break;
-    default:
-      ret = false;
-      break;
-  }
-  return ret;
+  return rclcpp::get_logger("SU065D4380Interface");
 }
 }  // namespace su065d4380_interface

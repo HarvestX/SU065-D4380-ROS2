@@ -14,8 +14,6 @@
 
 #pragma once
 
-#include <hardware_interface/visibility_control.h>
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -36,61 +34,38 @@
 #include <rclcpp_lifecycle/state.hpp>
 
 #include <su065d4380_interface/su065d4380_interface.hpp>
-
-using hardware_interface::CallbackReturn;
-using hardware_interface::return_type;
-
 namespace su065d4380_control
 {
+using hardware_interface::CallbackReturn;
+using hardware_interface::return_type;
+using rclcpp_lifecycle::State;
 class SU065D4380System : public hardware_interface::SystemInterface
 {
+public:
+  RCLCPP_SHARED_PTR_DEFINITIONS(SU065D4380System)
+
 private:
   using Interface = su065d4380_interface::SU065D4380Interface;
-  static const size_t LEFT_WHEEL_IDX = 0;
-  static const size_t RIGHT_WHEEL_IDX = 1;
+  Interface::SharedPtr interface_;
 
   double left_reduction_ratio_ = 1.0;
   double right_reduction_ratio_ = 1.0;
 
-  std::vector<double> hw_commands_;
-  std::vector<double> hw_positions_;
-  std::vector<double> hw_velocities_;
-
-  std::shared_ptr<Interface> interface_;
-  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_interface_;
+  std::vector<double> command_velocities_, state_positions_, state_velocities_;
 
 public:
-  RCLCPP_SHARED_PTR_DEFINITIONS(SU065D4380System)
+  CallbackReturn on_init(const hardware_interface::HardwareInfo &) override;
+  CallbackReturn on_configure(const State &) override;
+  CallbackReturn on_activate(const State &) override;
+  CallbackReturn on_deactivate(const State &) override;
 
-  HARDWARE_INTERFACE_PUBLIC
-  CallbackReturn
-  on_init(const hardware_interface::HardwareInfo & info) override;
+  std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
+  std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
 
-  HARDWARE_INTERFACE_PUBLIC
-  std::vector<hardware_interface::StateInterface>
-  export_state_interfaces() override;
-
-  HARDWARE_INTERFACE_PUBLIC
-  std::vector<hardware_interface::CommandInterface>
-  export_command_interfaces() override;
-
-  HARDWARE_INTERFACE_PUBLIC
-  CallbackReturn on_activate(const rclcpp_lifecycle::State &) override;
-
-  HARDWARE_INTERFACE_PUBLIC
-  CallbackReturn on_deactivate(const rclcpp_lifecycle::State &) override;
-
-  HARDWARE_INTERFACE_PUBLIC
-  hardware_interface::return_type read(
-    const rclcpp::Time & time,
-    const rclcpp::Duration & period) override;
-
-  HARDWARE_INTERFACE_PUBLIC
-  hardware_interface::return_type write(
-    const rclcpp::Time & time,
-    const rclcpp::Duration & period) override;
+  return_type read(const rclcpp::Time &, const rclcpp::Duration &) override;
+  return_type write(const rclcpp::Time &, const rclcpp::Duration &) override;
 
 private:
-  const rclcpp::Logger getLogger() noexcept;
+  static const rclcpp::Logger getLogger() noexcept;
 };
 }  // namespace su065d4380_control

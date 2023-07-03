@@ -19,56 +19,57 @@
 
 #include <h6x_serial_interface/h6x_serial_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
-
-#include "su065d4380_interface/commander/info_commander.hpp"
-#include "su065d4380_interface/commander/parameter_commander.hpp"
-#include "su065d4380_interface/commander/velocity_commander.hpp"
-#include "su065d4380_interface/logger.hpp"
-#include "su065d4380_interface/packet_handler.hpp"
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include "su065d4380_interface/rx_info_packet.hpp"
+#include "su065d4380_interface/tx_rx_vel_packet.hpp"
 
 
 namespace su065d4380_interface
 {
-using namespace std::chrono_literals;  // NOLINT
-class SU065D4380Interface
+using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+using State = rclcpp_lifecycle::State;
+class SU065D4380Interface : public rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 {
+public:
+  RCLCPP_SHARED_PTR_DEFINITIONS(SU065D4380Interface)
+
+  static constexpr double RPM2RPS = M_2_PI / 60.0;
+  static constexpr double RPS2RPM = 60.0 / M_2_PI;
+  static constexpr double ENC2RAD = M_2_PI / (1 << 14);
+
 private:
   using PortHandler = h6x_serial_interface::PortHandler;
   PortHandler::UniquePtr port_handler_;
-  PacketHandler::SharedPtr packet_handler_;
-  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_interface_;
 
-  VelocityCommander::UniquePtr velocity_commander_;
-  InfoCommander::UniquePtr info_commander_;
-
-  bool last_velocity_command_accepted;
-
-  rclcpp::Clock::SharedPtr clock_;
-  const rclcpp::Duration TIMEOUT_;
+  RxLeftVelPacket::UniquePtr rx_left_vel_packet_;
+  RxRightVelPacket::UniquePtr rx_right_vel_packet_;
+  RxDrvPacket::UniquePtr rx_drv_packet_;
+  RxEncPacket::UniquePtr rx_enc_packet_;
+  RxVolPacket::UniquePtr rx_vol_packet_;
+  TxRxVelPacket::UniquePtr tx_rx_vel_packet_;
 
 public:
   SU065D4380Interface() = delete;
-  explicit SU065D4380Interface(
-    const std::string &,
-    rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr,
-    const std::chrono::nanoseconds = 1s);
+  explicit SU065D4380Interface(const std::string &);
+  ~SU065D4380Interface();
 
-  bool init();
-  bool activate();
-  bool deactivate();
+  CallbackReturn on_configure(const State &) override;
+  CallbackReturn on_activate(const State &) override;
+  CallbackReturn on_deactivate(const State &) override;
 
-  bool readPreprocess()const noexcept;
-  bool readLastVelocityCommandState() noexcept;
-  bool readRightRpm(int16_t &) noexcept;
-  bool readLeftRpm(int16_t &)  noexcept;
-  bool readEncoder(double &, double &) noexcept;
-  bool readError() noexcept;
+  void read() noexcept;
+  void write() noexcept;
+  void consumeAll() noexcept;
 
-  bool writeRpm(const int16_t &, const int16_t &) noexcept;
+  bool hasError() noexcept;
+  double getRightVelocity() noexcept;
+  double getLeftVelocity() noexcept;
+  double getRightRadian() noexcept;
+  double getLeftRadian() noexcept;
+  void setVelocity(const double, const double) noexcept;
 
 private:
-  const rclcpp::Logger getLogger() noexcept;
-  bool processResponse(const RESPONSE_STATE &) noexcept;
+  static const rclcpp::Logger getLogger() noexcept;
 };
 
 }  // namespace su065d4380_interface
