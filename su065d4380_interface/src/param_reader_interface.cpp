@@ -35,16 +35,9 @@ void ParamReaderInterface::readRightGain()
     return;
   }
 
-  std::string data;
   this->tx_rx_param_read_packet_->setRightGain();
-  if (!this->tx_rx_param_read_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
+  if (!this->flashAndWaitResponse()) {
     return;
-  }
-
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_read_packet_->isWaitingResponse()) {
-    this->read();
   }
 
   RCLCPP_INFO(this->getLogger(), "Right gain %d", this->tx_rx_param_read_packet_->getData());
@@ -57,17 +50,9 @@ void ParamReaderInterface::readLeftGain()
     return;
   }
 
-  std::string data;
   this->tx_rx_param_read_packet_->setLeftGain();
-  if (!this->tx_rx_param_read_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
+  if (!this->flashAndWaitResponse()) {
     return;
-  }
-
-
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_read_packet_->isWaitingResponse()) {
-    this->read();
   }
 
   RCLCPP_INFO(this->getLogger(), "Left gain %d", this->tx_rx_param_read_packet_->getData());
@@ -80,16 +65,9 @@ void ParamReaderInterface::readAccelerationTime()
     return;
   }
 
-  std::string data;
   this->tx_rx_param_read_packet_->setAccelerationTime();
-  if (!this->tx_rx_param_read_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
+  if (!this->flashAndWaitResponse()) {
     return;
-  }
-
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_read_packet_->isWaitingResponse()) {
-    this->read();
   }
 
   RCLCPP_INFO(this->getLogger(), "Acceleration time %d", this->tx_rx_param_read_packet_->getData());
@@ -102,16 +80,9 @@ void ParamReaderInterface::readDecelerationTime()
     return;
   }
 
-  std::string data;
   this->tx_rx_param_read_packet_->setDecelerationTime();
-  if (!this->tx_rx_param_read_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
+  if (!this->flashAndWaitResponse()) {
     return;
-  }
-
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_read_packet_->isWaitingResponse()) {
-    this->read();
   }
 
   RCLCPP_INFO(this->getLogger(), "Deceleration time %d", this->tx_rx_param_read_packet_->getData());
@@ -124,16 +95,9 @@ void ParamReaderInterface::readTimeout()
     return;
   }
 
-  std::string data;
   this->tx_rx_param_read_packet_->setTimeout();
-  if (!this->tx_rx_param_read_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
+  if (!this->flashAndWaitResponse()) {
     return;
-  }
-
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_read_packet_->isWaitingResponse()) {
-    this->read();
   }
 
   RCLCPP_INFO(this->getLogger(), "Timeout %d", this->tx_rx_param_read_packet_->getData());
@@ -148,14 +112,8 @@ void ParamReaderInterface::readInputOffDecelerationTime()
 
   std::string data;
   this->tx_rx_param_read_packet_->setInputOffDecelerationTime();
-  if (!this->tx_rx_param_read_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
+  if (!this->flashAndWaitResponse()) {
     return;
-  }
-
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_read_packet_->isWaitingResponse()) {
-    this->read();
   }
 
   RCLCPP_INFO(
@@ -170,6 +128,26 @@ void ParamReaderInterface::readSinglePacket(const std::string & packet)
   } catch (const std::runtime_error & e) {
     RCLCPP_ERROR(this->getLogger(), e.what());
   }
+}
+
+bool ParamReaderInterface::flashAndWaitResponse()
+{
+  std::string data;
+  if (!this->tx_rx_param_read_packet_->getTx(data)) {
+    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
+    return false;
+  }
+
+  this->port_handler_->write(data.data(), data.size());
+  while (this->tx_rx_param_read_packet_->isWaitingResponse()) {
+    if (!rclcpp::ok()) {
+      return false;
+    }
+
+    this->read();
+  }
+
+  return true;
 }
 
 const rclcpp::Logger ParamReaderInterface::getLogger() noexcept

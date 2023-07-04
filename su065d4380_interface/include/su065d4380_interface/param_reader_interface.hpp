@@ -44,6 +44,10 @@ public:
 
 protected:
   void readSinglePacket(const std::string &) override;
+
+private:
+  bool flashAndWaitResponse();
   static const rclcpp::Logger getLogger() noexcept;
+
 };
 }  // namespace su065d4380_interface
