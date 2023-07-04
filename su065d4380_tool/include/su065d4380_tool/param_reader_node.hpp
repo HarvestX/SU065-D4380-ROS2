@@ -11,3 +11,28 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+#pragma once
+
+#include <rclcpp/rclcpp.hpp>
+#include <su065d4380_interface/param_reader_interface.hpp>
+
+namespace su065d4380_tool
+{
+class ParamReaderNode : public rclcpp::Node
+{
+private:
+  using CallbackReturn = su065d4380_interface::CallbackReturn;
+  using Interface = su065d4380_interface::ParamReaderInterface;
+  using State = su065d4380_interface::State;
+
+  rclcpp::TimerBase::SharedPtr init_timer_;
+  Interface::SharedPtr interface_;
+
+public:
+  explicit ParamReaderNode(const rclcpp::NodeOptions &);
+
+private:
+  void onInit();
+};
+}  // namespace su065d4380_tool

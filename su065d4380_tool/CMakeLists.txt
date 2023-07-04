@@ -8,8 +8,12 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-# set(TARGET param_configurator)
-# ament_auto_add_executable(${TARGET} ./src/${TARGET}.cpp)
+set(TARGET param_reader_node)
+ament_auto_add_library(${TARGET} SHARED src/${TARGET}.cpp)
+rclcpp_components_register_node(
+  ${TARGET}
+  PLUGIN "${PROJECT_NAME}::ParamReaderNode"
+  EXECUTABLE ${TARGET}_exec)
 
 # TESTING ===========================================================
 if(BUILD_TESTING)

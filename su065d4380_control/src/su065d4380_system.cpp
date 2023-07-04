@@ -25,6 +25,7 @@ CallbackReturn SU065D4380System::on_init(const hardware_interface::HardwareInfo 
 
   const std::string port_name = this->info_.hardware_parameters["dev"];
   this->interface_ = std::make_unique<Interface>(port_name);
+  this->interface_->on_init();
 
   this->state_positions_.resize(
     this->info_.joints.size(), std::numeric_limits<double>::quiet_NaN());

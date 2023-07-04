@@ -10,10 +10,8 @@ ament_auto_find_build_dependencies()
 
 # su065d4380 interface ==============================================
 file(GLOB src_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp)
-file(GLOB commander_src_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/commander/*.cpp)
-set(TARGET packet_handler)
-set(MYLIB ${PROJECT_NAME}_${TARGET})
-ament_auto_add_library(${MYLIB} SHARED ${src_files} ${commander_src_files})
+set(TARGET ${PROJECT_NAME})
+ament_auto_add_library(${TARGET} SHARED ${src_files})
 
 # Testing ===========================================================
 if(BUILD_TESTING)
@@ -30,7 +28,7 @@ if(BUILD_TESTING)
 
   foreach(TARGET ${TARGETS})
     ament_add_gmock(${TARGET} ./test/src/${TARGET}.cpp)
-    target_link_libraries(${TARGET} ${MYLIB})
+    target_link_libraries(${TARGET} ${${PROJECT_NAME}_LIBRARIES})
   endforeach()
 endif()
 

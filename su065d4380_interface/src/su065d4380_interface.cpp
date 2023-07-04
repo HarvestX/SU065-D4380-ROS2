@@ -16,22 +16,20 @@
 
 namespace su065d4380_interface
 {
-SU065D4380Interface::SU065D4380Interface(const std::string & dev)
+CallbackReturn SU065D4380Interface::on_init()
 {
-  this->port_handler_ = std::make_unique<PortHandler>(dev);
-
   this->rx_left_vel_packet_ = std::make_unique<RxLeftVelPacket>();
   this->rx_right_vel_packet_ = std::make_unique<RxRightVelPacket>();
   this->rx_drv_packet_ = std::make_unique<RxDrvPacket>();
   this->rx_enc_packet_ = std::make_unique<RxEncPacket>();
   this->rx_vol_packet_ = std::make_unique<RxVolPacket>();
   this->tx_rx_vel_packet_ = std::make_unique<TxRxVelPacket>();
+
+  CallbackReturn::SUCCESS;
 }
 
 SU065D4380Interface::~SU065D4380Interface()
 {
-  this->port_handler_.reset();
-
   this->rx_left_vel_packet_.reset();
   this->rx_right_vel_packet_.reset();
   this->rx_drv_packet_.reset();
@@ -40,82 +38,44 @@ SU065D4380Interface::~SU065D4380Interface()
   this->tx_rx_vel_packet_.reset();
 }
 
-CallbackReturn SU065D4380Interface::on_configure(const State &)
+void SU065D4380Interface::readSinglePacket(const std::string & packet)
 {
-  if (!this->port_handler_->configure(115200)) {
-    return CallbackReturn::FAILURE;
+  if (packet.size() < 1 || packet.at(0) != '$') {
+    return;
   }
 
-  return CallbackReturn::SUCCESS;
-}
-
-CallbackReturn SU065D4380Interface::on_activate(const State &)
-{
-  if (!this->port_handler_->open()) {
-    return CallbackReturn::FAILURE;
-  }
-
-  return CallbackReturn::SUCCESS;
-}
-
-CallbackReturn SU065D4380Interface::on_deactivate(const State &)
-{
-  // TODO(anyone): Stop motor;
-  this->setVelocity(0.0, 0.0);
-  this->write();
-
-  if (!this->port_handler_->close()) {
-    return CallbackReturn::FAILURE;
-  }
-
-  return CallbackReturn::SUCCESS;
-}
-
-void SU065D4380Interface::read() noexcept
-{
-  std::stringstream buf;
-  this->port_handler_->readUntil(buf, '\r');
-  std::string packet;
-  while (std::getline(buf, packet, '\r')) {
-    if (packet.size() < 1 || packet.at(0) != '$') {
-      continue;
+  if (packet.size() == RxInfoPacketBase::ASCII_BUF_SIZE &&
+    packet[RxInfoPacketBase::ID_IDX] == RxInfoPacketBase::ID)
+  {
+    switch (packet[RxInfoPacketBase::SUB_ID_IDX]) {
+      case RxLeftVelPacket::SUB_ID:
+        this->rx_left_vel_packet_->set(packet);
+        break;
+      case RxRightVelPacket::SUB_ID:
+        this->rx_right_vel_packet_->set(packet);
+        break;
+      case RxDrvPacket::SUB_ID:
+        this->rx_drv_packet_->set(packet);
+        break;
+      case RxEncPacket::SUB_ID:
+        this->rx_enc_packet_->set(packet);
+        break;
+      case RxVolPacket::SUB_ID:
+        this->rx_vol_packet_->set(packet);
+        break;
+      default:
+        RCLCPP_WARN(
+          this->getLogger(), "Invalid packet ID given %c",
+          packet[RxInfoPacketBase::SUB_ID_IDX]);
+        break;
     }
-
-    if (packet.size() == RxInfoPacketBase::ASCII_BUF_SIZE &&
-      packet[RxInfoPacketBase::ID_IDX] == RxInfoPacketBase::ID)
-    {
-      switch (packet[RxInfoPacketBase::SUB_ID_IDX]) {
-        case RxLeftVelPacket::SUB_ID:
-          this->rx_left_vel_packet_->set(packet);
-          break;
-        case RxRightVelPacket::SUB_ID:
-          this->rx_right_vel_packet_->set(packet);
-          break;
-        case RxDrvPacket::SUB_ID:
-          this->rx_drv_packet_->set(packet);
-          break;
-        case RxEncPacket::SUB_ID:
-          this->rx_enc_packet_->set(packet);
-          break;
-        case RxVolPacket::SUB_ID:
-          this->rx_vol_packet_->set(packet);
-          break;
-        default:
-          RCLCPP_WARN(
-            this->getLogger(), "Invalid packet ID given %c",
-            packet[RxInfoPacketBase::SUB_ID_IDX]);
-          break;
-      }
-    } else if (packet.size() == RxVelPacket::ASCII_BUF_SIZE) {
-      try {
-        this->tx_rx_vel_packet_->setRx(packet);
-      } catch (const std::runtime_error & e) {
-        RCLCPP_ERROR(this->getLogger(), e.what());
-      }
+  } else if (packet.size() == RxVelPacket::ASCII_BUF_SIZE) {
+    try {
+      this->tx_rx_vel_packet_->setRx(packet);
+    } catch (const std::runtime_error & e) {
+      RCLCPP_ERROR(this->getLogger(), e.what());
     }
   }
-
-  return;
 }
 
 void SU065D4380Interface::write() noexcept
