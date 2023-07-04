@@ -25,7 +25,7 @@ CallbackReturn SU065D4380Interface::on_init()
   this->rx_vol_packet_ = std::make_unique<RxVolPacket>();
   this->tx_rx_vel_packet_ = std::make_unique<TxRxVelPacket>();
 
-  CallbackReturn::SUCCESS;
+  return CallbackReturn::SUCCESS;
 }
 
 SU065D4380Interface::~SU065D4380Interface()
