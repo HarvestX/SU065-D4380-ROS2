@@ -34,9 +34,6 @@ public:
   ~ParamReaderInterface();
 
   CallbackReturn on_init() override;
-  CallbackReturn on_configure(const State &) override;
-  CallbackReturn on_activate(const State &) override;
-  CallbackReturn on_deactivate(const State &) override;
 
   void readRightGain();
   void readLeftGain();

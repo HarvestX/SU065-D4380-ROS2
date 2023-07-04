@@ -34,9 +34,6 @@ public:
   ~ParamWriterInterface();
 
   CallbackReturn on_init() override;
-  CallbackReturn on_configure(const State &) override;
-  CallbackReturn on_activate(const State &) override;
-  CallbackReturn on_deactivate(const State &) override;
 
   void writeRightGain(const uint16_t);
   void writeLeftGain(const uint16_t);
