@@ -14,4 +14,29 @@
 
 #pragma once
 
-// TODO(anyone): Implement parameter writer
+#include <memory>
+
+#include <rclcpp/rclcpp.hpp>
+#include <su065d4380_interface/param_writer_interface.hpp>
+#include <su065d4380_parameters.hpp>
+
+namespace su065d4380_tool
+{
+class ParamWriterNode : public rclcpp::Node
+{
+private:
+  using CallbackReturn = su065d4380_interface::CallbackReturn;
+  using Interface = su065d4380_interface::ParamWriterInterface;
+  using State = su065d4380_interface::State;
+
+  rclcpp::TimerBase::SharedPtr init_timer_;
+  Interface::SharedPtr interface_;
+  std::unique_ptr<su065d4380_param::ParamListener> param_listener_;
+
+public:
+  explicit ParamWriterNode(const rclcpp::NodeOptions &);
+
+private:
+  void onInit();
+};
+}  // namespace su065d4380_tool

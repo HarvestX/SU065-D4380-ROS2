@@ -14,8 +14,11 @@
 
 #pragma once
 
+#include <memory>
+
 #include <rclcpp/rclcpp.hpp>
 #include <su065d4380_interface/param_reader_interface.hpp>
+#include <su065d4380_parameters.hpp>
 
 namespace su065d4380_tool
 {
@@ -28,6 +31,7 @@ private:
 
   rclcpp::TimerBase::SharedPtr init_timer_;
   Interface::SharedPtr interface_;
+  std::unique_ptr<su065d4380_param::ParamListener> param_listener_;
 
 public:
   explicit ParamReaderNode(const rclcpp::NodeOptions &);

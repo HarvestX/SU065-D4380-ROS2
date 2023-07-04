@@ -19,9 +19,8 @@ namespace su065d4380_tool
 ParamReaderNode::ParamReaderNode(const rclcpp::NodeOptions & options)
 : rclcpp::Node("param_reader_node", options)
 {
-  this->declare_parameter("dev", "/dev/ttyACM0");
-  this->interface_ = std::make_shared<Interface>(
-    this->get_parameter("dev").as_string());
+  this->param_listener_ = std::make_unique<su065d4380_param::ParamListener>(
+    this->get_node_parameters_interface());
 
   using namespace std::chrono_literals;  // NOLINT
   this->init_timer_ = this->create_wall_timer(500ms, std::bind(&ParamReaderNode::onInit, this));
@@ -29,6 +28,9 @@ ParamReaderNode::ParamReaderNode(const rclcpp::NodeOptions & options)
 
 void ParamReaderNode::onInit()
 {
+  const auto params = this->param_listener_->get_params();
+  this->interface_ = std::make_shared<Interface>(params.dev);
+
   if (this->interface_->on_init() != CallbackReturn::SUCCESS) {
     RCLCPP_ERROR(this->get_logger(), "Failed to initialize");
     rclcpp::shutdown();
