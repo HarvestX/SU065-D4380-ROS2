@@ -24,8 +24,7 @@ ParamReaderNode::ParamReaderNode(const rclcpp::NodeOptions & options)
     this->get_parameter("dev").as_string());
 
   using namespace std::chrono_literals;  // NOLINT
-  this->init_timer_ = this->create_wall_timer(
-    1s, std::bind(&ParamReaderNode::onInit, this));
+  this->init_timer_ = this->create_wall_timer(500ms, std::bind(&ParamReaderNode::onInit, this));
 }
 
 void ParamReaderNode::onInit()
