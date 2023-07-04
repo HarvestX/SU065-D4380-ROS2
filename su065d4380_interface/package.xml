@@ -11,6 +11,7 @@
 
   <depend>h6x_packet_handler</depend>
   <depend>h6x_serial_interface</depend>
+  <depend>rclcpp_lifecycle</depend>
   <depend>rclcpp</depend>
 
   <test_depend>ament_cmake_gmock</test_depend>
