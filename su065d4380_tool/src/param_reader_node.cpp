@@ -35,12 +35,12 @@ void ParamReaderNode::onInit()
     rclcpp::shutdown();
   }
 
-  if (this->interface_->on_configure(State()) != Interface::CallbackReturn::SUCCESS) {
+  if (this->interface_->on_configure(State()) != CallbackReturn::SUCCESS) {
     RCLCPP_ERROR(this->get_logger(), "Failed to configure");
     rclcpp::shutdown();
   }
 
-  if (this->interface_->on_activate(State()) != Interface::CallbackReturn::SUCCESS) {
+  if (this->interface_->on_activate(State()) != CallbackReturn::SUCCESS) {
     RCLCPP_ERROR(this->get_logger(), "Failed to configure");
     rclcpp::shutdown();
   }
