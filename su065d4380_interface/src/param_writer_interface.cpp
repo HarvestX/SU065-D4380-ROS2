@@ -35,16 +35,13 @@ void ParamWriterInterface::writeRightGain(const uint16_t val)
     return;
   }
 
-  std::string data;
   this->tx_rx_param_write_packet_->setRightGain(val);
-  if (!this->tx_rx_param_write_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
-    return;
-  }
+  if (!this->flashAndWaitResponse()) {return;}
 
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_write_packet_->isWaitingResponse()) {
-    this->read();
+  if (this->read_status_) {
+    RCLCPP_INFO(this->getLogger(), "Right gain %d.", val);
+  } else {
+    RCLCPP_ERROR(this->getLogger(), "Failed to set right gain.");
   }
 }
 
@@ -55,16 +52,13 @@ void ParamWriterInterface::writeLeftGain(const uint16_t val)
     return;
   }
 
-  std::string data;
   this->tx_rx_param_write_packet_->setLeftGain(val);
-  if (!this->tx_rx_param_write_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
-    return;
-  }
+  if (!this->flashAndWaitResponse()) {return;}
 
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_write_packet_->isWaitingResponse()) {
-    this->read();
+  if (this->read_status_) {
+    RCLCPP_INFO(this->getLogger(), "Left gain %d.", val);
+  } else {
+    RCLCPP_ERROR(this->getLogger(), "Failed to set left gain.");
   }
 }
 
@@ -75,16 +69,13 @@ void ParamWriterInterface::writeAccelerationTime(const uint16_t val)
     return;
   }
 
-  std::string data;
   this->tx_rx_param_write_packet_->setAccelerationTime(val);
-  if (!this->tx_rx_param_write_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
-    return;
-  }
+  if (!this->flashAndWaitResponse()) {return;}
 
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_write_packet_->isWaitingResponse()) {
-    this->read();
+  if (this->read_status_) {
+    RCLCPP_INFO(this->getLogger(), "Acceleration time %d.", val);
+  } else {
+    RCLCPP_ERROR(this->getLogger(), "Failed to set acceleration time.");
   }
 }
 
@@ -95,16 +86,13 @@ void ParamWriterInterface::writeDecelerationTime(const uint16_t val)
     return;
   }
 
-  std::string data;
   this->tx_rx_param_write_packet_->setDecelerationTime(val);
-  if (!this->tx_rx_param_write_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
-    return;
-  }
+  if (!this->flashAndWaitResponse()) {return;}
 
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_write_packet_->isWaitingResponse()) {
-    this->read();
+  if (this->read_status_) {
+    RCLCPP_INFO(this->getLogger(), "Deceleration time %d.", val);
+  } else {
+    RCLCPP_ERROR(this->getLogger(), "Failed to set deceleration time.");
   }
 }
 
@@ -115,16 +103,13 @@ void ParamWriterInterface::writeTimeout(const uint16_t val)
     return;
   }
 
-  std::string data;
   this->tx_rx_param_write_packet_->setTimeout(val);
-  if (!this->tx_rx_param_write_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
-    return;
-  }
+  if (!this->flashAndWaitResponse()) {return;}
 
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_write_packet_->isWaitingResponse()) {
-    this->read();
+  if (this->read_status_) {
+    RCLCPP_INFO(this->getLogger(), "Timeout %d.", val);
+  } else {
+    RCLCPP_ERROR(this->getLogger(), "Failed to write timeout.");
   }
 }
 
@@ -135,30 +120,43 @@ void ParamWriterInterface::writeInputOffDecelerationTime(const uint16_t val)
     return;
   }
 
-  std::string data;
   this->tx_rx_param_write_packet_->setInputOffDecelerationTime(val);
-  if (!this->tx_rx_param_write_packet_->getTx(data)) {
-    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
-    return;
-  }
+  if (!this->flashAndWaitResponse()) {return;}
 
-  this->port_handler_->write(data.data(), data.size());
-  while (this->tx_rx_param_write_packet_->isWaitingResponse()) {
-    this->read();
+  if (this->read_status_) {
+    RCLCPP_INFO(this->getLogger(), "Input Off Deceleration Time %d.", val);
+  } else {
+    RCLCPP_ERROR(this->getLogger(), "Failed to write input off deceleration time.");
   }
 }
 
 void ParamWriterInterface::readSinglePacket(const std::string & packet)
 {
   try {
-    if (this->tx_rx_param_write_packet_->setRx(packet)) {
-      RCLCPP_INFO(this->getLogger(), "Succeeded to write!");
-    } else {
-      RCLCPP_ERROR(this->getLogger(), "Failed to write");
-    }
+    this->read_status_ = this->tx_rx_param_write_packet_->setRx(packet);
   } catch (const std::runtime_error & e) {
     RCLCPP_ERROR(this->getLogger(), e.what());
+    this->read_status_ = false;
   }
+}
+
+bool ParamWriterInterface::flashAndWaitResponse()
+{
+  std::string data;
+  if (!this->tx_rx_param_write_packet_->getTx(data)) {
+    RCLCPP_ERROR(this->getLogger(), "Failed to take Tx packet.");
+    return false;
+  }
+
+  this->port_handler_->write(data.data(), data.size());
+  while (this->tx_rx_param_write_packet_->isWaitingResponse()) {
+    if (!rclcpp::ok()) {
+      return false;
+    }
+    this->read();
+  }
+
+  return true;
 }
 
 const rclcpp::Logger ParamWriterInterface::getLogger() noexcept

@@ -28,6 +28,7 @@ public:
 
 private:
   TxRxParamWritePacket::UniquePtr tx_rx_param_write_packet_;
+  bool read_status_ = false;
 
 public:
   using InterfaceBase::InterfaceBase;
@@ -44,6 +45,9 @@ public:
 
 protected:
   void readSinglePacket(const std::string &) override;
+
+private:
+  bool flashAndWaitResponse();
   static const rclcpp::Logger getLogger() noexcept;
 };
 }  // namespace su065d4380_interface
