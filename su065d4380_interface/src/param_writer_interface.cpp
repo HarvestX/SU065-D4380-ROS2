@@ -124,7 +124,7 @@ void ParamWriterInterface::writeInputOffDecelerationTime(const uint16_t val)
   if (!this->flashAndWaitResponse()) {return;}
 
   if (this->read_status_) {
-    RCLCPP_INFO(this->getLogger(), "Input Off Deceleration Time %d.", val);
+    RCLCPP_INFO(this->getLogger(), "Input off deceleration Time %d.", val);
   } else {
     RCLCPP_ERROR(this->getLogger(), "Failed to write input off deceleration time.");
   }

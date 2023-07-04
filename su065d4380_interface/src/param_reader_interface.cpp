@@ -40,7 +40,7 @@ void ParamReaderInterface::readRightGain()
     return;
   }
 
-  RCLCPP_INFO(this->getLogger(), "Right gain %d", this->tx_rx_param_read_packet_->getData());
+  RCLCPP_INFO(this->getLogger(), "Right gain %d.", this->tx_rx_param_read_packet_->getData());
 }
 
 void ParamReaderInterface::readLeftGain()
@@ -55,7 +55,7 @@ void ParamReaderInterface::readLeftGain()
     return;
   }
 
-  RCLCPP_INFO(this->getLogger(), "Left gain %d", this->tx_rx_param_read_packet_->getData());
+  RCLCPP_INFO(this->getLogger(), "Left gain %d.", this->tx_rx_param_read_packet_->getData());
 }
 
 void ParamReaderInterface::readAccelerationTime()
@@ -70,7 +70,9 @@ void ParamReaderInterface::readAccelerationTime()
     return;
   }
 
-  RCLCPP_INFO(this->getLogger(), "Acceleration time %d", this->tx_rx_param_read_packet_->getData());
+  RCLCPP_INFO(
+    this->getLogger(), "Acceleration time %d.",
+    this->tx_rx_param_read_packet_->getData());
 }
 
 void ParamReaderInterface::readDecelerationTime()
@@ -85,7 +87,9 @@ void ParamReaderInterface::readDecelerationTime()
     return;
   }
 
-  RCLCPP_INFO(this->getLogger(), "Deceleration time %d", this->tx_rx_param_read_packet_->getData());
+  RCLCPP_INFO(
+    this->getLogger(), "Deceleration time %d.",
+    this->tx_rx_param_read_packet_->getData());
 }
 
 void ParamReaderInterface::readTimeout()
@@ -100,7 +104,7 @@ void ParamReaderInterface::readTimeout()
     return;
   }
 
-  RCLCPP_INFO(this->getLogger(), "Timeout %d", this->tx_rx_param_read_packet_->getData());
+  RCLCPP_INFO(this->getLogger(), "Timeout %d.", this->tx_rx_param_read_packet_->getData());
 }
 
 void ParamReaderInterface::readInputOffDecelerationTime()
@@ -117,7 +121,7 @@ void ParamReaderInterface::readInputOffDecelerationTime()
   }
 
   RCLCPP_INFO(
-    this->getLogger(), "Input off deceleration time %d",
+    this->getLogger(), "Input off deceleration time %d.",
     this->tx_rx_param_read_packet_->getData());
 }
 
