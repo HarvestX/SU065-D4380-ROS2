@@ -8,7 +8,6 @@ Nidec Motor Driver interface for ROS2
 
 ## Requirements
 - ROS 2
-  - Ubuntu20 : [Galactic Geochelone](https://docs.ros.org/en/galactic/Installation.html)
   - Ubuntu22 : [Humble Hawksbill](https://docs.ros.org/en/humble/Installation.html)
 
 ## Setup
