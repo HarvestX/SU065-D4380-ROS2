@@ -10,10 +10,8 @@ ament_auto_find_build_dependencies()
 
 # su065d4380 interface ==============================================
 file(GLOB src_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp)
-file(GLOB commander_src_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/commander/*.cpp)
-set(TARGET packet_handler)
-set(MYLIB ${PROJECT_NAME}_${TARGET})
-ament_auto_add_library(${MYLIB} SHARED ${src_files} ${commander_src_files})
+set(TARGET ${PROJECT_NAME})
+ament_auto_add_library(${TARGET} SHARED ${src_files})
 
 # Testing ===========================================================
 if(BUILD_TESTING)
@@ -22,12 +20,16 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 
-  set(TARGET test_rx_info_packet)
-  ament_auto_add_gtest(${TARGET} ./test/src/${TARGET}.cpp)
+  set(TARGETS
+    test_rx_info_packet
+    test_tx_rx_vel_packet
+    test_tx_rx_param_read_packet
+    test_tx_rx_param_write_packet)
 
-  set(TARGET test_tx_rx_vel_packet)
-  ament_add_gmock(${TARGET} ./test/src/${TARGET}.cpp)
-  target_link_libraries(${TARGET} ${MYLIB})
+  foreach(TARGET ${TARGETS})
+    ament_add_gmock(${TARGET} ./test/src/${TARGET}.cpp)
+    target_link_libraries(${TARGET} ${${PROJECT_NAME}_LIBRARIES})
+  endforeach()
 endif()
 
 ament_auto_package()
