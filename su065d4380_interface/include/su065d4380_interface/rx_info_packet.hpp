@@ -111,6 +111,61 @@ public:
   {
     return static_cast<error_state_t>(this->get2byteData<uint16_t>(2));
   }
+
+  static bool isSolvableError(const error_state_t & e)
+  {
+    switch (e) {
+      case error_state_t::OK:
+        // Actually this is not error though
+        return true;
+      case error_state_t::LOW_VOLTAGE:
+        [[fallthrough]];
+      case error_state_t::HIGH_VOLTAGE:
+        [[fallthrough]];
+      case error_state_t::INTERNAL_DRIVER_ERROR:
+        [[fallthrough]];
+      case error_state_t::SENSOR_ERROR:
+        [[fallthrough]];
+      case error_state_t::OVER_CURRENT:
+        return false;
+      case error_state_t::INVALID_VELOCITY:
+        [[fallthrough]];
+      case error_state_t::OVER_LOAD:
+        [[fallthrough]];
+      case error_state_t::COMMUNICATION_ERROR:
+        return true;
+      default:
+        break;
+    }
+    return false;
+  }
+
+  static std::string getErrorStr(const error_state_t & e)
+  {
+    switch (e) {
+      case error_state_t::OK:
+        return "OK";
+      case error_state_t::LOW_VOLTAGE:
+        return "Low voltage";
+      case error_state_t::HIGH_VOLTAGE:
+        return "High voltage";
+      case error_state_t::INTERNAL_DRIVER_ERROR:
+        return "Internal driver error";
+      case error_state_t::SENSOR_ERROR:
+        return "Sensor error";
+      case error_state_t::OVER_CURRENT:
+        return "Over current";
+      case error_state_t::INVALID_VELOCITY:
+        return "Invalid velocity";
+      case error_state_t::OVER_LOAD:
+        return "Overload";
+      case error_state_t::COMMUNICATION_ERROR:
+        return "Communication error";
+      default:
+        break;
+    }
+    return "Unknown";
+  }
 };
 
 class RxEncPacket : public RxInfoPacketBase

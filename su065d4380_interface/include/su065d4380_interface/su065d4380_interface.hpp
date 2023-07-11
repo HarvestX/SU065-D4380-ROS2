@@ -45,6 +45,10 @@ public:
   void consumeAll() noexcept;
 
   bool hasError() noexcept;
+  void showError() noexcept;
+  bool hasSolvableError() noexcept;
+  void solveError() noexcept;
+
   double getRightVelocity() noexcept;
   double getLeftVelocity() noexcept;
   double getRightRadian() noexcept;

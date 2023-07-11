@@ -159,6 +159,10 @@ return_type SU065D4380System::read(const rclcpp::Time &, const rclcpp::Duration 
 {
   this->interface_->read();
 
+  if (this->interface_->hasError()) {
+    return return_type::ERROR;
+  }
+
   this->state_positions_.at(0) = this->interface_->getLeftRadian();
   this->state_positions_.at(1) = this->interface_->getRightRadian();
 
