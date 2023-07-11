@@ -40,11 +40,16 @@ public:
   ~SU065D4380Interface();
 
   CallbackReturn on_init() override;
+  CallbackReturn on_activate(const State &) override;
 
   void write() noexcept;
   void consumeAll() noexcept;
 
   bool hasError() noexcept;
+  void showError() noexcept;
+  bool isSolvableError() noexcept;
+  void solveError() noexcept;
+
   double getRightVelocity() noexcept;
   double getLeftVelocity() noexcept;
   double getRightRadian() noexcept;

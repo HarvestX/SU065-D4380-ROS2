@@ -28,6 +28,18 @@ CallbackReturn SU065D4380Interface::on_init()
   return CallbackReturn::SUCCESS;
 }
 
+CallbackReturn SU065D4380Interface::on_activate(const State &)
+{
+  const auto & ret = this->port_handler_->open();
+
+  // Need to set velocity for initial communication
+  if (ret) {
+    this->setVelocity(0.0, 0.0);
+    this->write();
+  }
+  return ret ? CallbackReturn::SUCCESS : CallbackReturn::FAILURE;
+}
+
 SU065D4380Interface::~SU065D4380Interface()
 {
   this->rx_left_vel_packet_.reset();
@@ -105,6 +117,37 @@ bool SU065D4380Interface::hasError() noexcept
   const error_state_t e = this->rx_drv_packet_->getErrorState();
 
   return e != error_state_t::OK;
+}
+
+void SU065D4380Interface::showError() noexcept
+{
+  if (!this->rx_drv_packet_->isOK()) {
+    return;
+  }
+
+  const error_state_t e = this->rx_drv_packet_->getErrorState();
+  if (e == error_state_t::OK) {
+    RCLCPP_INFO(this->getLogger(), RxDrvPacket::getErrorStr(e).c_str());
+  } else {
+    RCLCPP_ERROR(this->getLogger(), RxDrvPacket::getErrorStr(e).c_str());
+  }
+}
+
+bool SU065D4380Interface::isSolvableError() noexcept
+{
+  if (!this->rx_drv_packet_->isOK()) {
+    return false;
+  }
+
+  const error_state_t e = this->rx_drv_packet_->getErrorState();
+  return RxDrvPacket::isSolvableError(e);
+}
+
+void SU065D4380Interface::solveError() noexcept
+{
+  this->tx_rx_vel_packet_->setVelocity(
+    mode_flag_t::FLAG_MODE_ERROR_REST, 0, 0);
+  this->write();
 }
 
 double SU065D4380Interface::getRightVelocity() noexcept
