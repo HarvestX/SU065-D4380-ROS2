@@ -49,8 +49,7 @@ void InterfaceBase::read()
   std::stringstream buf;
   this->port_handler_->readUntil(buf, '\r');
   std::string packet;
-  while (std::getline(buf, packet, '\r')) {
-    RCLCPP_INFO(rclcpp::get_logger("interface"), "got %s", packet.c_str());
+  while (std::getline(buf, packet, '\r') && rclcpp::ok()) {
     this->readSinglePacket(packet);
   }
 }
