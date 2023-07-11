@@ -24,8 +24,8 @@ namespace su065d4380_interface
 enum class mode_flag_t : uint8_t
 {
   FLAG_MODE_MOTOR_ON = 1 << 0,
-  FLAG_MODE_BREAK_OFF = 1 << 3,
-  FLAG_MODE_ERROR_REST = 1 << 5,
+  FLAG_MODE_BREAK_OFF = 1 << 2,
+  FLAG_MODE_ERROR_REST = 1 << 4,
 };
 
 constexpr mode_flag_t operator|(const mode_flag_t & lhs, const mode_flag_t & rhs)
