@@ -157,9 +157,7 @@ std::vector<hardware_interface::CommandInterface> SU065D4380System::export_comma
 
 return_type SU065D4380System::read(const rclcpp::Time &, const rclcpp::Duration &)
 {
-  RCLCPP_INFO(this->getLogger(), "read");
   this->interface_->read();
-  RCLCPP_INFO(this->getLogger(), "Read done");
 
   if (this->interface_->hasError()) {
     this->interface_->showError();
@@ -168,7 +166,6 @@ return_type SU065D4380System::read(const rclcpp::Time &, const rclcpp::Duration 
     }
     this->interface_->solveError();
   }
-  RCLCPP_INFO(this->getLogger(), "check error done");
 
   this->state_positions_.at(0) = this->interface_->getLeftRadian();
   this->state_positions_.at(1) = this->interface_->getRightRadian();
@@ -176,14 +173,11 @@ return_type SU065D4380System::read(const rclcpp::Time &, const rclcpp::Duration 
   this->state_velocities_.at(0) = this->interface_->getLeftVelocity();
   this->state_velocities_.at(1) = this->interface_->getRightVelocity();
 
-  RCLCPP_INFO(this->getLogger(), "set done");
-
   return return_type::OK;
 }
 
 return_type SU065D4380System::write(const rclcpp::Time &, const rclcpp::Duration &)
 {
-  RCLCPP_INFO(this->getLogger(), "write");
   this->interface_->setVelocity(this->command_velocities_.at(0), this->command_velocities_.at(1));
   this->interface_->write();
 
