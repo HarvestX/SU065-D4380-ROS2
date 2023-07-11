@@ -47,7 +47,7 @@ public:
 
   bool hasError() noexcept;
   void showError() noexcept;
-  bool hasSolvableError() noexcept;
+  bool isSolvableError() noexcept;
   void solveError() noexcept;
 
   double getRightVelocity() noexcept;

@@ -133,7 +133,7 @@ void SU065D4380Interface::showError() noexcept
   }
 }
 
-bool SU065D4380Interface::hasSolvableError() noexcept
+bool SU065D4380Interface::isSolvableError() noexcept
 {
   if (!this->rx_drv_packet_->isOK()) {
     return false;
