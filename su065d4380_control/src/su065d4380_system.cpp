@@ -159,6 +159,7 @@ return_type SU065D4380System::read(const rclcpp::Time &, const rclcpp::Duration 
 {
   RCLCPP_INFO(this->getLogger(), "read");
   this->interface_->read();
+  RCLCPP_INFO(this->getLogger(), "Read done");
 
   if (this->interface_->hasError()) {
     this->interface_->showError();
