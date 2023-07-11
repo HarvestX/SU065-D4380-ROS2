@@ -92,7 +92,6 @@
     <joint
         name="${prefix}su065d4380_wheel_joint"
         type="continuous">
-      <!-- type="fixed"> -->
       <parent link="${prefix}su065d4380_wheel_motor_link" />
       <child link="${prefix}su065d4380_wheel_link" />
       <axis xyz="0 1 0" />
