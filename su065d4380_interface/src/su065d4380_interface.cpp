@@ -28,6 +28,18 @@ CallbackReturn SU065D4380Interface::on_init()
   return CallbackReturn::SUCCESS;
 }
 
+CallbackReturn SU065D4380Interface::on_activate(const State &)
+{
+  const auto & ret = this->port_handler_->open();
+
+  // Need to set velocity for initial communication
+  if (ret) {
+    this->setVelocity(0.0, 0.0);
+    this->write();
+  }
+  return ret ? CallbackReturn::SUCCESS : CallbackReturn::FAILURE;
+}
+
 SU065D4380Interface::~SU065D4380Interface()
 {
   this->rx_left_vel_packet_.reset();

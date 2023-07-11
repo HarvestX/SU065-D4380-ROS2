@@ -40,6 +40,7 @@ public:
   ~SU065D4380Interface();
 
   CallbackReturn on_init() override;
+  CallbackReturn on_activate(const State &) override;
 
   void write() noexcept;
   void consumeAll() noexcept;
