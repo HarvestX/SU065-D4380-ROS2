@@ -156,7 +156,7 @@ double SU065D4380Interface::getRightVelocity() noexcept
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  return this->rx_right_vel_packet_->getRPM() * RPM2RPS;
+  return -1.0 * this->rx_right_vel_packet_->getRPM() * RPM2RPS;
 }
 
 double SU065D4380Interface::getLeftVelocity() noexcept
@@ -174,7 +174,7 @@ double SU065D4380Interface::getRightRadian() noexcept
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  return this->rx_enc_packet_->getRightEncoder() * ENC2RAD;
+  return -1.0 * this->rx_enc_packet_->getRightEncoder() * ENC2RAD;
 }
 
 double SU065D4380Interface::getLeftRadian() noexcept
