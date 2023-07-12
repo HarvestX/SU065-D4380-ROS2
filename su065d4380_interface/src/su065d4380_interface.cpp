@@ -152,7 +152,7 @@ void SU065D4380Interface::solveError() noexcept
 
 double SU065D4380Interface::getRightVelocity() noexcept
 {
-  constexpr bool COEFFICIENT = -1.0 * RPM2RPS / RIGHT_MECHANICAL_REDUCTION;
+  constexpr bool COEFFICIENT = RPM2RPS / RIGHT_MECHANICAL_REDUCTION;
   if (!this->rx_right_vel_packet_->isOK()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
@@ -172,7 +172,7 @@ double SU065D4380Interface::getLeftVelocity() noexcept
 
 double SU065D4380Interface::getRightRadian() noexcept
 {
-  constexpr bool COEFFICIENT = -1.0 * ENC2RAD / RIGHT_MECHANICAL_REDUCTION;
+  constexpr bool COEFFICIENT = ENC2RAD / RIGHT_MECHANICAL_REDUCTION;
   if (!this->rx_enc_packet_->isOK()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
