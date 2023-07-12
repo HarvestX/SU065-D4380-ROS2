@@ -196,7 +196,6 @@ void SU065D4380Interface::setVelocity(const double left_rps, const double right_
   constexpr double LEFT_COEFFICIENT = RPS2RPM * LEFT_MECHANICAL_REDUCTION;
   const int16_t right_rpm = static_cast<int16_t>(right_rps * RIGHT_COEFFICIENT);
   const int16_t left_rpm = static_cast<int16_t>(left_rps * LEFT_COEFFICIENT);
-  RCLCPP_INFO(this->getLogger(), "RPM %d %d", right_rpm, left_rpm);
   this->tx_rx_vel_packet_->setVelocity(mode_flag_t::FLAG_MODE_MOTOR_ON, right_rpm, left_rpm);
 }
 
