@@ -28,9 +28,9 @@ using State = rclcpp_lifecycle::State;
 class InterfaceBase : public rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 {
 public:
-  static constexpr double RPM2RPS = M_2_PI / 60.0;
-  static constexpr double RPS2RPM = 60.0 / M_2_PI;
-  static constexpr double ENC2RAD = M_2_PI / (1 << 14);
+  static constexpr double RPM2RPS = 2.0 * M_PI / 60.0;
+  static constexpr double RPS2RPM = 60.0 / 2.0 / M_PI;
+  static constexpr double ENC2RAD = 2.0 * M_PI / (1 << 14);
 
 protected:
   using PortHandler = h6x_serial_interface::PortHandler;
