@@ -26,6 +26,8 @@ class SU065D4380Interface : public InterfaceBase
 {
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(SU065D4380Interface)
+  static const double LEFT_MECHANICAL_REDUCTION = 9.0;
+  static const double RIGHT_MECHANICAL_REDUCTION = 9.0;
 
 private:
   RxLeftVelPacket::UniquePtr rx_left_vel_packet_;
@@ -37,7 +39,7 @@ private:
 
 public:
   using InterfaceBase::InterfaceBase;
-  ~SU065D4380Interface();
+  ~SU065D4380Interface()
 
   CallbackReturn on_init() override;
   CallbackReturn on_activate(const State &) override;

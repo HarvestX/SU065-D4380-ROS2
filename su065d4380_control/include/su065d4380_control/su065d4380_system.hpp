@@ -48,9 +48,6 @@ private:
   using Interface = su065d4380_interface::SU065D4380Interface;
   Interface::SharedPtr interface_;
 
-  double left_reduction_ratio_ = 1.0;
-  double right_reduction_ratio_ = 1.0;
-
   std::vector<double> command_velocities_, state_positions_, state_velocities_;
 
 public:
