@@ -159,11 +159,6 @@ return_type SU065D4380System::read(const rclcpp::Time &, const rclcpp::Duration 
   this->state_velocities_.at(0) = this->interface_->getLeftVelocity();
   this->state_velocities_.at(1) = this->interface_->getRightVelocity();
 
-  RCLCPP_INFO(
-    this->getLogger(), "RAD %.3lf %.3lf", this->state_positions_[0], this->state_positions_[1]);
-  RCLCPP_INFO(
-    this->getLogger(), "RPS %.3lf %.3lf", this->state_velocities_[0], this->state_velocities_[1]);
-
   return return_type::OK;
 }
 
