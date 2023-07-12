@@ -18,9 +18,18 @@
 
 using namespace su065d4380_interface;  // NOLINT
 
+TEST(RxInfoPacket, RxRightVelPacket) {
+  const auto right_packet = std::make_unique<RxRightVelPacket>();
+  const std::string data = "$A10100F83028";
+  ASSERT_TRUE(right_packet->set(data));
+  ASSERT_EQ(right_packet->getMode(), 1);
+  ASSERT_EQ(right_packet->getRPM(), -2000);
+}
+
+
 TEST(RxInfoPacket, RxLeftVelPacket) {
   const auto left_packet = std::make_unique<RxLeftVelPacket>();
-  const std::string data = "$A10100F83028";
+  const std::string data = "$A20100F8302B";
   ASSERT_FALSE(left_packet->isOK());
   ASSERT_TRUE(left_packet->set(data));
   ASSERT_TRUE(left_packet->isOK());
@@ -28,14 +37,6 @@ TEST(RxInfoPacket, RxLeftVelPacket) {
   ASSERT_EQ(left_packet->getRPM(), -2000);
   left_packet->consume();
   ASSERT_FALSE(left_packet->isOK());
-}
-
-TEST(RxInfoPacket, RxRightVelPacket) {
-  const auto right_packet = std::make_unique<RxRightVelPacket>();
-  const std::string data = "$A20100F8302B";
-  ASSERT_TRUE(right_packet->set(data));
-  ASSERT_EQ(right_packet->getMode(), 1);
-  ASSERT_EQ(right_packet->getRPM(), -2000);
 }
 
 TEST(RxInfoPacket, RxDrvPacket) {

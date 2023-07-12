@@ -48,26 +48,26 @@ public:
   }
 };
 
-class RxLeftVelPacket : public RxVelPacketBase
-{
-public:
-  RCLCPP_UNIQUE_PTR_DEFINITIONS(RxLeftVelPacket)
-  static const char SUB_ID = '1';
-
-public:
-  RxLeftVelPacket()
-  : RxVelPacketBase(SUB_ID) {}
-};
-
 class RxRightVelPacket : public RxVelPacketBase
 {
 public:
   RCLCPP_UNIQUE_PTR_DEFINITIONS(RxRightVelPacket)
-  static const char SUB_ID = '2';
+  static const char SUB_ID = '1';
 
 public:
   RxRightVelPacket()
   :  RxVelPacketBase(SUB_ID) {}
+};
+
+class RxLeftVelPacket : public RxVelPacketBase
+{
+public:
+  RCLCPP_UNIQUE_PTR_DEFINITIONS(RxLeftVelPacket)
+  static const char SUB_ID = '2';
+
+public:
+  RxLeftVelPacket()
+  : RxVelPacketBase(SUB_ID) {}
 };
 
 enum class driver_state_t : uint16_t
