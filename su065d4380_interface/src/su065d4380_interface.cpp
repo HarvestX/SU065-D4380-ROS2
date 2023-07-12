@@ -152,7 +152,7 @@ void SU065D4380Interface::solveError() noexcept
 
 double SU065D4380Interface::getRightVelocity() noexcept
 {
-  constexpr double COEFFICIENT = RPM2RPS / RIGHT_MECHANICAL_REDUCTION;
+  constexpr double COEFFICIENT = -1.0 * RPM2RPS / RIGHT_MECHANICAL_REDUCTION;
   if (!this->rx_right_vel_packet_->isOK()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
