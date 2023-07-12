@@ -187,7 +187,7 @@ double SU065D4380Interface::getLeftRadian() noexcept
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  return this->rx_enc_packet_->getLeftEncoder() * ENC2RAD;
+  return COEFFICIENT * this->rx_enc_packet_->getLeftEncoder();
 }
 
 void SU065D4380Interface::setVelocity(const double left_rps, const double right_rps) noexcept
