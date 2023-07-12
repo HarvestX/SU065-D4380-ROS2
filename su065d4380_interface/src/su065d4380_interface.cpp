@@ -152,45 +152,51 @@ void SU065D4380Interface::solveError() noexcept
 
 double SU065D4380Interface::getRightVelocity() noexcept
 {
+  constexpr double COEFFICIENT = -1.0 * RPM2RPS / RIGHT_MECHANICAL_REDUCTION;
   if (!this->rx_right_vel_packet_->isOK()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  return this->rx_right_vel_packet_->getRPM() * RPM2RPS;
+  return COEFFICIENT * this->rx_right_vel_packet_->getRPM();
 }
 
 double SU065D4380Interface::getLeftVelocity() noexcept
 {
+  constexpr double COEFFICIENT = RPM2RPS / LEFT_MECHANICAL_REDUCTION;
   if (!this->rx_left_vel_packet_->isOK()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  return this->rx_left_vel_packet_->getRPM() * RPM2RPS;
+  return COEFFICIENT * this->rx_left_vel_packet_->getRPM();
 }
 
 double SU065D4380Interface::getRightRadian() noexcept
 {
+  constexpr double COEFFICIENT = -1.0 * ENC2RAD / RIGHT_MECHANICAL_REDUCTION;
   if (!this->rx_enc_packet_->isOK()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  return this->rx_enc_packet_->getRightEncoder() * ENC2RAD;
+  return COEFFICIENT * this->rx_enc_packet_->getRightEncoder();
 }
 
 double SU065D4380Interface::getLeftRadian() noexcept
 {
+  constexpr double COEFFICIENT = ENC2RAD / LEFT_MECHANICAL_REDUCTION;
   if (!this->rx_enc_packet_->isOK()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  return this->rx_enc_packet_->getLeftEncoder() * ENC2RAD;
+  return COEFFICIENT * this->rx_enc_packet_->getLeftEncoder();
 }
 
 void SU065D4380Interface::setVelocity(const double left_rps, const double right_rps) noexcept
 {
-  this->tx_rx_vel_packet_->setVelocity(
-    mode_flag_t::FLAG_MODE_MOTOR_ON,
-    static_cast<int16_t>(left_rps * RPS2RPM), static_cast<int16_t>(-1.0 * right_rps * RPS2RPM));
+  constexpr double RIGHT_COEFFICIENT = -1.0 * RPS2RPM * RIGHT_MECHANICAL_REDUCTION;
+  constexpr double LEFT_COEFFICIENT = RPS2RPM * LEFT_MECHANICAL_REDUCTION;
+  const int16_t right_rpm = static_cast<int16_t>(right_rps * RIGHT_COEFFICIENT);
+  const int16_t left_rpm = static_cast<int16_t>(left_rps * LEFT_COEFFICIENT);
+  this->tx_rx_vel_packet_->setVelocity(mode_flag_t::FLAG_MODE_MOTOR_ON, right_rpm, left_rpm);
 }
 
 const rclcpp::Logger SU065D4380Interface::getLogger() noexcept

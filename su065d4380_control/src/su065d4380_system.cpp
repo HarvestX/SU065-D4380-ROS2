@@ -62,21 +62,6 @@ CallbackReturn SU065D4380System::on_init(const hardware_interface::HardwareInfo 
     }
   }
 
-  for (const auto & transmission : this->info_.transmissions) {
-    for (const auto & joint : transmission.joints) {
-      if (joint.name.find("left") != std::string::npos) {
-        this->left_reduction_ratio_ = joint.mechanical_reduction;
-      }
-      if (joint.name.find("right") != std::string::npos) {
-        this->right_reduction_ratio_ = joint.mechanical_reduction;
-      }
-    }
-  }
-
-  RCLCPP_INFO(
-    this->getLogger(), "Reduction Ratio: %.3lf, %.3lf",
-    this->left_reduction_ratio_, this->right_reduction_ratio_);
-
   if (this->info_.joints.at(0).name.find("left") == std::string::npos) {
     RCLCPP_FATAL(this->getLogger(), "The index for left wheel expected to be 0");
     return CallbackReturn::ERROR;

@@ -26,6 +26,8 @@ class SU065D4380Interface : public InterfaceBase
 {
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(SU065D4380Interface)
+  static constexpr double LEFT_MECHANICAL_REDUCTION = 9.0;
+  static constexpr double RIGHT_MECHANICAL_REDUCTION = 9.0;
 
 private:
   RxLeftVelPacket::UniquePtr rx_left_vel_packet_;
