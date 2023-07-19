@@ -2,22 +2,7 @@
 <robot
     xmlns:xacro="http://ros.org/wiki/xacro"
     name="su065d4380">
-
-  <!-- arguments -->
-  <xacro:arg
-      name="use_fake_hardware"
-      default="False" />
-  <xacro:arg
-      name="prefix"
-      default="" />
-  <xacro:arg
-      name="dev"
-      default="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AB0PCR2T-if00-port0" />
-
   <xacro:include filename="$(find su065d4380_description)/urdf/su065d4380.xacro" />
-
-  <!-- ros2_control-components -->
-  <xacro:include filename="$(find su065d4380_description)/ros2_control/su065d4380.ros2_control.xacro" />
 
   <link name="base_link" />
 
@@ -28,9 +13,4 @@
         xyz="0 0 0"
         rpy="0 0 0" />
   </xacro:su065d4380>
-
-  <xacro:SU065D4380_ros2_control
-      prefix="$(arg prefix)"
-      use_fake_hardware="$(arg use_fake_hardware)"
-      dev="$(arg dev)" />
 </robot>
